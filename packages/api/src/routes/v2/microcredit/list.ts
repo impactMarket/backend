@@ -132,12 +132,11 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: filter
+     *         name: status
      *         schema:
-     *           type: string
-     *           enum: [pending, approved, rejected]
+     *           type: integer
      *         required: false
-     *         description: optional filter
+     *         description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: approved, 5: rejected"
      *       - in: query
      *         name: orderBy
      *         schema:

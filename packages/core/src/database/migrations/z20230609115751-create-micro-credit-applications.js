@@ -18,12 +18,20 @@ module.exports = {
                 onDelete: 'CASCADE',
                 allowNull: false
             },
+            form: {
+                type: Sequelize.JSONB,
+                allowNull: false
+            },
+            prismicId: {
+                type: Sequelize.STRING(32),
+                allowNull: false
+            },
             amount: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.INTEGER
             },
             period: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.INTEGER
             },
             status: {

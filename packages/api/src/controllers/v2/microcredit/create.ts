@@ -77,7 +77,10 @@ class MicroCreditController {
         }
 
         this.microCreditService
-            .updateApplication(req.body)
+            .updateApplication(
+                req.body.map(a => a.applicationId),
+                req.body.map(a => a.status)
+            )
             .then(r => standardResponse(res, 201, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -65,7 +65,7 @@ module.exports = {
             }
         );
 
-        const MicroCreditApplications = await queryInterface.sequelize.define(
+        const MicroCreditApplication = await queryInterface.sequelize.define(
             'microcredit_applications',
             {
                 id: {
@@ -83,12 +83,20 @@ module.exports = {
                     onDelete: 'CASCADE',
                     allowNull: false
                 },
+                form: {
+                    type: Sequelize.JSONB,
+                    allowNull: false
+                },
+                prismicId: {
+                    type: Sequelize.STRING(32),
+                    allowNull: false
+                },
                 amount: {
-                    allowNull: false,
+                    allowNull: true,
                     type: Sequelize.INTEGER
                 },
                 period: {
-                    allowNull: false,
+                    allowNull: true,
                     type: Sequelize.INTEGER
                 },
                 status: {
@@ -114,13 +122,7 @@ module.exports = {
             }
         );
 
-        const allCurrentApplications = await MicroCreditApplications.findAll();
         const allCurrentUsersWithoutApplications = await User.findAll({
-            where: {
-                id: {
-                    [Sequelize.Op.notIn]: allCurrentApplications.map(application => application.userId)
-                }
-            },
             limit: 50
         });
 
@@ -136,15 +138,17 @@ module.exports = {
             const status = getRandomInt(0, 3);
             newApplications.push({
                 userId: allCurrentUsersWithoutApplications[index].id,
+                form: { 'form-name': 'microcredit-application' },
+                prismicId: 'X' + getRandomInt(1000000000, 9999999999),
                 amount: getRandomInt(2, 11),
                 // between 3, 6 or 9 months
                 period: getRandomInt(1, 4) * 7776000,
                 status,
                 // it was decided somewhat between now and 4 months ago
-                decisionOn: status !== 0 ? new Date(Date.now() - getRandomInt(0, 5) * 2592000) : null
+                decisionOn: status !== 0 ? new Date(Date.now() - getRandomInt(0, 5) * 2592000 * 1000) : null
             });
         }
 
-        await MicroCreditApplications.bulkCreate(newApplications);
+        await MicroCreditApplication.bulkCreate(newApplications);
     }
 };

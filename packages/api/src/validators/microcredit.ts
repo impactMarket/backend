@@ -30,7 +30,7 @@ type ListBorrowersType = {
 type ListApplicationsType = {
     offset?: number;
     limit?: number;
-    filter?: 'pending' | 'approved' | 'rejected';
+    status?: number;
     orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
 };
 
@@ -62,7 +62,7 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
-    filter: Joi.string().optional().valid('pending', 'approved', 'rejected'),
+    status: Joi.number().optional().min(0).max(5),
     orderBy: Joi.string().optional().valid('appliedOn', 'appliedOn:asc', 'appliedOn:desc')
 });
 

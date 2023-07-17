@@ -33,10 +33,9 @@ import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUser
 import { initializeManager } from './ubi/manager';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
 import { initializeMerchantRegistry } from './merchant/merchantRegistry';
-import { initializeMicroCreditApplications } from './microCredit/applications';
+import { initializeMicroCreditApplication } from './microCredit/applications';
 import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
 import { initializeMicroCreditDocs } from './microCredit/docs';
-import { initializeMicroCreditForm } from './microCredit/form';
 import { initializeMicroCreditNote } from './microCredit/note';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
@@ -58,7 +57,6 @@ import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 import { initializeWalletAirdropProof } from './walletAirdrop/walletAirdropProof';
 import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
-import { microcreditNoteAssociation } from './associations/microcredit';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
 import { walletAidropAssociation } from './associations/walletAirdrop';
@@ -132,8 +130,7 @@ export default function initModels(sequelize: Sequelize): void {
 
     // MicroCredit
     initializeMicroCreditDocs(sequelize);
-    initializeMicroCreditApplications(sequelize);
-    initializeMicroCreditForm(sequelize);
+    initializeMicroCreditApplication(sequelize);
     initializeMicroCreditBorrowers(sequelize);
     initializeMicroCreditNote(sequelize);
 
@@ -146,5 +143,4 @@ export default function initModels(sequelize: Sequelize): void {
     storyAssociation(sequelize);
     walletAidropAssociation(sequelize);
     learnAndEarnAssociation(sequelize);
-    microcreditNoteAssociation(sequelize);
 }
