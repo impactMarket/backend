@@ -329,14 +329,26 @@ class ChainSubscribers {
                             transaction
                         )
                     ]);
-                    await models.microCreditBorrowers.create(
-                        {
-                            userId: user.id,
-                            performance: 100,
-                            manager: transactionsReceipt.from
+                    const [borrower, created] = await models.microCreditBorrowers.findOrCreate({
+                        where: {
+                            userId: user.id
                         },
-                        { transaction }
-                    );
+                        defaults: {
+                            userId: user.id,
+                            manager: transactionsReceipt.from,
+                            performance: 100
+                        },
+                        transaction
+                    });
+                    if (!created) {
+                        borrower.update(
+                            {
+                                manager: transactionsReceipt.from,
+                                performance: 100
+                            },
+                            { transaction }
+                        );
+                    }
                 }
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
