@@ -1,8 +1,8 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { AppUser, AppUserCreationAttributes } from '../../../interfaces/app/appUser';
+import { MicroCreditApplicationModel } from '../microCredit/applications';
 import { MicroCreditBorrowersModel } from '../microCredit/borrowers';
-import { MicroCreditFormModel } from '../microCredit/form';
 
 export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
@@ -34,7 +34,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public readonly deletedAt!: Date;
 
     public readonly borrower?: MicroCreditBorrowersModel;
-    public readonly microCreditForm?: MicroCreditFormModel;
+    public readonly microCreditApplications?: MicroCreditApplicationModel[];
 }
 
 export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {

@@ -1,6 +1,8 @@
-export interface MicroCreditApplications {
+export interface MicroCreditApplication {
     id: number;
     userId: number;
+    form: object;
+    prismicId: string;
     amount: number;
     period: number;
     status: number;
@@ -11,10 +13,21 @@ export interface MicroCreditApplications {
     updatedAt: Date;
 }
 
-export interface MicroCreditApplicationsCreation {
+export interface MicroCreditApplicationCreation {
     userId: number;
-    amount: number;
-    period: number;
-    status: number;
-    decisionOn: Date;
+    form: object;
+    prismicId: string;
+    amount?: number;
+    period?: number;
+    status?: number;
+    decisionOn?: Date;
+}
+
+export enum MicroCreditApplicationStatus {
+    PENDING = 0,
+    SUBMITTED = 1,
+    IN_REVIEW = 2,
+    REQUEST_CHANGES = 3,
+    APPROVED = 4,
+    REJECTED = 5
 }

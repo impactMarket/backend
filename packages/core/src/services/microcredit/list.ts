@@ -2,9 +2,8 @@ import { AppUser } from '../../interfaces/app/appUser';
 import { BigNumber, Contract } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
-import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
+import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
-import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
 import { Op, Order, WhereOptions, literal } from 'sequelize';
 import { config } from '../../..';
 import { getAddress } from '@ethersproject/address';
@@ -80,11 +79,11 @@ export enum LoanStatus {
     CANCELED = 9
 }
 
-// verify if the user has any pending loan, from microcreditForm or microcreditApplications
+// verify if the user has any pending loan, from microcreditApplications
 // and if so, but accepted, fetch the subgraph for status, otherwise, return
 async function getLastLoanStatus(user: { id: number; address: string }): Promise<number> {
     // only the most recent
-    const form = await models.microCreditForm.findOne({
+    const form = await models.microCreditApplications.findOne({
         where: {
             userId: user.id
         },
@@ -96,7 +95,7 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
         return LoanStatus.NO_LOAN;
     }
 
-    if (form.status === MicroCreditFormStatus.APPROVED) {
+    if (form.status === MicroCreditApplicationStatus.APPROVED) {
         try {
             const status = await getUserLastLoanStatusFromSubgraph(user.address);
             return status + 6;
@@ -106,12 +105,14 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
     }
 
     switch (form.status) {
-        case MicroCreditFormStatus.PENDING:
+        case MicroCreditApplicationStatus.PENDING:
             return LoanStatus.FORM_DRAFT;
-        case MicroCreditFormStatus.SUBMITTED:
-        case MicroCreditFormStatus.INREVIEW:
+        case MicroCreditApplicationStatus.SUBMITTED:
+        case MicroCreditApplicationStatus.IN_REVIEW:
             return LoanStatus.PENDING_REVIEW;
-        case MicroCreditFormStatus.REJECTED:
+        case MicroCreditApplicationStatus.REQUEST_CHANGES:
+            return LoanStatus.REQUEST_CHANGES;
+        case MicroCreditApplicationStatus.REJECTED:
             return LoanStatus.REJECTED;
         default:
             return LoanStatus.NO_LOAN;
@@ -289,7 +290,7 @@ export default class MicroCreditList {
     public listApplications = async (query: {
         offset?: number;
         limit?: number;
-        filter?: 'pending' | 'approved' | 'rejected';
+        status?: number;
         orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
     }): Promise<{
         count: number;
@@ -310,15 +311,9 @@ export default class MicroCreditList {
         }[];
     }> => {
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
-        const where: WhereOptions<MicroCreditApplications> = {};
-        // map filter to status (pending: 0, approved: 1, rejected: 2)
-        const statusMap = {
-            pending: 0,
-            approved: 1,
-            rejected: 2
-        };
-        if (query.filter !== undefined) {
-            where.status = statusMap[query.filter];
+        const where: WhereOptions<MicroCreditApplication> = {};
+        if (query.status !== undefined) {
+            where.status = query.status;
         }
         const applications = await models.microCreditApplications.findAndCountAll({
             attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'createdAt'],
@@ -452,8 +447,8 @@ export default class MicroCreditList {
                   })
                 : Promise.resolve([]),
             include.includes('forms')
-                ? models.microCreditForm.findAll({
-                      attributes: ['id', 'status', 'createdAt'],
+                ? models.microCreditApplications.findAll({
+                      attributes: ['id', 'status', 'decisionOn', 'createdAt'],
                       where: {
                           userId: user.id
                       },
@@ -669,14 +664,14 @@ export default class MicroCreditList {
     public getUserForm = async (userRequest: { userId: number; address: string }, formId: number) => {
         const userRoles = await getUserRoles(userRequest.address);
         if (userRoles.loanManager || userRoles.councilMember || userRoles.ambassador) {
-            return await models.microCreditForm.findOne({
+            return await models.microCreditApplications.findOne({
                 where: {
                     id: formId
                 }
             });
         }
 
-        const formResult = await models.microCreditForm.findOne({
+        const formResult = await models.microCreditApplications.findOne({
             where: {
                 id: formId,
                 userId: userRequest.userId

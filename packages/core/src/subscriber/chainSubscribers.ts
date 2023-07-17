@@ -1,3 +1,5 @@
+import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
+import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { Transaction } from 'sequelize';
 import { config, contracts, database, services, utils } from '../../';
@@ -13,6 +15,7 @@ class ChainSubscribers {
     ifaceCommunity: ethers.utils.Interface;
     ifaceMicrocredit: ethers.utils.Interface;
     communities: Map<string, number>;
+    microCreditService: MicroCreditCreate;
 
     constructor(
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
@@ -25,6 +28,7 @@ class ChainSubscribers {
         this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
         this.ifaceMicrocredit = new ethers.utils.Interface(contracts.MicrocreditABI);
         this.communities = communities;
+        this.microCreditService = new MicroCreditCreate();
         this.recover();
     }
 
@@ -310,21 +314,28 @@ class ChainSubscribers {
                 });
 
                 if (user) {
+                    const [transactionsReceipt] = await Promise.all([
+                        this.provider.getTransaction(log.transactionHash),
+                        this.microCreditService.updateApplication(
+                            [userAddress],
+                            [MicroCreditApplicationStatus.APPROVED]
+                        ),
+                        sendNotification(
+                            [user.toJSON()],
+                            NotificationType.LOAN_ADDED,
+                            true,
+                            true,
+                            undefined,
+                            transaction
+                        )
+                    ]);
                     await models.microCreditBorrowers.create(
                         {
                             userId: user.id,
-                            performance: 0,
-                            manager: (await this.provider.getTransaction(log.transactionHash)).from
+                            performance: 100,
+                            manager: transactionsReceipt.from
                         },
                         { transaction }
-                    );
-                    await sendNotification(
-                        [user.toJSON()],
-                        NotificationType.LOAN_ADDED,
-                        true,
-                        true,
-                        undefined,
-                        transaction
                     );
                 }
             } else if (parsedLog.name === 'ManagerChanged') {

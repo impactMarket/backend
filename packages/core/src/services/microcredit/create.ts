@@ -1,9 +1,9 @@
 import { AppUserModel } from '../../database/models/app/appUser';
 import { BaseError } from '../../utils';
+import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditContentStorage } from '../../services/storage';
-import { MicroCreditFormModel } from '../../database/models/microCredit/form';
-import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
 import { NotificationType } from '../../interfaces/app/appNotification';
+import { Op } from 'sequelize';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -66,7 +66,9 @@ export default class MicroCreditCreate {
         return microCreditDocs;
     }
 
-    public async updateApplication(updates: { applicationId: number; status: number }[]) {
+    public async updateApplication(applicationId: number[], status: number[]): Promise<void>;
+    public async updateApplication(walletAddress: string[], status: number[]): Promise<void>;
+    public async updateApplication(arg: (number | string)[], status: number[]) {
         const updateApplicationStatus = async (applicationId: number, status: number) => {
             await models.microCreditApplications.update(
                 {
@@ -81,16 +83,47 @@ export default class MicroCreditCreate {
             );
         };
 
-        for (const update of updates) {
-            const { applicationId, status } = update;
-            await updateApplicationStatus(applicationId, status);
+        if (arg.length !== status.length) {
+            throw new BaseError('INVALID_ARGUMENT', 'Invalid argument');
+        }
+
+        let applicationIds: number[] = [];
+
+        if (typeof arg[0] === 'number') {
+            applicationIds = arg as number[];
+        } else {
+            const users = await models.appUser.findAll({
+                where: {
+                    address: { [Op.in]: arg as string[] }
+                },
+                include: [
+                    {
+                        model: models.microCreditApplications,
+                        as: 'microCreditApplications',
+                        attributes: ['id']
+                    }
+                ]
+            });
+
+            applicationIds = users
+                .map(user => user.microCreditApplications)
+                .filter(applications => applications !== undefined)
+                .map(applications => applications!.map(application => application.id))
+                .flat();
+        }
+
+        for (let x = 0; x < applicationIds.length; x++) {
+            const applicationId = applicationIds[x];
+            const statusId = status[x];
+
+            await updateApplicationStatus(applicationId, statusId);
         }
 
         // notify user about decision
         // get users to notify
         const usersToNotify = await models.microCreditApplications.findAll({
             where: {
-                id: updates.map(update => update.applicationId)
+                id: { [Op.in]: applicationIds }
             },
             include: [
                 {
@@ -114,10 +147,10 @@ export default class MicroCreditCreate {
         form: object,
         prismicId: string,
         submitted: boolean
-    ): Promise<MicroCreditFormModel> => {
+    ): Promise<MicroCreditApplication> => {
         try {
-            const status = submitted ? MicroCreditFormStatus.SUBMITTED : MicroCreditFormStatus.PENDING;
-            const userForm = await models.microCreditForm.findOrCreate({
+            const status = submitted ? MicroCreditApplicationStatus.SUBMITTED : MicroCreditApplicationStatus.PENDING;
+            const [userForm, created] = await models.microCreditApplications.findOrCreate({
                 where: {
                     userId,
                     prismicId
@@ -130,12 +163,14 @@ export default class MicroCreditCreate {
                 }
             });
 
+            if (created) {
+                return userForm;
+            }
+
             // update form
-            const newForm = { ...userForm[0].form, ...form };
+            const newForm = { ...userForm.form, ...form };
 
-            // TODO: if submitted, check if all required fields was filled (prismic)
-
-            const data = await userForm[0].update({
+            const data = await userForm.update({
                 form: newForm,
                 status
             });

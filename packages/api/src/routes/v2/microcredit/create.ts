@@ -89,6 +89,7 @@ export default (route: Router): void => {
      *     tags:
      *       - "microcredit"
      *     summary: "Update microcredit applications"
+     *     description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: approved, 5: rejected"
      *     requestBody:
      *       content:
      *         application/json:
