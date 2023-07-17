@@ -146,7 +146,7 @@ export default class MicroCreditCreate {
         }
     };
 
-    public addNote = async (managerId: number, userId: number, note: string) => {
+    public addNote = (managerId: number, userId: number, note: string) => {
         return models.microCreditNote.create({
             managerId,
             userId,
