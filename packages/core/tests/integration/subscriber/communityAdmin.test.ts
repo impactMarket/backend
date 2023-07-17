@@ -143,7 +143,7 @@ describe('communityAdmin (chainSubscribers)', () => {
                 where: {
                     contractAddress
                 },
-                transaction: match.any,
+                transaction: match.any
             }
         );
     });
