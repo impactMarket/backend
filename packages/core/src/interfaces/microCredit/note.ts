@@ -1,4 +1,4 @@
-export interface MicroCreditNotes {
+export interface MicroCreditNote {
     id: number;
     userId: number;
     managerId: number;
@@ -8,7 +8,7 @@ export interface MicroCreditNotes {
     createdAt: Date;
 }
 
-export interface MicroCreditNotesCreationAttributes {
+export interface MicroCreditNoteCreationAttributes {
     userId: number;
     managerId: number;
     note: string;

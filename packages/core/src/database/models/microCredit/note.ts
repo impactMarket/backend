@@ -1,9 +1,9 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { DbModels } from '../../db';
-import { MicroCreditNotes, MicroCreditNotesCreationAttributes } from '../../../interfaces/microCredit/note';
+import { MicroCreditNote, MicroCreditNoteCreationAttributes } from '../../../interfaces/microCredit/note';
 
-export class MicroCreditNotesModel extends Model<MicroCreditNotes, MicroCreditNotesCreationAttributes> {
+export class MicroCreditNoteModel extends Model<MicroCreditNote, MicroCreditNoteCreationAttributes> {
     public id!: number;
     public userId!: number;
     public managerId!: number;
@@ -13,9 +13,9 @@ export class MicroCreditNotesModel extends Model<MicroCreditNotes, MicroCreditNo
     public readonly createdAt!: Date;
 }
 
-export function initializeMicroCreditNote(sequelize: Sequelize): typeof MicroCreditNotesModel {
-    const { microCreditApplications } = sequelize.models as DbModels;
-    MicroCreditNotesModel.init(
+export function initializeMicroCreditNote(sequelize: Sequelize): typeof MicroCreditNoteModel {
+    const { appUser } = sequelize.models as DbModels;
+    MicroCreditNoteModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -25,7 +25,7 @@ export function initializeMicroCreditNote(sequelize: Sequelize): typeof MicroCre
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: microCreditApplications,
+                    model: appUser,
                     key: 'id'
                 },
                 onDelete: 'CASCADE',
@@ -51,5 +51,5 @@ export function initializeMicroCreditNote(sequelize: Sequelize): typeof MicroCre
             sequelize
         }
     );
-    return MicroCreditNotesModel;
+    return MicroCreditNoteModel;
 }
