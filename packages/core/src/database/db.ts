@@ -36,6 +36,7 @@ import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { MicroCreditApplicationModel } from './models/microCredit/applications';
 import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
+import { MicroCreditNoteModel } from './models/microCredit/note';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
@@ -117,6 +118,7 @@ export type DbModels = {
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
     microCreditApplications: ModelStatic<MicroCreditApplicationModel>;
     microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
+    microCreditNote: ModelStatic<MicroCreditNoteModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 };

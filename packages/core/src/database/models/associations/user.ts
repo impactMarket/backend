@@ -10,7 +10,8 @@ export function userAssociation(sequelize: Sequelize) {
         appLog,
         microCreditApplications,
         microCreditBorrowers,
-        appReferralCode
+        appReferralCode,
+        microCreditNote
     } = sequelize.models as DbModels;
     // used to query from the beneficiary with incude
     beneficiary.belongsTo(appUser, {
@@ -71,6 +72,12 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     appReferralCode.belongsTo(appUser, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user'
+    });
+
+    microCreditNote.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user'

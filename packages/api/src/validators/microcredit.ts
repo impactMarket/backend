@@ -164,6 +164,14 @@ const saveForm = celebrate({
         })
         .required()
 });
+const addNote = celebrate({
+    body: defaultSchema
+        .object({
+            userId: Joi.number().required(),
+            note: Joi.string().required()
+        })
+        .required()
+});
 
 export {
     listBorrowersValidator,
@@ -174,6 +182,7 @@ export {
     postDocsValidator,
     putApplicationsValidator,
     saveForm,
+    addNote,
     ListBorrowersRequestSchema,
     ListApplicationsRequestSchema,
     PreSignerUrlFromAWSRequestSchema,

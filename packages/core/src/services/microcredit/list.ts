@@ -436,7 +436,7 @@ export default class MicroCreditList {
             throw new utils.BaseError('USER_NOT_FOUND', 'Borrower not found');
         }
 
-        const [docs, forms] = await Promise.all([
+        const [docs, forms, notes] = await Promise.all([
             include.includes('docs')
                 ? models.microCreditDocs.findAll({
                       attributes: ['filepath', 'category'],
@@ -454,6 +454,22 @@ export default class MicroCreditList {
                       },
                       order: [['createdAt', 'desc']]
                   })
+                : Promise.resolve([]),
+            include.includes('notes')
+                ? models.microCreditNote.findAll({
+                      attributes: ['id', 'note', 'createdAt'],
+                      include: [
+                          {
+                              model: models.appUser,
+                              attributes: ['address', 'firstName', 'lastName'],
+                              as: 'user'
+                          }
+                      ],
+                      where: {
+                          userId: user.id
+                      },
+                      order: [['createdAt', 'desc']]
+                  })
                 : Promise.resolve([])
         ]);
         const loans = await getBorrowerLoansCount(address);
@@ -464,7 +480,8 @@ export default class MicroCreditList {
             loans,
             lastLoanStatus,
             docs: docs.map(d => d.toJSON()),
-            forms: forms.map(f => f.toJSON())
+            forms: forms.map(f => f.toJSON()),
+            notes: notes.map(n => n.toJSON())
         };
     };
 

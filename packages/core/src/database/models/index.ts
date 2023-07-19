@@ -36,6 +36,7 @@ import { initializeMerchantRegistry } from './merchant/merchantRegistry';
 import { initializeMicroCreditApplication } from './microCredit/applications';
 import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
 import { initializeMicroCreditDocs } from './microCredit/docs';
+import { initializeMicroCreditNote } from './microCredit/note';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -131,6 +132,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeMicroCreditDocs(sequelize);
     initializeMicroCreditApplication(sequelize);
     initializeMicroCreditBorrowers(sequelize);
+    initializeMicroCreditNote(sequelize);
 
     // Exchange
     initializeExchangeRegistry(sequelize);

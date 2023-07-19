@@ -89,8 +89,8 @@ export default (route: Router): void => {
      *           items:
      *             type: string
      *         required: false
-     *         enum: [docs, forms]
-     *         example: [docs, forms]
+     *         enum: [docs, forms, notes]
+     *         example: [docs, forms, notes]
      *         description: what to include in the response
      *     responses:
      *       "200":
