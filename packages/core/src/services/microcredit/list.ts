@@ -105,9 +105,9 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
     }
 
     switch (form.status) {
-        case MicroCreditApplicationStatus.PENDING:
+        case MicroCreditApplicationStatus.DRAFT:
             return LoanStatus.FORM_DRAFT;
-        case MicroCreditApplicationStatus.SUBMITTED:
+        case MicroCreditApplicationStatus.PENDING:
         case MicroCreditApplicationStatus.IN_REVIEW:
             return LoanStatus.PENDING_REVIEW;
         case MicroCreditApplicationStatus.REQUEST_CHANGES:
@@ -314,6 +314,10 @@ export default class MicroCreditList {
         const where: WhereOptions<MicroCreditApplication> = {};
         if (query.status !== undefined) {
             where.status = query.status;
+        } else {
+            where.status = {
+                [Op.not]: MicroCreditApplicationStatus.DRAFT
+            };
         }
         const applications = await models.microCreditApplications.findAndCountAll({
             attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'createdAt'],
