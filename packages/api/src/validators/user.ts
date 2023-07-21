@@ -1,6 +1,10 @@
 import { Joi, celebrate } from 'celebrate';
 
+import { ContainerTypes, ValidatedRequestSchema, createValidator } from '~utils/queryValidator';
 import { defaultSchema } from './defaultSchema';
+import config from '~config/index';
+
+const validator = createValidator();
 
 const create = celebrate({
     body: defaultSchema.object({
@@ -68,10 +72,34 @@ const sendPushNotifications = celebrate({
     })
 });
 
-export default {
+type ListUserNotificationsType = {
+    offset?: number;
+    limit?: number;
+    unreadOnly?: boolean;
+    isWallet?: boolean;
+    isWebApp?: boolean;
+};
+
+const queryListUserNotificationsSchema = defaultSchema.object<ListUserNotificationsType>({
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().max(20).default(config.defaultLimit),
+    unreadOnly: Joi.boolean().optional(),
+    isWallet: Joi.boolean().optional(),
+    isWebApp: Joi.boolean().optional()
+});
+
+interface ListUserNotificationsRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: ListUserNotificationsType;
+}
+
+const queryListUserNotificationsValidator = validator.query(queryListUserNotificationsSchema);
+
+export {
     create,
     update,
     report,
     readNotifications,
-    sendPushNotifications
+    sendPushNotifications,
+    queryListUserNotificationsValidator,
+    ListUserNotificationsRequestSchema
 };

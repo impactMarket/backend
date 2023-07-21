@@ -1,9 +1,16 @@
 import { Router } from 'express';
 import timeout from 'connect-timeout';
 
-import { adminAuthentication, authenticateToken, verifySignature } from '../../middlewares';
-import UserController from '../../controllers/v2/user';
-import userValidators from '../../validators/user';
+import { adminAuthentication, authenticateToken, verifySignature } from '~middlewares/index';
+import {
+    queryListUserNotificationsValidator,
+    create as userCreate,
+    readNotifications as userReadNotifications,
+    report as userReport,
+    sendPushNotifications as userSendPushNotifications,
+    update as userUpdate
+} from '~validators/user';
+import UserController from '~controllers/v2/user';
 
 export default (app: Router): void => {
     const route = Router();
@@ -79,7 +86,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      */
-    route.post('/', userValidators.create, userController.create);
+    route.post('/', userCreate, userController.create);
 
     /**
      * @swagger
@@ -171,7 +178,7 @@ export default (app: Router): void => {
      *     - SignatureMessage: []
      *     - Signature: []
      */
-    route.put('/', authenticateToken, verifySignature, userValidators.update, userController.update);
+    route.put('/', authenticateToken, verifySignature, userUpdate, userController.update);
 
     /**
      * @swagger
@@ -254,7 +261,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/report', authenticateToken, userValidators.report, userController.report);
+    route.post('/report', authenticateToken, userReport, userController.report);
 
     /**
      * @swagger
@@ -350,43 +357,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /users/notifications/unread:
-     *   get:
-     *     tags:
-     *       - "users"
-     *     summary: Get the number of unread notifications from a user
-     *     parameters:
-     *       - in: query
-     *         name: isWebApp
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *       - in: query
-     *         name: isWallet
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *     responses:
-     *       "200":
-     *          description: OK
-     *          content:
-     *            application/json:
-     *              schema:
-     *                type: object
-     *                properties:
-     *                  success:
-     *                    type: boolean
-     *                  data:
-     *                    type: integer
-     *                    description: number of unread notifications
-     *     security:
-     *     - BearerToken: []
-     */
-    route.get('/notifications/unread/:query?', authenticateToken, timeout('3s'), userController.getUnreadNotifications);
-
-    /**
-     * @swagger
-     *
      * /users/notifications:
      *   get:
      *     tags:
@@ -415,6 +385,12 @@ export default (app: Router): void => {
      *         schema:
      *           type: boolean
      *         required: false
+     *       - in: query
+     *         name: unreadOnly
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by unread notifications only. If undefined, it will return all notifications
      *     responses:
      *       "200":
      *          description: OK
@@ -430,12 +406,18 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/notifications/:query?', authenticateToken, timeout('3s'), userController.getNotifications);
+    route.get(
+        '/notifications/:query?',
+        authenticateToken,
+        queryListUserNotificationsValidator,
+        timeout('3s'),
+        userController.getNotifications
+    );
 
     /**
      * @swagger
      *
-     * /users/notifications/read:
+     * /users/notifications:
      *   put:
      *     tags:
      *       - "users"
@@ -467,12 +449,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.put(
-        '/notifications/read',
-        authenticateToken,
-        userValidators.readNotifications,
-        userController.readNotifications
-    );
+    route.put('/notifications', authenticateToken, userReadNotifications, userController.readNotifications);
 
     /**
      * @swagger
@@ -502,7 +479,7 @@ export default (app: Router): void => {
     route.post(
         '/push-notifications',
         adminAuthentication,
-        userValidators.sendPushNotifications,
+        userSendPushNotifications,
         userController.sendPushNotifications
     );
 };
