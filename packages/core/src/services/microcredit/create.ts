@@ -149,7 +149,7 @@ export default class MicroCreditCreate {
         submitted: boolean
     ): Promise<MicroCreditApplication> => {
         try {
-            const status = submitted ? MicroCreditApplicationStatus.SUBMITTED : MicroCreditApplicationStatus.PENDING;
+            const status = submitted ? MicroCreditApplicationStatus.PENDING : MicroCreditApplicationStatus.DRAFT;
             const [userForm, created] = await models.microCreditApplications.findOrCreate({
                 where: {
                     userId,
@@ -162,6 +162,11 @@ export default class MicroCreditCreate {
                     status
                 }
             });
+
+            if (status === MicroCreditApplicationStatus.PENDING) {
+                // TODO: notify loan manager!
+                // TODO: send email to user with form
+            }
 
             if (created) {
                 return userForm;

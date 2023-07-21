@@ -24,8 +24,8 @@ export interface MicroCreditApplicationCreation {
 }
 
 export enum MicroCreditApplicationStatus {
-    PENDING = 0,
-    SUBMITTED = 1,
+    DRAFT = 0,
+    PENDING = 1,
     IN_REVIEW = 2,
     REQUEST_CHANGES = 3,
     APPROVED = 4,
