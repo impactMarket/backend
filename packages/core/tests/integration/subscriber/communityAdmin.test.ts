@@ -7,7 +7,7 @@ import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
 import cUSDContractJSON from './cUSD.json';
 
-describe('communityAdmin (chainSubscribers)', () => {
+describe('communityAdmin', () => {
     let provider: ethers.providers.Web3Provider;
     let subscribers: ChainSubscribers;
     let accounts: string[] = [];
@@ -103,7 +103,6 @@ describe('communityAdmin (chainSubscribers)', () => {
                 where: {
                     requestByAddress: accounts[1]
                 },
-                transaction: match.any,
                 returning: true
             }
         );
@@ -141,8 +140,7 @@ describe('communityAdmin (chainSubscribers)', () => {
             {
                 where: {
                     contractAddress
-                },
-                transaction: match.any
+                }
             }
         );
     });
