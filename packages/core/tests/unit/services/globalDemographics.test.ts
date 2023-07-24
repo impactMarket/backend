@@ -2,14 +2,11 @@ import { Sequelize } from 'sequelize';
 import { SinonStub, assert, match, stub } from 'sinon';
 
 import { AppUser } from '../../../src/interfaces/app/appUser';
-import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import { models } from '../../../src/database';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
-import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
 import CommunityFactory from '../../factories/community';
 import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
-import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 
 const globalDemographicsService = new GlobalDemographicsService();
@@ -29,7 +26,6 @@ async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
 describe('calculate global demographics', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
-    let communities: CommunityAttributes[];
     const maxClaim = 450;
     let dbGlobalDemographicsInsertStub: SinonStub;
 
@@ -78,7 +74,7 @@ describe('calculate global demographics', () => {
                 }
             ]
         });
-        communities = await CommunityFactory([
+        await CommunityFactory([
             {
                 requestByAddress: users[0].address,
                 started: new Date(),
@@ -94,8 +90,6 @@ describe('calculate global demographics', () => {
                 hasAddress: true
             }
         ]);
-        await ManagerFactory([users[0]], communities[0].id);
-        await BeneficiaryFactory(users.slice(0, 7), communities[0].id);
         dbGlobalDemographicsInsertStub = stub(globalDemographicsService.globalDemographics, 'bulkCreate');
     });
 

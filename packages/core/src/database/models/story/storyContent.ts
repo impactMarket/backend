@@ -4,7 +4,6 @@ import { StoryContent, StoryContentCreation } from '../../../interfaces/story/st
 
 export class StoryContentModel extends Model<StoryContent, StoryContentCreation> {
     public id!: number;
-    public mediaMediaId!: number;
     public storyMediaPath!: string;
     public storyMedia!: string[];
     public message!: string;
@@ -21,15 +20,6 @@ export function initializeStoryContent(sequelize: Sequelize): typeof StoryConten
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true
-            },
-            mediaMediaId: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id'
-                },
-                // onDelete: 'SET NULL', // default
-                allowNull: true
             },
             storyMediaPath: {
                 type: DataTypes.STRING(44),

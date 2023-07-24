@@ -10,8 +10,6 @@ export function communityAssociation(sequelize: Sequelize) {
         ubiPromoterSocialMedia,
         ubiCommunityPromoter,
         appAnonymousReport,
-        manager,
-        beneficiary,
         appProposal,
         appUser,
         ubiCommunityDemographics,
@@ -29,20 +27,6 @@ export function communityAssociation(sequelize: Sequelize) {
     community.hasMany(ubiCommunityDailyMetrics, {
         foreignKey: 'communityId',
         as: 'metrics'
-    });
-
-    // used to query from the community with incude
-    community.hasMany(beneficiary, {
-        foreignKey: 'communityId',
-        sourceKey: 'id',
-        as: 'beneficiaries'
-    });
-
-    // used to query from the community with incude
-    community.hasMany(manager, {
-        foreignKey: 'communityId',
-        sourceKey: 'id',
-        as: 'managers'
     });
 
     // used to query from the promoter with incude

@@ -7,7 +7,6 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { models } from '../../src/database';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import BeneficiaryFactory from '../factories/beneficiary';
 import ClaimLocationService from '../../src/services/ubi/claimLocation/index';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
@@ -86,9 +85,6 @@ describe('claim location service', () => {
                 country: 'AR'
             }
         ]);
-        await BeneficiaryFactory(users.slice(0, 1), communities[0].id);
-        await BeneficiaryFactory(users.slice(1, 2), communities[1].id);
-        await BeneficiaryFactory(users.slice(3, 4), communities[3].id);
         returnGetBeneficiaryByAddressSubgraph = stub(beneficiarySubgraph, 'getBeneficiariesByAddress');
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });

@@ -13,7 +13,6 @@ import { CommunityDetailsService } from '../../../src/services/ubi/community/det
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import { sequelize as database, models } from '../../../src/database';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
-import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 
@@ -665,12 +664,6 @@ describe('community service v2', () => {
                     id: community.contractAddress!,
                     claimed: 0
                 });
-                await BeneficiaryFactory(
-                    await UserFactory({
-                        n: crypto.randomInt(20)
-                    }),
-                    community.id
-                );
             }
 
             returnCommunityEntities.returns(
@@ -748,12 +741,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[0].address ? 3 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -919,12 +906,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[1].address ? 5 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -1044,12 +1025,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[2].address ? 3 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -1157,12 +1132,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[1].address ? 5 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
