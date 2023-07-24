@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 import { services } from '@impactmarket/core';
 
-import { RequestWithUser } from '../../middlewares/core';
-import { standardResponse } from '../../utils/api';
+import { ListUserNotificationsRequestSchema } from '~validators/user';
+import { RequestWithUser } from '~middlewares/core';
+import { ValidatedRequest } from '~utils/queryValidator';
+import { standardResponse } from '~utils/api';
 
 class UserController {
     private userService: services.app.UserServiceV2;
@@ -281,7 +283,10 @@ class UserController {
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public getNotifications = (req: RequestWithUser, res: Response) => {
+    public getNotifications = (
+        req: RequestWithUser & ValidatedRequest<ListUserNotificationsRequestSchema>,
+        res: Response
+    ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {

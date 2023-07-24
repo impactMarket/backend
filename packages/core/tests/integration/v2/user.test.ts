@@ -566,7 +566,7 @@ describe('user service v2', () => {
 
             const notifications = await userService.getNotifications(
                 {
-                    isWebApp: 'true'
+                    isWebApp: true
                 },
                 user.id
             );
@@ -585,7 +585,7 @@ describe('user service v2', () => {
             });
             const notifications = await userService.getNotifications(
                 {
-                    isWebApp: 'true'
+                    isWebApp: true
                 },
                 user.id
             );

@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
@@ -335,33 +335,70 @@ export default class UserService {
 
     public async getNotifications(
         query: {
-            offset?: string;
-            limit?: string;
-            isWallet?: string;
-            isWebApp?: string;
+            offset?: number;
+            limit?: number;
+            unreadOnly?: boolean;
+            isWallet?: boolean;
+            isWebApp?: boolean;
         },
         userId: number
     ): Promise<{
         count: number;
         rows: AppNotification[];
     }> {
-        const notifications = await models.appNotification.findAndCountAll({
-            where: {
-                userId,
-                isWebApp: query.isWebApp === 'true',
-                isWallet: query.isWallet === 'true'
-            },
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
-            order: [['createdAt', 'DESC']]
-        });
+        const { isWallet, isWebApp, unreadOnly, offset, limit } = query;
+        let where: WhereOptions<AppNotification> = { userId };
+        if (isWebApp !== undefined) {
+            where = {
+                ...where,
+                isWebApp
+            };
+        }
+        if (isWallet !== undefined) {
+            where = {
+                ...where,
+                isWallet
+            };
+        }
+
+        let count = 0;
+        let rows: AppNotification[] = [];
+
+        if (unreadOnly !== undefined) {
+            const notifications = await models.appNotification.findAndCountAll({
+                where: {
+                    ...where,
+                    read: !unreadOnly
+                },
+                offset,
+                limit,
+                order: [['createdAt', 'DESC']]
+            });
+
+            count = notifications.count;
+            rows = notifications.rows as AppNotification[];
+        } else {
+            count = await models.appNotification.count({
+                where: {
+                    ...where,
+                    read: false
+                }
+            });
+            rows = await models.appNotification.findAll({
+                where,
+                offset,
+                limit,
+                order: [['createdAt', 'DESC']]
+            });
+        }
+
         return {
-            count: notifications.count,
-            rows: notifications.rows as AppNotification[]
+            count,
+            rows
         };
     }
 
-    public async readNotifications(userId: number, notifications?: number[]): Promise<boolean> {
+    public async readNotifications(userId: number, notificationsId: number[]): Promise<boolean> {
         const updated = await models.appNotification.update(
             {
                 read: true
@@ -371,7 +408,7 @@ export default class UserService {
                 where: {
                     userId,
                     id: {
-                        [Op.in]: notifications
+                        [Op.in]: notificationsId
                     }
                 }
             }
