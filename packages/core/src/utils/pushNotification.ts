@@ -6,6 +6,7 @@ import localesConfig from '../utils/locale.json';
 // it needs to be imported this way, or the initialize will fail
 import { AppUser } from '../interfaces/app/appUser';
 import { Logger } from './logger';
+import { Transaction } from 'sequelize';
 import { utils } from '../../index';
 import admin from 'firebase-admin';
 import config from '../config';
@@ -15,7 +16,8 @@ export async function sendNotification(
     type: NotificationType,
     isWallet: boolean = true,
     isWebApp: boolean = true,
-    params?: object
+    params: object | undefined = undefined,
+    transaction: Transaction | undefined = undefined
 ) {
     try {
         // registry notification
@@ -26,7 +28,8 @@ export async function sendNotification(
                 isWallet,
                 isWebApp,
                 params
-            }))
+            })),
+            { transaction }
         );
 
         // filter users that have walletPNT

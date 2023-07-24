@@ -3,7 +3,7 @@ import { BaseError } from '../../utils';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationType } from '../../interfaces/app/appNotification';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -66,9 +66,9 @@ export default class MicroCreditCreate {
         return microCreditDocs;
     }
 
-    public async updateApplication(applicationId: number[], status: number[]): Promise<void>;
-    public async updateApplication(walletAddress: string[], status: number[]): Promise<void>;
-    public async updateApplication(arg: (number | string)[], status: number[]) {
+    public async updateApplication(applicationId: number[], status: number[], transaction?: Transaction): Promise<void>;
+    public async updateApplication(walletAddress: string[], status: number[], transaction?: Transaction): Promise<void>;
+    public async updateApplication(arg: (number | string)[], status: number[], transaction?: Transaction) {
         const updateApplicationStatus = async (applicationId: number, status: number) => {
             await models.microCreditApplications.update(
                 {
@@ -78,7 +78,8 @@ export default class MicroCreditCreate {
                 {
                     where: {
                         id: applicationId
-                    }
+                    },
+                    transaction
                 }
             );
         };
@@ -139,7 +140,7 @@ export default class MicroCreditCreate {
             .map(application => application.user)
             .filter(user => user !== undefined) as AppUserModel[];
 
-        await sendNotification(users, NotificationType.LOAN_STATUS_CHANGED);
+        await sendNotification(users, NotificationType.LOAN_STATUS_CHANGED, true, true, undefined, transaction);
     }
 
     public saveForm = async (
