@@ -28,7 +28,7 @@ describe('communityAdmin', () => {
         provider = new ethers.providers.Web3Provider(ganacheProvider as any);
         accounts = await provider.listAccounts();
         communityUpdated = stub(database.models.community, 'update');
-        communityUpdated.returns(Promise.resolve([1, {} as any]));
+        communityUpdated.returns(Promise.resolve([1, [{ id: 1 }]]));
         findCommunity = stub(database.models.community, 'findOne');
         findCommunity.returns(Promise.resolve({ id: 1 }));
         let lastBlock = 0;
@@ -58,11 +58,13 @@ describe('communityAdmin', () => {
 
         CommunityAdminContract = await CommunityAdminFactory.deploy(cUSD.address);
 
-        stub(config, 'communityAdminAddress').value(CommunityAdminContract.address);
-
+        const redisClientMap = new Map();
         stub(database, 'redisClient').value({
-            set: async () => null
+            set: async (key: string, value: any) => redisClientMap.set(key, value),
+            get: async (key: string) => redisClientMap.get(key),
+            incr: async (_: string) => null
         });
+        stub(config, 'communityAdminAddress').value(CommunityAdminContract.address);
 
         subscribers = new ChainSubscribers(provider as any, provider, new Map([]));
     });
@@ -76,7 +78,7 @@ describe('communityAdmin', () => {
     });
 
     afterEach(() => {
-        communityUpdated.reset();
+        communityUpdated.resetHistory();
     });
 
     it('add community', async () => {
@@ -103,7 +105,8 @@ describe('communityAdmin', () => {
                 where: {
                     requestByAddress: accounts[1]
                 },
-                returning: true
+                returning: true,
+                transaction: match.any
             }
         );
     });
@@ -140,7 +143,8 @@ describe('communityAdmin', () => {
             {
                 where: {
                     contractAddress
-                }
+                },
+                transaction: match.any
             }
         );
     });
