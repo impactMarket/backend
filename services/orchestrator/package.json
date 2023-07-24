@@ -16,7 +16,7 @@
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.102",
-        "@types/node": "18.16.4",
+        "@types/node": "20.4.4",
         "serverless-bundle": "fancywriter/serverless-bundle#c53aa061ed83f683dbb665f9734fc1dca624788a"
     }
 }
