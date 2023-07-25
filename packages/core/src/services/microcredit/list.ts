@@ -287,12 +287,15 @@ export default class MicroCreditList {
     };
 
     // read application from models.microCreditApplications, including appUser to include profile
-    public listApplications = async (query: {
-        offset?: number;
-        limit?: number;
-        status?: number;
-        orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
-    }): Promise<{
+    public listApplications = async (
+        userId: number,
+        query: {
+            offset?: number;
+            limit?: number;
+            status?: number;
+            orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
+        }
+    ): Promise<{
         count: number;
         rows: {
             // from models.appUser
@@ -311,7 +314,7 @@ export default class MicroCreditList {
         }[];
     }> => {
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
-        const where: WhereOptions<MicroCreditApplication> = {};
+        const where: WhereOptions<MicroCreditApplication> = { selectedLoanManagerId: userId };
         if (query.status !== undefined) {
             where.status = query.status;
         } else {

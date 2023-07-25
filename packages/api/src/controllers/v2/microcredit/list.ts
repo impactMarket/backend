@@ -46,7 +46,7 @@ class MicroCreditController {
             return;
         }
         this.microCreditService
-            .listApplications(req.query)
+            .listApplications(req.user.userId, req.query)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
