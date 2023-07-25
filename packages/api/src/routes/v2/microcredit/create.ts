@@ -141,7 +141,13 @@ export default (route: Router): void => {
      *            properties:
      *              form:
      *                type: object
-     *                required: true
+     *                required: false
+     *              prismicId:
+     *                type: string
+     *                required: false
+     *              selectedLoanManagerId:
+     *                type: number
+     *                required: false
      *              submit:
      *                type: boolean
      *                required: false

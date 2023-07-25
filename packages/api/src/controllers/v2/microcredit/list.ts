@@ -110,6 +110,15 @@ class MicroCreditController {
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    getLoanManagersByCountry = (req: RequestWithUser, res: Response) => {
+        const country = req.params.country as string;
+
+        this.microCreditService
+            .getLoanManagersByCountry(country)
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { MicroCreditController };

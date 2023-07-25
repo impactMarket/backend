@@ -705,4 +705,37 @@ export default class MicroCreditList {
 
         throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember, ambassador or form owner');
     };
+
+    public getLoanManagersByCountry = async (country: string) => {
+        let loanManagers: number[] = [];
+
+        // TODO: this is hardcoded for now, but we should have a better way to do this
+        if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
+            loanManagers = [5700, 5801];
+        } else {
+            switch (country.toLowerCase()) {
+                case 'br':
+                    loanManagers = [12928, 106251];
+                    break;
+                case 'ug':
+                    loanManagers = [30880, 106251];
+                    break;
+                case 'ng':
+                case 've':
+                    loanManagers = [106251];
+                    break;
+            }
+        }
+
+        const users = await models.appUser.findAll({
+            attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+            where: {
+                id: {
+                    [Op.in]: loanManagers
+                }
+            }
+        });
+
+        return users.map(u => u.toJSON());
+    };
 }
