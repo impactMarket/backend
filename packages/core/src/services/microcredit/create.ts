@@ -1,3 +1,4 @@
+import * as prismicH from '@prismicio/helpers';
 import { AppUserModel } from '../../database/models/app/appUser';
 import { BaseError, prismic as basePrimisc, locales } from '../../utils';
 import { MailDataRequired } from '@sendgrid/mail';
@@ -223,7 +224,8 @@ export default class MicroCreditCreate {
                     submittedFormEmailNotificationSubtitle = data['submitted-form-email-notification-subtitle'];
                     submittedFormEmailNotificationViewApplication =
                         data['submitted-form-email-notification-view-application'];
-                    submittedFormEmailNotificationViewNextSteps = data['submitted-form-email-notification-next-steps'];
+                    submittedFormEmailNotificationViewNextSteps =
+                        prismicH.asHTML(data['submitted-form-email-notification-next-steps']) || '';
                 }
                 if (
                     !submittedFormEmailNotificationSubject ||
@@ -241,7 +243,8 @@ export default class MicroCreditCreate {
                     submittedFormEmailNotificationSubtitle = data['submitted-form-email-notification-subtitle'];
                     submittedFormEmailNotificationViewApplication =
                         data['submitted-form-email-notification-view-application'];
-                    submittedFormEmailNotificationViewNextSteps = data['submitted-form-email-notification-next-steps'];
+                    submittedFormEmailNotificationViewNextSteps =
+                        prismicH.asHTML(data['submitted-form-email-notification-next-steps']) || '';
                 }
 
                 // build the email structure and send
