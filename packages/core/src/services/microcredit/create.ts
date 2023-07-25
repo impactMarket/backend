@@ -1,9 +1,14 @@
 import { AppUserModel } from '../../database/models/app/appUser';
 import { BaseError } from '../../utils';
-import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
+import {
+    MicroCreditApplication,
+    MicroCreditApplicationCreation,
+    MicroCreditApplicationStatus
+} from '../../interfaces/microCredit/applications';
 import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationType } from '../../interfaces/app/appNotification';
-import { Op, Transaction } from 'sequelize';
+import { NullishPropertiesOf } from 'sequelize/types/utils';
+import { Op, Optional, Transaction } from 'sequelize';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -147,25 +152,43 @@ export default class MicroCreditCreate {
         userId: number,
         form: object,
         prismicId: string,
+        selectedLoanManagerId: number | undefined,
         submitted: boolean
     ): Promise<MicroCreditApplication> => {
         try {
             const status = submitted ? MicroCreditApplicationStatus.PENDING : MicroCreditApplicationStatus.DRAFT;
+            let defaults: Optional<
+                MicroCreditApplicationCreation,
+                NullishPropertiesOf<MicroCreditApplicationCreation>
+            > = { userId, status };
+            // add fields only if they are not undefined
+            // since it fails to have undefined as default
+            if (form) {
+                defaults = { ...defaults, form };
+            }
+            if (selectedLoanManagerId) {
+                defaults = { ...defaults, selectedLoanManagerId };
+            }
+            if (prismicId) {
+                defaults = { ...defaults, prismicId };
+            }
             const [userForm, created] = await models.microCreditApplications.findOrCreate({
                 where: {
                     userId,
                     prismicId
                 },
-                defaults: {
-                    form,
-                    userId,
-                    prismicId,
-                    status
-                }
+                defaults
             });
 
             if (status === MicroCreditApplicationStatus.PENDING) {
-                // TODO: notify loan manager!
+                // notify loan manager!
+                models.appUser
+                    .findOne({
+                        where: {
+                            id: userForm.selectedLoanManagerId
+                        }
+                    })
+                    .then(user => user && sendNotification([user], NotificationType.NEW_LOAN_SUBMITTED, true, true));
                 // TODO: send email to user with form
             }
 
@@ -178,6 +201,7 @@ export default class MicroCreditCreate {
 
             const data = await userForm.update({
                 form: newForm,
+                selectedLoanManagerId,
                 status
             });
 

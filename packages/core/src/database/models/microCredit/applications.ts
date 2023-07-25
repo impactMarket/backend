@@ -8,6 +8,7 @@ export class MicroCreditApplicationModel extends Model<MicroCreditApplication, M
     public id!: number;
     public userId!: number;
     public form!: object;
+    public selectedLoanManagerId!: number;
     public prismicId!: string;
     public amount!: number;
     public period!: number;
@@ -41,11 +42,15 @@ export function initializeMicroCreditApplication(sequelize: Sequelize): typeof M
             },
             form: {
                 type: DataTypes.JSONB,
-                allowNull: false
+                allowNull: true
+            },
+            selectedLoanManagerId: {
+                type: DataTypes.INTEGER,
+                allowNull: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: false
+                allowNull: true
             },
             amount: {
                 allowNull: true,

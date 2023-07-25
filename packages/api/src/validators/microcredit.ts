@@ -159,9 +159,11 @@ const saveForm = celebrate({
     body: defaultSchema
         .object({
             prismicId: Joi.string().required(),
-            form: Joi.object().required(),
+            form: Joi.object().optional(),
+            selectedLoanManagerId: Joi.number().optional(),
             submit: Joi.bool().optional()
         })
+        .or('selectedLoanManagerId', 'form')
         .required()
 });
 const addNote = celebrate({
