@@ -1,5 +1,6 @@
 import { AppUserModel } from '../../database/models/app/appUser';
-import { BaseError } from '../../utils';
+import { BaseError, prismic as basePrimisc, locales } from '../../utils';
+import { MailDataRequired } from '@sendgrid/mail';
 import {
     MicroCreditApplication,
     MicroCreditApplicationCreation,
@@ -13,6 +14,8 @@ import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
 import { sendNotification } from '../../utils/pushNotification';
+
+const { client: prismic } = basePrimisc;
 
 export default class MicroCreditCreate {
     private microCreditContentStorage = new MicroCreditContentStorage();
@@ -189,7 +192,85 @@ export default class MicroCreditCreate {
                         }
                     })
                     .then(user => user && sendNotification([user], NotificationType.NEW_LOAN_SUBMITTED, true, true));
-                // TODO: send email to user with form
+                // below we will send email to user with form
+                // get user email and language to get text for template and send email
+                const urlToApplicationForm = `https://app.impactmarket.com/microcredit/form/${userForm.id}`;
+                const user = await models.appUser.findOne({
+                    attributes: ['email', 'language', 'walletPNT', 'appPNT'],
+                    where: {
+                        id: userForm.userId
+                    }
+                });
+                if (!user) {
+                    throw new BaseError('USER_NOT_FOUND', 'User not found');
+                }
+
+                // get text for email template on user language defaulting to english
+                const locale = locales.find(({ shortCode }) => user?.language.toLowerCase() === shortCode.toLowerCase())
+                    ?.code;
+                const response = await prismic.getAllByType('push_notifications_data', {
+                    lang: locale || 'en-US'
+                });
+                let submittedFormEmailNotificationSubject: string | undefined;
+                let submittedFormEmailNotificationTitle: string | undefined;
+                let submittedFormEmailNotificationSubtitle: string | undefined;
+                let submittedFormEmailNotificationViewApplication: string | undefined;
+                let submittedFormEmailNotificationViewNextSteps: string | undefined;
+                if (response.length > 0) {
+                    const data = response[0].data;
+                    submittedFormEmailNotificationSubject = data['submitted-form-email-notification-subject'];
+                    submittedFormEmailNotificationTitle = data['submitted-form-email-notification-title'];
+                    submittedFormEmailNotificationSubtitle = data['submitted-form-email-notification-subtitle'];
+                    submittedFormEmailNotificationViewApplication =
+                        data['submitted-form-email-notification-view-application'];
+                    submittedFormEmailNotificationViewNextSteps = data['submitted-form-email-notification-next-steps'];
+                }
+                if (
+                    !submittedFormEmailNotificationSubject ||
+                    !submittedFormEmailNotificationTitle ||
+                    !submittedFormEmailNotificationSubtitle ||
+                    !submittedFormEmailNotificationViewApplication ||
+                    !submittedFormEmailNotificationViewNextSteps
+                ) {
+                    const response = await prismic.getAllByType('push_notifications_data', {
+                        lang: 'en-US'
+                    });
+                    const data = response[0].data;
+                    submittedFormEmailNotificationSubject = data['submitted-form-email-notification-subject'];
+                    submittedFormEmailNotificationTitle = data['submitted-form-email-notification-title'];
+                    submittedFormEmailNotificationSubtitle = data['submitted-form-email-notification-subtitle'];
+                    submittedFormEmailNotificationViewApplication =
+                        data['submitted-form-email-notification-view-application'];
+                    submittedFormEmailNotificationViewNextSteps = data['submitted-form-email-notification-next-steps'];
+                }
+
+                // build the email structure and send
+                const dynamicTemplateData = {
+                    submittedFormEmailNotificationTitle,
+                    submittedFormEmailNotificationSubtitle,
+                    urlToApplicationForm,
+                    submittedFormEmailNotificationViewApplication,
+                    submittedFormEmailNotificationViewNextSteps
+                };
+                const personalizations = [
+                    {
+                        to: [{ email: user.email }],
+                        subject: submittedFormEmailNotificationSubject,
+                        dynamicTemplateData
+                    }
+                ];
+                const sendgridData: MailDataRequired = {
+                    from: {
+                        name: 'impactMarket',
+                        email: 'hello@impactmarket.com'
+                    },
+                    personalizations,
+                    templateId: 'd-b257690897ff41028d7ad8cabe88f8cb'
+                };
+                sendEmail(sendgridData);
+                sendNotification([user.toJSON()], NotificationType.LOAN_APPLICATION_SUBMITTED, true, true, {
+                    url: urlToApplicationForm
+                });
             }
 
             if (created) {
