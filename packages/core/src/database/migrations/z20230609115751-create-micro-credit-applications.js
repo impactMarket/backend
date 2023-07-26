@@ -20,11 +20,15 @@ module.exports = {
             },
             form: {
                 type: Sequelize.JSONB,
-                allowNull: false
+                allowNull: true
+            },
+            selectedLoanManagerId: {
+                type: Sequelize.INTEGER,
+                allowNull: true
             },
             prismicId: {
                 type: Sequelize.STRING(32),
-                allowNull: false
+                allowNull: true
             },
             amount: {
                 allowNull: true,

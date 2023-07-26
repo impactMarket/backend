@@ -46,7 +46,7 @@ class MicroCreditController {
             return;
         }
         this.microCreditService
-            .listApplications(req.query)
+            .listApplications(req.user.userId, req.query)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -107,6 +107,15 @@ class MicroCreditController {
 
         this.microCreditService
             .getUserForm(req.user, parseInt(req.params.id as string, 10))
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getLoanManagersByCountry = (req: RequestWithUser, res: Response) => {
+        const country = req.params.country as string;
+
+        this.microCreditService
+            .getLoanManagersByCountry(country)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

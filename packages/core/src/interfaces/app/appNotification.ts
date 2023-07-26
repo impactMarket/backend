@@ -39,7 +39,9 @@ export enum NotificationType {
     COMMUNITY_CREATED,
     LOAN_ADDED,
     LEARN_AND_EARN_DO_NEW_LESSON,
-    LOAN_STATUS_CHANGED
+    LOAN_STATUS_CHANGED,
+    LOAN_APPLICATION_SUBMITTED,
+    NEW_LOAN_SUBMITTED
 }
 
 export interface AppNotification {

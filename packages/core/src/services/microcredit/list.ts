@@ -287,12 +287,15 @@ export default class MicroCreditList {
     };
 
     // read application from models.microCreditApplications, including appUser to include profile
-    public listApplications = async (query: {
-        offset?: number;
-        limit?: number;
-        status?: number;
-        orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
-    }): Promise<{
+    public listApplications = async (
+        userId: number,
+        query: {
+            offset?: number;
+            limit?: number;
+            status?: number;
+            orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
+        }
+    ): Promise<{
         count: number;
         rows: {
             // from models.appUser
@@ -311,7 +314,7 @@ export default class MicroCreditList {
         }[];
     }> => {
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
-        const where: WhereOptions<MicroCreditApplication> = {};
+        const where: WhereOptions<MicroCreditApplication> = { selectedLoanManagerId: userId };
         if (query.status !== undefined) {
             where.status = query.status;
         } else {
@@ -704,5 +707,38 @@ export default class MicroCreditList {
         }
 
         throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember, ambassador or form owner');
+    };
+
+    public getLoanManagersByCountry = async (country: string) => {
+        let loanManagers: number[] = [];
+
+        // TODO: this is hardcoded for now, but we should have a better way to do this
+        if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
+            loanManagers = [5700, 5801];
+        } else {
+            switch (country.toLowerCase()) {
+                case 'br':
+                    loanManagers = [12928, 106251];
+                    break;
+                case 'ug':
+                    loanManagers = [30880, 106251];
+                    break;
+                case 'ng':
+                case 've':
+                    loanManagers = [106251];
+                    break;
+            }
+        }
+
+        const users = await models.appUser.findAll({
+            attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+            where: {
+                id: {
+                    [Op.in]: loanManagers
+                }
+            }
+        });
+
+        return users.map(u => u.toJSON());
     };
 }

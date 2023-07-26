@@ -2,6 +2,7 @@ export interface MicroCreditApplication {
     id: number;
     userId: number;
     form: object;
+    selectedLoanManagerId: number;
     prismicId: string;
     amount: number;
     period: number;
@@ -15,8 +16,9 @@ export interface MicroCreditApplication {
 
 export interface MicroCreditApplicationCreation {
     userId: number;
-    form: object;
-    prismicId: string;
+    form?: object;
+    selectedLoanManagerId?: number;
+    prismicId?: string;
     amount?: number;
     period?: number;
     status?: number;

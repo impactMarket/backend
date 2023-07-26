@@ -263,4 +263,26 @@ export default (route: Router): void => {
      *     - BearerToken: []
      */
     route.get('/form/:id', authenticateToken, controller.getUserForm);
+
+    /**
+     * @swagger
+     *
+     * /microcredit/managers/{country}:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get Microcredit managers by country"
+     *     description: "Get Microcredit managers by country"
+     *     parameters:
+     *       - in: path
+     *         name: country
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: country tag (eg.  NG, KE, GH, etc.)
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/managers/:country', controller.getLoanManagersByCountry);
 };
