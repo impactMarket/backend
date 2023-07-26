@@ -425,23 +425,6 @@ export default class UserService {
         return true;
     }
 
-    public async getUnreadNotifications(
-        userId: number,
-        query: {
-            isWallet?: string;
-            isWebApp?: string;
-        }
-    ): Promise<number> {
-        return models.appNotification.count({
-            where: {
-                userId,
-                read: false,
-                isWebApp: query.isWebApp === 'true',
-                isWallet: query.isWallet === 'true'
-            }
-        });
-    }
-
     public async sendPushNotifications(
         title: string,
         body: string,
