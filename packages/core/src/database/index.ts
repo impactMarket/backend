@@ -43,7 +43,11 @@ const models = sequelize.models as DbModels;
 let redisClient: Redis = undefined as any;
 
 if (process.env.NODE_ENV !== 'test') {
-    redisClient = new Redis(config.redis);
+    redisClient = new Redis(config.redis, {
+        tls: {
+            rejectUnauthorized: false
+        }
+    });
 }
 
 export { sequelize, Sequelize, models, redisClient };
