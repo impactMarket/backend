@@ -360,15 +360,18 @@ export default class UserService {
                 isWallet
             };
         }
+        if (unreadOnly !== undefined) {
+            where = {
+                ...where,
+                read: !unreadOnly
+            };
+        }
 
         const notifications: {
             rows: AppNotification[];
             count: number;
         } = await models.appNotification.findAndCountAll({
-            where: {
-                ...where,
-                ...(unreadOnly !== undefined ? { read: !unreadOnly } : {})
-            },
+            where,
             offset,
             limit,
             order: [['createdAt', 'DESC']]
