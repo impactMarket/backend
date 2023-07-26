@@ -50,6 +50,7 @@ export default class UserService {
             beneficiaryRules?: boolean;
             managerRules?: boolean;
         } = {};
+        let notificationsCount = 0;
 
         // validate to both existing and new accounts
         if (userParams.phone) {
@@ -114,10 +115,15 @@ export default class UserService {
                 return _user;
             };
 
-            [user, userRoles, userRules] = await Promise.all([
+            [user, userRoles, userRules, notificationsCount] = await Promise.all([
                 findAndUpdate(),
                 this._userRoles(userParams.address),
-                this._userRules(userParams.address)
+                this._userRules(userParams.address),
+                models.appNotification.count({
+                    where: {
+                        read: false
+                    }
+                })
             ]);
         }
 
@@ -146,17 +152,23 @@ export default class UserService {
             ...jsonUser,
             ...userRoles,
             ...userRules,
-            token
+            token,
+            notificationsCount
         };
     }
 
     public async get(address: string) {
-        const [user, userRoles, userRules] = await Promise.all([
+        const [user, userRoles, userRules, notificationsCount] = await Promise.all([
             models.appUser.findOne({
                 where: { address }
             }),
             this._userRoles(address),
-            this._userRules(address)
+            this._userRules(address),
+            models.appNotification.count({
+                where: {
+                    read: false
+                }
+            })
         ]);
 
         if (user === null) {
@@ -166,7 +178,8 @@ export default class UserService {
         return {
             ...user.toJSON(),
             ...userRoles,
-            ...userRules
+            ...userRules,
+            notificationsCount
         };
     }
 
@@ -402,23 +415,6 @@ export default class UserService {
             throw new BaseError('UPDATE_FAILED', 'notifications were not updated!');
         }
         return true;
-    }
-
-    public async getUnreadNotifications(
-        userId: number,
-        query: {
-            isWallet?: string;
-            isWebApp?: string;
-        }
-    ): Promise<number> {
-        return models.appNotification.count({
-            where: {
-                userId,
-                read: false,
-                isWebApp: query.isWebApp === 'true',
-                isWallet: query.isWallet === 'true'
-            }
-        });
     }
 
     public async sendPushNotifications(
