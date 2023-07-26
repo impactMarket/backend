@@ -50,6 +50,7 @@ export default class UserService {
             beneficiaryRules?: boolean;
             managerRules?: boolean;
         } = {};
+        let notificationsCount = 0;
 
         // validate to both existing and new accounts
         if (userParams.phone) {
@@ -114,10 +115,15 @@ export default class UserService {
                 return _user;
             };
 
-            [user, userRoles, userRules] = await Promise.all([
+            [user, userRoles, userRules, notificationsCount] = await Promise.all([
                 findAndUpdate(),
                 this._userRoles(userParams.address),
-                this._userRules(userParams.address)
+                this._userRules(userParams.address),
+                models.appNotification.count({
+                    where: {
+                        read: false
+                    }
+                })
             ]);
         }
 
@@ -146,7 +152,8 @@ export default class UserService {
             ...jsonUser,
             ...userRoles,
             ...userRules,
-            token
+            token,
+            notificationsCount
         };
     }
 
