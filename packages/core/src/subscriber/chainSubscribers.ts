@@ -178,9 +178,9 @@ class ChainSubscribers {
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log, transaction);
         } else if (this.communities.get(log.address)) {
-            this._processCommunityEvents(log, transaction);
+            await this._processCommunityEvents(log, transaction);
         } else if (log.address === config.microcreditContractAddress) {
-            this._processMicrocreditEvents(log, transaction);
+            await this._processMicrocreditEvents(log, transaction);
         }
     }
 
@@ -235,27 +235,24 @@ class ChainSubscribers {
                     Logger.error(`Community with address ${communityAddress} wasn't updated at "CommunityAdded"`);
                 } else {
                     this.communities.set(communityAddress, affectedRows[0].id);
-                    models.appUser
-                        .findOne({
-                            attributes: ['id', 'language', 'walletPNT', 'appPNT'],
-                            where: {
-                                address: getAddress(managerAddress[0])
-                            }
-                        })
-                        .then(async user => {
-                            if (user) {
-                                await sendNotification(
-                                    [user.toJSON()],
-                                    NotificationType.COMMUNITY_CREATED,
-                                    true,
-                                    true,
-                                    {
-                                        communityId: affectedRows[0].id
-                                    },
-                                    transaction
-                                );
-                            }
-                        });
+                    const user = await models.appUser.findOne({
+                        attributes: ['id', 'language', 'walletPNT', 'appPNT'],
+                        where: {
+                            address: getAddress(managerAddress[0])
+                        }
+                    });
+                    if (user) {
+                        await sendNotification(
+                            [user.toJSON()],
+                            NotificationType.COMMUNITY_CREATED,
+                            true,
+                            true,
+                            {
+                                communityId: affectedRows[0].id
+                            },
+                            transaction
+                        );
+                    }
                 }
             }
         } catch (error) {
@@ -263,7 +260,7 @@ class ChainSubscribers {
         }
     }
 
-    _processCommunityEvents(log: ethers.providers.Log, transaction: Transaction): void {
+    async _processCommunityEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
         try {
             const parsedLog = this.ifaceCommunity.parseLog(log);
 
@@ -277,27 +274,24 @@ class ChainSubscribers {
                 if (community) {
                     utils.cache.cleanBeneficiaryCache(community);
                 }
-                models.appUser
-                    .findOne({
-                        attributes: ['id', 'language', 'walletPNT', 'appPNT'],
-                        where: {
-                            address: getAddress(userAddress)
-                        }
-                    })
-                    .then(user => {
-                        if (user && community) {
-                            sendNotification(
-                                [user.toJSON()],
-                                NotificationType.BENEFICIARY_ADDED,
-                                true,
-                                true,
-                                {
-                                    communityId: community
-                                },
-                                transaction
-                            );
-                        }
-                    });
+                const user = await models.appUser.findOne({
+                    attributes: ['id', 'language', 'walletPNT', 'appPNT'],
+                    where: {
+                        address: getAddress(userAddress)
+                    }
+                });
+                if (user && community) {
+                    await sendNotification(
+                        [user.toJSON()],
+                        NotificationType.BENEFICIARY_ADDED,
+                        true,
+                        true,
+                        {
+                            communityId: community
+                        },
+                        transaction
+                    );
+                }
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 Logger.info('Remove Beneficiary event');
 
@@ -313,7 +307,7 @@ class ChainSubscribers {
         }
     }
 
-    _processMicrocreditEvents(log: ethers.providers.Log, transaction: Transaction): void {
+    async _processMicrocreditEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
         try {
             const parsedLog = this.ifaceMicrocredit.parseLog(log);
             const userAddress = parsedLog.args[0];
@@ -321,7 +315,7 @@ class ChainSubscribers {
             if (parsedLog.name === 'LoanAdded') {
                 Logger.info('Add Loan event');
 
-                Promise.all([
+                const [user, transactionsReceipt] = await Promise.all([
                     models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
@@ -329,69 +323,66 @@ class ChainSubscribers {
                         }
                     }),
                     this.provider.getTransaction(log.transactionHash)
-                ]).then(async ([user, transactionsReceipt]) => {
-                    if (user) {
-                        const [[borrower, created]] = await Promise.all([
-                            models.microCreditBorrowers.findOrCreate({
-                                where: {
-                                    userId: user.id
-                                },
-                                defaults: {
-                                    userId: user.id,
-                                    manager: transactionsReceipt.from,
-                                    performance: 100
-                                },
-                                transaction
-                            }),
-                            this.microCreditService.updateApplication(
-                                [userAddress],
-                                [MicroCreditApplicationStatus.APPROVED],
-                                transaction
-                            ),
-                            sendNotification(
-                                [user.toJSON()],
-                                NotificationType.LOAN_ADDED,
-                                true,
-                                true,
-                                undefined,
-                                transaction
-                            )
-                        ]);
-                        if (!created) {
-                            borrower.update(
-                                {
-                                    manager: transactionsReceipt.from,
-                                    performance: 100
-                                },
-                                { transaction }
-                            );
-                        }
+                ]);
+                if (user) {
+                    const [[borrower, created]] = await Promise.all([
+                        models.microCreditBorrowers.findOrCreate({
+                            where: {
+                                userId: user.id
+                            },
+                            defaults: {
+                                userId: user.id,
+                                manager: transactionsReceipt.from,
+                                performance: 100
+                            },
+                            transaction
+                        }),
+                        this.microCreditService.updateApplication(
+                            [userAddress],
+                            [MicroCreditApplicationStatus.APPROVED],
+                            transaction
+                        ),
+                        sendNotification(
+                            [user.toJSON()],
+                            NotificationType.LOAN_ADDED,
+                            true,
+                            true,
+                            undefined,
+                            transaction
+                        )
+                    ]);
+                    if (!created) {
+                        await borrower.update(
+                            {
+                                manager: transactionsReceipt.from,
+                                performance: 100
+                            },
+                            { transaction }
+                        );
                     }
-                });
+                }
             } else if (parsedLog.name === 'ManagerChanged') {
                 Logger.info('ManagerChanged event');
 
-                models.appUser
-                    .findOne({
-                        attributes: ['id'],
-                        where: {
-                            address: getAddress(userAddress)
+                const user = await models.appUser.findOne({
+                    attributes: ['id'],
+                    where: {
+                        address: getAddress(userAddress)
+                    }
+                });
+                if (user) {
+                    await models.microCreditBorrowers.update(
+                        {
+                            manager: parsedLog.args[1]
+                        },
+                        {
+                            where: {
+                                userId: user.id
+                            },
+                            transaction
                         }
-                    })
-                    .then(user => {
-                        if (user) {
-                            models.microCreditBorrowers.update(
-                                {
-                                    manager: parsedLog.args[1]
-                                },
-                                {
-                                    where: {
-                                        userId: user.id
-                                    }
-                                }
-                            );
-                        }
-                    });
+                    );
+                }
             }
         } catch (error) {
             Logger.error('Failed to process Microcredit Events:', error);
