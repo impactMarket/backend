@@ -151,12 +151,17 @@ export default class UserService {
     }
 
     public async get(address: string) {
-        const [user, userRoles, userRules] = await Promise.all([
+        const [user, userRoles, userRules, notificationsCount] = await Promise.all([
             models.appUser.findOne({
                 where: { address }
             }),
             this._userRoles(address),
-            this._userRules(address)
+            this._userRules(address),
+            models.appNotification.count({
+                where: {
+                    read: false
+                }
+            })
         ]);
 
         if (user === null) {
@@ -166,7 +171,8 @@ export default class UserService {
         return {
             ...user.toJSON(),
             ...userRoles,
-            ...userRules
+            ...userRules,
+            notificationsCount
         };
     }
 
