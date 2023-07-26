@@ -123,7 +123,7 @@ export type GetBorrowersQuery = {
     offset?: number;
     limit?: number;
     addedBy?: string;
-    filter?: 'all' | 'ontrack' | 'need-help' | 'repaid';
+    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -234,13 +234,28 @@ export default class MicroCreditList {
         }
         // get borrowers loans from subgraph
         // and return only the active loan
+        const mapFilterToLoanStatus = (filter: GetBorrowersQuery['filter']) => {
+            switch (filter) {
+                case 'not-claimed':
+                    return 0;
+                case 'repaid':
+                    return 2;
+                case 'ontrack':
+                case 'need-help':
+                    return 1;
+                default:
+                    return undefined;
+            }
+        };
         const rawBorrowers = await getBorrowers({
             ...excludeDatabaseQueriesWhenSubgraph(query),
             onlyBorrowers,
-            onlyClaimed: true,
-            loanStatus: query.filter === 'repaid' ? 2 : query.filter === undefined ? undefined : 1
+            loanStatus: mapFilterToLoanStatus(query.filter)
         });
         if (!where) {
+            count = rawBorrowers.count;
+        }
+        if (rawBorrowers.count !== count) {
             count = rawBorrowers.count;
         }
         const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
