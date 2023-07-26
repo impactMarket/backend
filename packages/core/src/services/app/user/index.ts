@@ -361,40 +361,22 @@ export default class UserService {
             };
         }
 
-        let count = 0;
-        let rows: AppNotification[] = [];
-
-        if (unreadOnly !== undefined) {
-            const notifications = await models.appNotification.findAndCountAll({
-                where: {
-                    ...where,
-                    read: !unreadOnly
-                },
-                offset,
-                limit,
-                order: [['createdAt', 'DESC']]
-            });
-
-            count = notifications.count;
-            rows = notifications.rows as AppNotification[];
-        } else {
-            count = await models.appNotification.count({
-                where: {
-                    ...where,
-                    read: false
-                }
-            });
-            rows = await models.appNotification.findAll({
-                where,
-                offset,
-                limit,
-                order: [['createdAt', 'DESC']]
-            });
-        }
+        const notifications: {
+            rows: AppNotification[];
+            count: number;
+        } = await models.appNotification.findAndCountAll({
+            where: {
+                ...where,
+                ...(unreadOnly !== undefined ? { read: !unreadOnly } : {})
+            },
+            offset,
+            limit,
+            order: [['createdAt', 'DESC']]
+        });
 
         return {
-            count,
-            rows
+            count: notifications.count,
+            rows: notifications.rows
         };
     }
 
