@@ -618,7 +618,7 @@ describe('user service v2', () => {
                 user.id
             );
 
-            expect(notifications).to.be.eq(1);
+            expect(notifications.count).to.be.eq(1);
         });
     });
 
