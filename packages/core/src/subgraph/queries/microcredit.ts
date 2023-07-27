@@ -248,7 +248,7 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt:desc';
 };
 
-const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
+export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
     const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 

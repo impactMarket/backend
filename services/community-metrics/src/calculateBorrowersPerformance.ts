@@ -6,7 +6,33 @@ async function calculateBorrowersPerformance(): Promise<void> {
         utils.Logger.info('Updating borrowers performance...');
 
         // get borrowers
-        const { borrowers } = await subgraph.queries.microcredit.getBorrowers({ onlyClaimed: true, loanStatus: 1 });
+        const totalBorrowers = await subgraph.queries.microcredit.countGetBorrowers({
+            loanStatus: 1
+        });
+        utils.Logger.info(`Total borrowers: ${totalBorrowers}`);
+        const loops = Math.ceil(totalBorrowers / 200);
+        const borrowers: {
+            id: string;
+            loan: {
+                amount: string;
+                period: number;
+                dailyInterest: number;
+                claimed: number;
+                repaid: string;
+                lastRepayment: number;
+                lastRepaymentAmount: string;
+                lastDebt: string;
+            };
+        }[] = [];
+        for (let i = 0; i < loops; i++) {
+            const { borrowers: batchBorrowers } = await subgraph.queries.microcredit.getBorrowers({
+                onlyClaimed: true,
+                loanStatus: 1,
+                offset: i * 200,
+                limit: 200
+            });
+            borrowers.push(...batchBorrowers);
+        }
         // get user id from borrower address
         const rawUsers = await database.models.appUser.findAll({
             where: { address: borrowers.map(b => ethers.utils.getAddress(b.id)) }
@@ -22,19 +48,21 @@ async function calculateBorrowersPerformance(): Promise<void> {
             }
             const { repaid, amount, claimed, period } = borrower.loan;
             const elapsed = Date.now() / 1000 - claimed;
-            const performance = (Number(amount) / Number(repaid) / (elapsed / Number(period))) * 100;
+            const performance =
+                parseFloat(amount) /
+                parseFloat(repaid) /
+                (Math.round(elapsed / 2592000) / Math.round(period / 2592000));
             borrowersPerformance.set(userId, performance);
         }
         // update borrowers on database
-        try {
-            for (const performance of borrowersPerformance) {
-                await database.models.microCreditBorrowers.update(
-                    { performance: Math.trunc(performance[1]) },
-                    { where: { userId: performance[0] } }
-                );
-            }
-        } catch (error) {
-            utils.Logger.error(error);
+        for (const borrowerPerformance of borrowersPerformance) {
+            if (borrowerPerformance[1] === Infinity) continue;
+            if (Number.isNaN(borrowerPerformance[1])) continue;
+
+            await database.models.microCreditBorrowers.update(
+                { performance: Math.trunc(borrowerPerformance[1]) },
+                { where: { userId: borrowerPerformance[0] } }
+            );
         }
         utils.Logger.info('Updated borrowers performance!');
     } catch (error) {
