@@ -447,8 +447,20 @@ export default class MicroCreditList {
      */
     public getBorrower = async (query: { address: string; include: string[] }) => {
         const { address, include } = query;
+        const year = new Date().getUTCFullYear();
         const user = await models.appUser.findOne({
-            attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+            attributes: [
+                'id',
+                'address',
+                'firstName',
+                'lastName',
+                'avatarMediaPath',
+                'country',
+                'gender',
+                'email',
+                'phone',
+                [literal(`${year}-year`), 'age']
+            ],
             where: {
                 address
             }
