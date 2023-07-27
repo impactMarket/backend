@@ -57,7 +57,7 @@ export async function checkLearnAndEarnBalances() {
 
     const levels = await models.learnAndEarnLevel.findAll({
         where: { isLive: true, active: true },
-        include: [{ model: models.appUser, as: 'adminUserId', required: false }]
+        include: [{ model: models.appUser, as: 'adminUser', required: false }]
     });
 
     for (let i = 0; i < levels.length; i++) {

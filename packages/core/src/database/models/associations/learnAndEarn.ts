@@ -73,6 +73,7 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
 
     learnAndEarnLevel.belongsTo(appUser, {
         foreignKey: 'adminUserId',
+        targetKey: 'id',
         as: 'adminUser'
     });
 }
