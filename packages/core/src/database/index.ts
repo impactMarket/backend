@@ -1,5 +1,5 @@
 import { Options, Sequelize } from 'sequelize';
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
 import pg from 'pg';
 
 import { DbModels } from './db';
@@ -43,11 +43,15 @@ const models = sequelize.models as DbModels;
 let redisClient: Redis = undefined as any;
 
 if (process.env.NODE_ENV !== 'test') {
-    redisClient = new Redis(config.redis, {
-        tls: {
-            rejectUnauthorized: false
-        }
-    });
+    if (config.aws.lambda) {
+        redisClient = new Redis(config.redis, {
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+    } else {
+        redisClient = new Redis(config.redis);
+    }
 }
 
 export { sequelize, Sequelize, models, redisClient };
