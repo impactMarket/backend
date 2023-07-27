@@ -1,5 +1,5 @@
 import { Options, Sequelize } from 'sequelize';
-import Redis, { RedisOptions } from 'ioredis';
+import Redis from 'ioredis';
 import pg from 'pg';
 
 import { DbModels } from './db';
