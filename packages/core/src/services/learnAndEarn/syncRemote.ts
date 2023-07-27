@@ -50,7 +50,7 @@ async function getPrismicLearnAndEarn() {
                 // update reward
                 await models.learnAndEarnLevel.update(
                     {
-                        totalReward: prismicLevel.data.reward
+                        totalReward: prismicLevel.data.reward || 0
                     },
                     {
                         where: {
