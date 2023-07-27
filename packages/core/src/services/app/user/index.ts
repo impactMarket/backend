@@ -115,16 +115,17 @@ export default class UserService {
                 return _user;
             };
 
-            [user, userRoles, userRules, notificationsCount] = await Promise.all([
+            [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
                 this._userRoles(userParams.address),
-                this._userRules(userParams.address),
-                models.appNotification.count({
-                    where: {
-                        read: false
-                    }
-                })
+                this._userRules(userParams.address)
             ]);
+            notificationsCount = await models.appNotification.count({
+                where: {
+                    userId: user.id,
+                    read: false
+                }
+            });
         }
 
         this._updateLastLogin(user.id);
@@ -158,22 +159,23 @@ export default class UserService {
     }
 
     public async get(address: string) {
-        const [user, userRoles, userRules, notificationsCount] = await Promise.all([
+        const [user, userRoles, userRules] = await Promise.all([
             models.appUser.findOne({
                 where: { address }
             }),
             this._userRoles(address),
-            this._userRules(address),
-            models.appNotification.count({
-                where: {
-                    read: false
-                }
-            })
+            this._userRules(address)
         ]);
 
         if (user === null) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
+        const notificationsCount = await models.appNotification.count({
+            where: {
+                userId: user.id,
+                read: false
+            }
+        });
 
         return {
             ...user.toJSON(),
