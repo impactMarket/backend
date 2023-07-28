@@ -162,11 +162,11 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /microcredit/note:
+     * /microcredit/notes:
      *   post:
      *     tags:
      *       - "microcredit"
-     *     summary: "Add a note to a Microcredit Application"
+     *     summary: "Add a note to a user"
      *     requestBody:
      *      required: true
      *      content:
@@ -174,7 +174,7 @@ export default (route: Router): void => {
      *          schema:
      *            type: object
      *            properties:
-     *              applicationId:
+     *              userId:
      *                type: number
      *                required: true
      *              note:
