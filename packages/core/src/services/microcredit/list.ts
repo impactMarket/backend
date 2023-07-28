@@ -177,7 +177,6 @@ export default class MicroCreditList {
         let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
-        let count = 0;
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
@@ -198,15 +197,13 @@ export default class MicroCreditList {
         }
         if (order || where) {
             // performance is calculated on backend, so we need to get it from the database
-            const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
+            const rBorrowers = await models.microCreditBorrowers.findAll({
                 attributes: ['performance'],
                 where: {
                     ...where,
                     manager: query.addedBy
                 },
                 order,
-                limit: order ? query.limit ?? 10 : undefined,
-                offset: order ? query.offset ?? 0 : undefined,
                 include: [
                     {
                         model: models.appUser,
@@ -216,20 +213,11 @@ export default class MicroCreditList {
                 ]
             });
 
-            usersToFilter = rBorrowers.rows.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
-            if (where) {
-                count = rBorrowers.count;
-            }
+            usersToFilter = rBorrowers.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
         }
 
         let onlyBorrowers: string[] | undefined = undefined;
         if (usersToFilter) {
-            // when there's already a list of users but no order, this means, all users were fetched
-            // so we need to slice to get only the ones we want
-            if (!order) {
-                const { offset, limit } = query;
-                usersToFilter = usersToFilter.slice(offset ?? 0, limit ?? 10);
-            }
             onlyBorrowers = usersToFilter.map(b => b.address);
         }
         // get borrowers loans from subgraph
@@ -252,12 +240,6 @@ export default class MicroCreditList {
             onlyBorrowers,
             loanStatus: mapFilterToLoanStatus(query.filter)
         });
-        if (!where) {
-            count = rawBorrowers.count;
-        }
-        if (rawBorrowers.count !== count) {
-            count = rawBorrowers.count;
-        }
         const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
 
         if (!usersToFilter) {
@@ -291,7 +273,7 @@ export default class MicroCreditList {
         };
         // merge borrowers loans and profile
         return {
-            count,
+            count: rawBorrowers.count,
             rows: mergeArraysByOrder<any, User>(
                 borrowers,
                 usersToFilter,

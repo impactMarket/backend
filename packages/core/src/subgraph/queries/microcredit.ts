@@ -1,6 +1,7 @@
 import { axiosMicrocreditSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
+import config from '../../config';
 
 type Asset = {
     id: string;
@@ -249,7 +250,7 @@ export type SubgraphGetBorrowersQuery = {
 };
 
 export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
-    const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
+    const { addedBy, loanStatus, orderBy, onlyClaimed, onlyBorrowers } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
@@ -262,6 +263,11 @@ export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promi
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
                     ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
+                    ${
+                        onlyBorrowers !== undefined
+                            ? `id_in:${JSON.stringify(onlyBorrowers.map(b => b.toLowerCase()))}`
+                            : ''
+                    }
                 }
                 ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
@@ -352,8 +358,8 @@ export const getBorrowers = async (
         operationName: 'borrowers',
         query: `query borrowers {
             borrowers(
-                first: ${limit && !onlyBorrowers ? limit : 10}
-                skip: ${offset && !onlyBorrowers ? offset : 0}
+                first: ${limit ? limit : config.defaultLimit}
+                skip: ${offset ? offset : config.defaultOffset}
                 where: {
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
