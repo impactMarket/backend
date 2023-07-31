@@ -124,7 +124,10 @@ export default {
 
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
     storyCronActive: validatedEnv.STORY_CRON_ACTIVE,
-    slackApi: validatedEnv.SLACK_API,
+    slack: {
+        token: validatedEnv.SLACK_TOKEN,
+        lambdaChannel: validatedEnv.SLACK_LAMBDA_CHANNEL
+    },
     sendgridApi: validatedEnv.SENDGRID_API_KEY,
     firebaseFileBase64: validatedEnv.FIREBASE_FILE_BASE64,
 

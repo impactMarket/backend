@@ -14,8 +14,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         await globalMetrics();
         utils.Logger.info('Updated global metrics!');
     } catch (error) {
-        // TODO: add error alert
         utils.Logger.error('Error calcuateGlobalMetrics: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to calculate global metrics', config.slack.lambdaChannel);
     }
 }
 async function globalMetrics(): Promise<void> {

@@ -3,6 +3,7 @@ import * as dataFetching from './dataFetching';
 import * as jwt from './jwt';
 import * as prismic from './prismic';
 import * as pushNotification from './pushNotification';
+import * as slack from './slack';
 import * as util from './util';
 import { BaseError } from './baseError';
 import { Logger } from './logger';
@@ -32,6 +33,7 @@ export {
     Logger,
     formatObjectToNumber,
     util,
+    slack,
     jwt,
     cache,
     pushNotification,

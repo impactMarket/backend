@@ -1,5 +1,5 @@
 import { Op, WhereOptions } from 'sequelize';
-import { database, utils } from '@impactmarket/core';
+import { database, utils, config } from '@impactmarket/core';
 
 export async function verifyDeletedAccounts(): Promise<void> {
     utils.Logger.info('Verifying user accounts to delete...');
@@ -30,7 +30,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
         utils.Logger.info('User accounts to delete verified!');
     } catch (error) {
         await t.rollback();
-        // TODO: add error alert
         utils.Logger.error('Error verifyDeletedAccounts: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to verify deleted accounts', config.slack.lambdaChannel);
     }
 }
