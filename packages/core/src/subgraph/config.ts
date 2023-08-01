@@ -7,21 +7,21 @@ const axiosSubgraph = axios.create({
     headers: {
         'content-type': 'application/json'
     },
-    timeout: 15000
+    timeout: 5000
 });
 const axiosCouncilSubgraph = axios.create({
     baseURL: config.councilSubgraphUrl,
     headers: {
         'content-type': 'application/json'
     },
-    timeout: 15000
+    timeout: 5000
 });
 const axiosMicrocreditSubgraph = axios.create({
     baseURL: config.microcreditSubgraphUrl,
     headers: {
         'content-type': 'application/json'
     },
-    timeout: 15000
+    timeout: 5000
 });
 // TODO: " as any" is a temporary solution to deploy to heroku
 // TODO: test this works as expected to reduce timeout
