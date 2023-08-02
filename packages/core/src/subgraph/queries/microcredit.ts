@@ -248,6 +248,69 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt:desc';
 };
 
+export const getBorrowerRepayments = async (query: {
+    offset?: number;
+    limit?: number;
+    userAddress: string;
+}): Promise<{ count: number; rows: { amount: number; timestamp: number; debt: number }[] }> => {
+    const { offset, limit, userAddress } = query;
+    const graphqlQuery = {
+        operationName: 'getRepaymentsAndCount',
+        query: `query getRepaymentsAndCount {
+            repayments(
+                first: ${limit ? limit : 10}
+                skip: ${offset ? offset : 0}
+                where: { borrower: "${userAddress.toLowerCase()}" }
+                orderBy: timestamp
+                orderDirection: desc
+            ) {
+                amount
+                timestamp
+                debt
+            }
+            borrower(id: "${userAddress.toLowerCase()}") {
+                repaymentsCount
+            }
+        }`
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    repayments: {
+                        amount: string;
+                        timestamp: number;
+                        debt: string;
+                    }[];
+                    borrower: {
+                        repaymentsCount: number;
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const repaymentsAndCount = {
+        count: response.data?.data.borrower.repaymentsCount,
+        rows: response.data?.data.repayments.map((repayment: any) => ({
+            amount: parseFloat(repayment.amount),
+            debt: parseFloat(repayment.debt),
+            timestamp: repayment.timestamp
+        }))
+    };
+    redisClient.set(graphqlQuery.query, JSON.stringify(repaymentsAndCount), 'EX', intervalsInSeconds.halfHour);
+
+    return repaymentsAndCount;
+};
+
 export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
     const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];

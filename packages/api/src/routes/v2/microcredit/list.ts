@@ -184,12 +184,6 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: loanId
-     *         schema:
-     *           type: integer
-     *         required: true
-     *         description: loan id of the user
-     *       - in: query
      *         name: borrower
      *         schema:
      *           type: string
