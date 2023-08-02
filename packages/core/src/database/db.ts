@@ -43,6 +43,7 @@ import { StoryContentModel } from './models/story/storyContent';
 import { StoryEngagementModel } from './models/story/storyEngagement';
 import { StoryUserEngagementModel } from './models/story/storyUserEngagement';
 import { StoryUserReportModel } from './models/story/storyUserReport';
+import { SubgraphMicroCreditBorrowersModel } from './models/microCredit/subgraphBorrowers';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
 import { UbiCommunityContractModel } from './models/ubi/communityContract';
@@ -119,6 +120,7 @@ export type DbModels = {
     microCreditApplications: ModelStatic<MicroCreditApplicationModel>;
     microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
     microCreditNote: ModelStatic<MicroCreditNoteModel>;
+    subgraphMicroCreditBorrowers: ModelStatic<SubgraphMicroCreditBorrowersModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 };

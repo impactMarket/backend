@@ -246,6 +246,7 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt'
         | 'lastDebt:asc'
         | 'lastDebt:desc';
+    entityLastUpdated?: number;
 };
 
 export const getBorrowerRepayments = async (query: {
@@ -404,7 +405,7 @@ export const getBorrowers = async (
         };
     }[];
 }> => {
-    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers } = query;
+    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers, entityLastUpdated } = query;
 
     // date 3 months ago
     const date = new Date();
@@ -429,6 +430,7 @@ export const getBorrowers = async (
                 }
                 ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
+                ${entityLastUpdated ? `entityLastUpdated_gt: ${entityLastUpdated}` : ''}
             ) {
                 id
                 lastLoanAmount
