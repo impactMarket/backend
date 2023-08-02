@@ -77,8 +77,9 @@ const queryPreSignerUrlFromAWSSchema = defaultSchema.object({
     mime: Joi.string().required()
 });
 
-const queryGetBorrowerSchema = defaultSchema.object<{ address: string; include: string | string[] }>({
-    address: Joi.string().required(),
+const queryGetBorrowerSchema = defaultSchema.object<{ address: string; formId: number; include: string | string[] }>({
+    address: Joi.string().optional(),
+    formId: Joi.number().optional(),
     include: Joi.alternatives(Joi.string(), Joi.array<string[]>()).optional().default([])
 });
 
