@@ -1,4 +1,4 @@
-import { database, subgraph, utils } from '@impactmarket/core';
+import { database, subgraph, utils, config } from '@impactmarket/core';
 import { ethers } from 'ethers';
 
 async function calculateBorrowersPerformance(): Promise<void> {
@@ -66,8 +66,8 @@ async function calculateBorrowersPerformance(): Promise<void> {
         }
         utils.Logger.info('Updated borrowers performance!');
     } catch (error) {
-        // TODO: add error alert
         utils.Logger.error('Error calculateBorrowersPerformance: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to calculate borrowers performance', config.slack.lambdaChannel);
     }
 }
 

@@ -11,8 +11,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         await communitiesMetrics();
         utils.Logger.info('Updated community metrics!');
     } catch (error) {
-        // TODO: add error alert
         utils.Logger.error('Error calcuateCommunitiesMetrics: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to calculate communities metrics', config.slack.lambdaChannel);
     }
 }
 async function communitiesMetrics(): Promise<void> {
@@ -147,8 +147,8 @@ export async function calculateGlobalDemographics() {
         await globalDemographicsService.calculate();
         utils.Logger.info('Updated global demographics!');
     } catch (error) {
-        // TODO: add error alert
         utils.Logger.error('Error calculateGlobalDemographics: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to calculate global demographics', config.slack.lambdaChannel);
     }
 }
 
@@ -158,8 +158,8 @@ export async function calcuateCommunitiesDemographics() {
         await communitiesDemographics();
         utils.Logger.info('Updated community demographics!');
     } catch (error) {
-        // TODO: add error alert
         utils.Logger.error('Error calcuateCommunitiesDemographics: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to calculate community demographics', config.slack.lambdaChannel);
     }
 }
 async function communitiesDemographics() {
