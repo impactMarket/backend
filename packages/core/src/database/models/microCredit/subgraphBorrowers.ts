@@ -1,10 +1,15 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
-import { SubgraphMicroCreditBorrowers, SubgraphMicroCreditBorrowersCreation } from '../../../interfaces/microCredit/subgraphBorrowers';
+import {
+    SubgraphMicroCreditBorrowers,
+    SubgraphMicroCreditBorrowersCreation
+} from '../../../interfaces/microCredit/subgraphBorrowers';
 
-export class SubgraphMicroCreditBorrowersModel extends Model<SubgraphMicroCreditBorrowers, SubgraphMicroCreditBorrowersCreation> {
+export class SubgraphMicroCreditBorrowersModel extends Model<
+    SubgraphMicroCreditBorrowers,
+    SubgraphMicroCreditBorrowersCreation
+> {
     public id!: number;
     public userId!: number;
     public lastRepayment!: number;
@@ -39,27 +44,27 @@ export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): ty
             },
             lastRepayment: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             lastRepaymentAmount: {
                 type: DataTypes.FLOAT,
-                allowNull: true,
+                allowNull: true
             },
             lastDebt: {
                 type: DataTypes.FLOAT,
-                allowNull: true,
+                allowNull: true
             },
             amount: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             period: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             claimed: {
                 type: DataTypes.INTEGER,
-                allowNull: true, 
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
@@ -73,7 +78,7 @@ export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): ty
         {
             tableName: 'subgraph_microcredit_borrowers',
             modelName: 'subgraphMicroCreditBorrowers',
-            sequelize,
+            sequelize
         }
     );
     return SubgraphMicroCreditBorrowersModel;
