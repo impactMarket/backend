@@ -1,4 +1,4 @@
-service: update-borrowers
+service: microcredit
 
 frameworkVersion: '3'
 useDotenv: true
@@ -24,11 +24,11 @@ provider:
   region: ${env:AWS_REGION}
 
 functions:
-  updateBorrowers:
-    handler: handler.start
+  borrowers:
+    handler: handler.borrowers
     events:
       # Invoke Lambda function every 30 minutes
-      - schedule: cron(30 * * * * *)
+      - schedule: rate(30 minutes)
 
 plugins:
   - serverless-webpack

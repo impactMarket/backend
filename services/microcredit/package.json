@@ -1,5 +1,5 @@
 {
-    "name": "@impactmarket/update-borrowers",
+    "name": "@impactmarket/microcredit-lambda",
     "version": "1.0.0",
     "scripts": {
         "build": "tsc",
