@@ -253,12 +253,12 @@ export default class MicroCreditCreate {
                     submittedFormEmailNotificationSubtitle,
                     urlToApplicationForm,
                     submittedFormEmailNotificationViewApplication,
-                    submittedFormEmailNotificationViewNextSteps
+                    submittedFormEmailNotificationViewNextSteps,
+                    submittedFormEmailNotificationSubject
                 };
                 const personalizations = [
                     {
                         to: [{ email: user.email }],
-                        subject: submittedFormEmailNotificationSubject,
                         dynamicTemplateData
                     }
                 ];
