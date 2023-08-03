@@ -1,7 +1,4 @@
 import { AppUser } from '../../interfaces/app/appUser';
-import { BigNumber, Contract } from 'ethers';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { MicrocreditABI as MicroCreditABI } from '../../contracts';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { Op, Order, WhereOptions, literal } from 'sequelize';
@@ -9,8 +6,8 @@ import { config } from '../../..';
 import { getAddress } from '@ethersproject/address';
 import {
     getBorrowerLoansCount,
+    getBorrowerRepayments,
     getBorrowers,
-    getLoanRepayments,
     getUserLastLoanStatusFromSubgraph
 } from '../../subgraph/queries/microcredit';
 import { getUserRoles } from '../../subgraph/queries/user';
@@ -382,10 +379,6 @@ export default class MicroCreditList {
      *            items:
      *              type: object
      *              properties:
-     *                index:
-     *                  type: number
-     *                  description: repayment index
-     *                  example: 1
      *                amount:
      *                  type: number
      *                  description: repayment amount
@@ -406,39 +399,18 @@ export default class MicroCreditList {
     public getRepaymentsHistory = async (query: {
         offset?: number;
         limit?: number;
-        loanId: number;
         borrower: string;
     }): Promise<{
         count: number;
         rows: {
-            index: number;
             amount: number;
             debt: number;
             timestamp: number;
         }[];
     }> => {
-        const { borrower, loanId, offset, limit } = query;
-        const provider = new JsonRpcProvider(config.jsonRpcUrl);
-        const microcredit = new Contract(config.microcreditContractAddress, MicroCreditABI, provider);
-        const totalRepayments = await getLoanRepayments(borrower, loanId);
+        const { borrower: userAddress, offset, limit } = query;
 
-        const repaymentsPromise: { date: number; amount: BigNumber }[] = [];
-        // iterates from offset (or zero if offset not defined) to offset + the min between totalRepayments and limit (or 10 if limit not defined)
-        for (let i = offset ?? 0; i < (offset ?? 0) + Math.min(totalRepayments, limit ?? 10); i++) {
-            repaymentsPromise.push(microcredit.userLoanRepayments(borrower, loanId, i));
-        }
-
-        const repayments = await Promise.all(repaymentsPromise);
-
-        return {
-            count: totalRepayments,
-            rows: repayments.map((r, i) => ({
-                index: repayments.length - i,
-                amount: r.amount.div(BigNumber.from(10).pow(18)).toNumber(),
-                debt: 0,
-                timestamp: parseInt(r.date.toString(), 10)
-            }))
-        };
+        return await getBorrowerRepayments({ userAddress, offset, limit });
     };
 
     /**
