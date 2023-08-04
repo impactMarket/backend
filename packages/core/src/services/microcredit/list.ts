@@ -68,12 +68,13 @@ export enum LoanStatus {
     FORM_DRAFT = 1,
     PENDING_REVIEW = 2,
     REQUEST_CHANGES = 3,
-    APPROVED = 4,
-    REJECTED = 5,
-    PENDING_CLAIM = 6,
-    CLAIMED = 7,
-    FULL_REPAID = 8,
-    CANCELED = 9
+    INTERVIEW = 4,
+    APPROVED = 5,
+    REJECTED = 6,
+    PENDING_CLAIM = 7,
+    CLAIMED = 8,
+    FULL_REPAID = 9,
+    CANCELED = 10
 }
 
 // verify if the user has any pending loan, from microcreditApplications
@@ -95,7 +96,7 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
     if (form.status === MicroCreditApplicationStatus.APPROVED) {
         try {
             const status = await getUserLastLoanStatusFromSubgraph(user.address);
-            return status + 6;
+            return status + 7;
         } catch (e) {
             return LoanStatus.NO_LOAN;
         }
