@@ -2,14 +2,8 @@ import { DbModels } from '../../../database/db';
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    const {
-        appUser,
-        appLog,
-        microCreditApplications,
-        microCreditBorrowers,
-        appReferralCode,
-        microCreditNote
-    } = sequelize.models as DbModels;
+    const { appUser, appLog, microCreditApplications, microCreditBorrowers, appReferralCode, microCreditNote } =
+        sequelize.models as DbModels;
 
     appLog.belongsTo(appUser, {
         foreignKey: 'userId',

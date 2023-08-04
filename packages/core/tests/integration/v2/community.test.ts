@@ -3,7 +3,6 @@ import { SinonStub, replace, restore, stub } from 'sinon';
 import { ethers } from 'ethers';
 import { expect, use } from 'chai';
 import chaiSubset from 'chai-subset';
-import crypto from 'crypto';
 
 import * as subgraph from '../../../src/subgraph/queries/community';
 import * as userSubgraph from '../../../src/subgraph/queries/user';

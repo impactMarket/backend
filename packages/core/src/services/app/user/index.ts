@@ -642,7 +642,7 @@ export default class UserService {
             models.appUser.findOne({
                 attributes: ['readManagerRules'],
                 where: { address }
-            }),
+            })
         ]);
 
         return {
