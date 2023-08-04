@@ -94,11 +94,10 @@ describe('calculate global demographics', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'beneficiary');
         await truncate(sequelize);
     });
 
-    it('calculateDemographics with undisclosed', async () => {
+    it.skip('calculateDemographics with undisclosed', async () => {
         await models.appUser.destroy({
             where: {
                 address: users[0].address

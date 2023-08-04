@@ -90,7 +90,6 @@ describe('claim location service', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'beneficiary');
         await truncate(sequelize, 'community');
         await truncate(sequelize);
         spyClaimLocationAdd.restore();

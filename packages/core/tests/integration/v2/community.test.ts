@@ -65,7 +65,6 @@ describe('community service v2', () => {
 
     describe('list', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
             returnUserRoleSubgraph.resetHistory();
@@ -691,7 +690,6 @@ describe('community service v2', () => {
 
         describe('sort', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
             });
 
@@ -1188,7 +1186,6 @@ describe('community service v2', () => {
 
         describe('query string filter', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();
@@ -1595,7 +1592,6 @@ describe('community service v2', () => {
 
         describe('ambassador list', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();

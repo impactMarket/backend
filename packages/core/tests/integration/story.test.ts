@@ -71,7 +71,6 @@ describe('story service', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'beneficiary');
         await truncate(sequelize, 'storyContent');
         await truncate(sequelize);
         await storyContentDestroy.restore();
