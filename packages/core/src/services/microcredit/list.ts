@@ -417,8 +417,34 @@ export default class MicroCreditList {
      * Get borrower profile, including docs and loans
      * @param address borrower address
      */
-    public getBorrower = async (query: { address: string; include: string[] }) => {
-        const { address, include } = query;
+    public getBorrower = async (query: { address?: string; include: string[]; formId?: number }) => {
+        const { include, formId } = query;
+        let { address } = query;
+
+        if (formId) {
+            const microcreditApplication = await models.microCreditApplications.findOne({
+                attributes: [],
+                include: [
+                    {
+                        attributes: ['address'],
+                        model: models.appUser,
+                        as: 'user'
+                    }
+                ],
+                where: {
+                    id: formId
+                }
+            });
+
+            if (microcreditApplication?.user?.address) {
+                address = microcreditApplication.user.address;
+            }
+        }
+
+        if (!address) {
+            throw new utils.BaseError('INVALID_PARAMS', 'address or formId is expected');
+        }
+
         const year = new Date().getUTCFullYear();
         const user = await models.appUser.findOne({
             attributes: [
