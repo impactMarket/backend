@@ -4302,7 +4302,7 @@
   resolved "https://registry.yarnpkg.com/@slack/types/-/types-2.8.0.tgz#11ea10872262a7e6f86f54e5bcd4f91e3a41fe91"
   integrity sha512-ghdfZSF0b4NC9ckBA8QnQgC9DJw2ZceDq0BIjjRSv6XAZBXJdWgxIsYz0TYnWSiqsKZGH2ZXbj9jYABZdH3OSQ==
 
-"@slack/web-api@^6.8.1":
+"@slack/web-api@6.8.1":
   version "6.8.1"
   resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.8.1.tgz#c6c1e7405c884c4d9048f8b1d3901bd138d00610"
   integrity sha512-eMPk2S99S613gcu7odSw/LV+Qxr8A+RXvBD0GYW510wJuTERiTjP5TgCsH8X09+lxSumbDE88wvWbuFuvGa74g==
@@ -17779,10 +17779,10 @@ timed-out@^4.0.1:
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
   integrity sha512-G7r3AhovYtr5YKOWQkta8RKAPb+J9IsO4uVmzjl8AZwfhs8UcUwTiD6gcJYSgOtzyjvQKrKYn41syHbUWMkafA==
 
-timekeeper@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/timekeeper/-/timekeeper-2.2.0.tgz#9645731fce9e3280a18614a57a9d1b72af3ca368"
-  integrity sha512-W3AmPTJWZkRwu+iSNxPIsLZ2ByADsOLbbLxe46UJyWj3mlYLlwucKiq+/dPm0l9wTzqoF3/2PH0AGFCebjq23A==
+timekeeper@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/timekeeper/-/timekeeper-2.3.1.tgz#2deb6e0b95d93625fda84c18d47f84a99e4eba01"
+  integrity sha512-LeQRS7/4JcC0PgdSFnfUiStQEdiuySlCj/5SJ18D+T1n9BoY7PxKFfCwLulpHXoLUFr67HxBddQdEX47lDGx1g==
 
 timers-ext@^0.1.7:
   version "0.1.7"
