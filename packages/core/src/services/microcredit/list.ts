@@ -468,7 +468,7 @@ export default class MicroCreditList {
                           {
                               model: models.appUser,
                               attributes: ['address', 'firstName', 'lastName'],
-                              as: 'user'
+                              as: 'manager'
                           }
                       ],
                       where: {
