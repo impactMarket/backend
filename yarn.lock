@@ -4302,7 +4302,7 @@
   resolved "https://registry.yarnpkg.com/@slack/types/-/types-2.8.0.tgz#11ea10872262a7e6f86f54e5bcd4f91e3a41fe91"
   integrity sha512-ghdfZSF0b4NC9ckBA8QnQgC9DJw2ZceDq0BIjjRSv6XAZBXJdWgxIsYz0TYnWSiqsKZGH2ZXbj9jYABZdH3OSQ==
 
-"@slack/web-api@^6.8.1":
+"@slack/web-api@6.8.1":
   version "6.8.1"
   resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.8.1.tgz#c6c1e7405c884c4d9048f8b1d3901bd138d00610"
   integrity sha512-eMPk2S99S613gcu7odSw/LV+Qxr8A+RXvBD0GYW510wJuTERiTjP5TgCsH8X09+lxSumbDE88wvWbuFuvGa74g==
@@ -5947,10 +5947,10 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-autocannon@7.11.0:
-  version "7.11.0"
-  resolved "https://registry.yarnpkg.com/autocannon/-/autocannon-7.11.0.tgz#4f52dd15a90707da76de6a7122cc74cd30271981"
-  integrity sha512-17farET7ImAZjOCGSxiG3TcEbc6b+zWWQ61CpKC8D6UIjq+U3c1foRDSMk8Rgl4VJ01Hbbbx6UhdXhye9yTEZg==
+autocannon@7.12.0:
+  version "7.12.0"
+  resolved "https://registry.yarnpkg.com/autocannon/-/autocannon-7.12.0.tgz#d85cf81cd4fdfb9b5b6a49756c613fa33cb61993"
+  integrity sha512-SZwtwykFZaoz5pKg7WY7gw1Dayqv9buXSjvc99sSzZIfguUc4FmFEFJr3INtfXJ7o9Xyn5bJM093wxipVV59ZA==
   dependencies:
     chalk "^4.1.0"
     char-spinner "^1.0.1"
