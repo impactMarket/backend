@@ -81,7 +81,7 @@ export default (route: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: borrower address
+     *         description: borrower address (required if formId is undefined)
      *       - in: query
      *         name: formId
      *         schema:
