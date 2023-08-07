@@ -82,4 +82,10 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'id',
         as: 'user'
     });
+
+    microCreditNote.belongsTo(appUser, {
+        foreignKey: 'managerId',
+        targetKey: 'id',
+        as: 'manager'
+    });
 }
