@@ -7,6 +7,9 @@ export interface SubgraphMicroCreditBorrowers {
     amount: number;
     period: number;
     claimed?: number;
+    dailyInterest?: number;
+    repaid?: number;
+    status: number;
 
     // timestamps
     createdAt: Date;
@@ -21,4 +24,7 @@ export interface SubgraphMicroCreditBorrowersCreation {
     amount: number;
     period: number;
     claimed?: number;
+    dailyInterest?: number;
+    repaid?: number;
+    status: number;
 }

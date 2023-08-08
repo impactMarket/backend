@@ -13,7 +13,7 @@ export async function updateBorrowers(): Promise<void> {
 
         const entityLastUpdated = lastUpdate ? (lastUpdate.updatedAt.getTime() / 1000) | 0 : undefined;
 
-        const borrowers = await subgraph.queries.microcredit.getBorrowers({ entityLastUpdated });
+        const borrowers = await subgraph.queries.microcredit.getBorrowers({ entityLastUpdated, limit: 1000 });
 
         const users = await appUser.findAll({
             attributes: ['address', 'id'],
@@ -31,6 +31,9 @@ export async function updateBorrowers(): Promise<void> {
                 amount: parseFloat(borrower!.loan.amount),
                 period: borrower!.loan.period,
                 claimed: borrower!.loan.claimed,
+                dailyInterest: borrower!.loan.dailyInterest,
+                repaid: parseFloat(borrower!.loan.repaid),
+                status: borrower!.loan.status
             };
 
             return subgraphMicroCreditBorrowers

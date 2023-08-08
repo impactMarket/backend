@@ -18,6 +18,9 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
     public amount!: number;
     public period!: number;
     public claimed!: number;
+    public dailyInterest!: number;
+    public repaid!: number;
+    public status!: number;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -65,6 +68,18 @@ export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): ty
             claimed: {
                 type: DataTypes.INTEGER,
                 allowNull: true
+            },
+            dailyInterest: {
+                type: DataTypes.FLOAT,
+                allowNull: true
+            },
+            repaid: {
+                type: DataTypes.FLOAT,
+                allowNull: true
+            },
+            status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,

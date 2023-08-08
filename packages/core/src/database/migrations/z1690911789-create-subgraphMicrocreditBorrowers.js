@@ -41,6 +41,18 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true, 
             },
+            dailyInterest: {
+                type: Sequelize.FLOAT,
+                allowNull: true, 
+            },
+            repaid: {
+                type: Sequelize.FLOAT,
+                allowNull: true, 
+            },
+            status: {
+                type: Sequelize.INTEGER,
+                allowNull: false, 
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false
