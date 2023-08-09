@@ -283,10 +283,16 @@ export default class MicroCreditCreate {
             // update form
             const newForm = { ...userForm.form, ...form };
 
+            // prevent the application from returning to DRAFT if it is in another status
+            const updateStatus =
+                status === MicroCreditApplicationStatus.DRAFT && userForm.status !== MicroCreditApplicationStatus.DRAFT
+                    ? {}
+                    : { status };
+
             const data = await userForm.update({
                 form: newForm,
                 selectedLoanManagerId,
-                status
+                ...updateStatus
             });
 
             return data;
