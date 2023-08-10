@@ -389,7 +389,6 @@ export const getUserLastLoanStatusFromSubgraph = async (userAddress: string): Pr
 export const getBorrowers = async (
     query: SubgraphGetBorrowersQuery
 ): Promise<{
-    count: number;
     borrowers: {
         // optional so it can be deleted from object!
         id: string;
@@ -453,9 +452,7 @@ export const getBorrowers = async (
         return JSON.parse(cacheResults);
     }
 
-    const [count, response] = await Promise.all([
-        countGetBorrowers(query),
-        axiosMicrocreditSubgraph.post<
+    const response = await axiosMicrocreditSubgraph.post<
             any,
             {
                 data: {
@@ -475,8 +472,7 @@ export const getBorrowers = async (
                     };
                 };
             }
-        >('', graphqlQuery)
-    ]);
+        >('', graphqlQuery);
 
     const borrowers = response.data?.data.borrowers.map(borrower => ({
         loan: {
@@ -492,9 +488,9 @@ export const getBorrowers = async (
         },
         id: borrower.id
     }));
-    redisClient.set(graphqlQuery.query, JSON.stringify({ count, borrowers }), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(graphqlQuery.query, JSON.stringify({ borrowers }), 'EX', intervalsInSeconds.twoMins);
 
-    return { count, borrowers };
+    return { borrowers };
 };
 
 export const getBorrowerLoansCount = async (borrower: string): Promise<number> => {

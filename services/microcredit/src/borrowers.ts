@@ -22,28 +22,37 @@ export async function updateBorrowers(): Promise<void> {
             }
         });
 
-        await Promise.all(users.map(user => {
-            const borrower = borrowers.borrowers.find(el => el.id === user.address.toLowerCase());
-            const values = {
-                lastRepayment: borrower!.loan.lastRepayment,
-                lastRepaymentAmount: parseFloat(borrower!.loan.lastRepaymentAmount),
-                lastDebt: parseFloat(borrower!.loan.lastDebt),
-                amount: parseFloat(borrower!.loan.amount),
-                period: borrower!.loan.period,
-                claimed: borrower!.loan.claimed,
-                dailyInterest: borrower!.loan.dailyInterest,
-                repaid: parseFloat(borrower!.loan.repaid),
-                status: borrower!.loan.status
-            };
+        const batch = config.cronJobBatchSize;
+        // batch to avoid "to many connections" error
+        for (let i = 0; ; i += batch) {
+            const userBatch = users.slice(i, i + batch);
+            await Promise.all(userBatch.map(user => {
+                const borrower = borrowers.borrowers.find(el => el.id === user.address.toLowerCase());
+                const values = {
+                    lastRepayment: borrower!.loan.lastRepayment,
+                    lastRepaymentAmount: parseFloat(borrower!.loan.lastRepaymentAmount),
+                    lastDebt: parseFloat(borrower!.loan.lastDebt),
+                    amount: parseFloat(borrower!.loan.amount),
+                    period: borrower!.loan.period,
+                    claimed: borrower!.loan.claimed,
+                    dailyInterest: borrower!.loan.dailyInterest,
+                    repaid: parseFloat(borrower!.loan.repaid),
+                    status: borrower!.loan.status
+                };
 
-            return subgraphMicroCreditBorrowers
-                .findOne({ where: { userId: user.id } })
-                .then(subgraphBorrower => {
-                    if(subgraphBorrower)
-                        return subgraphBorrower.update(values, { transaction: t });
-                    return subgraphMicroCreditBorrowers.create({ userId: user.id, ...values }, { transaction: t });
-                })
-        }));
+                return subgraphMicroCreditBorrowers
+                    .findOne({ where: { userId: user.id } })
+                    .then(subgraphBorrower => {
+                        if(subgraphBorrower)
+                            return subgraphBorrower.update(values, { transaction: t });
+                        return subgraphMicroCreditBorrowers.create({ userId: user.id, ...values }, { transaction: t });
+                    })
+            }));
+
+            if (i + batch > users.length) {
+                break;
+            }
+        }
 
         await t.commit();
         utils.Logger.info('Borrowers updated!');
