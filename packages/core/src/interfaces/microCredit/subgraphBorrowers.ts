@@ -12,7 +12,6 @@ export interface SubgraphMicroCreditBorrowers {
     status: number;
 
     // timestamps
-    createdAt: Date;
     updatedAt: Date;
 }
 

@@ -23,7 +23,6 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
     public status!: number;
 
     // timestamps!
-    public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
 
@@ -81,10 +80,6 @@ export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): ty
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false
-            },
             updatedAt: {
                 type: DataTypes.DATE,
                 allowNull: false
@@ -93,6 +88,7 @@ export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): ty
         {
             tableName: 'subgraph_microcredit_borrowers',
             modelName: 'subgraphMicroCreditBorrowers',
+            createdAt: false,
             sequelize
         }
     );
