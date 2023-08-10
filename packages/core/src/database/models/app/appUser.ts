@@ -3,6 +3,7 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 import { AppUser, AppUserCreationAttributes } from '../../../interfaces/app/appUser';
 import { MicroCreditApplicationModel } from '../microCredit/applications';
 import { MicroCreditBorrowersModel } from '../microCredit/borrowers';
+import { SubgraphMicroCreditBorrowersModel } from '../microCredit/subgraphBorrowers';
 
 export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
@@ -35,6 +36,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
 
     public readonly borrower?: MicroCreditBorrowersModel;
     public readonly microCreditApplications?: MicroCreditApplicationModel[];
+    public readonly loan?: SubgraphMicroCreditBorrowersModel;
 }
 
 export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {

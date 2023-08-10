@@ -11,7 +11,8 @@ export function userAssociation(sequelize: Sequelize) {
         microCreditApplications,
         microCreditBorrowers,
         appReferralCode,
-        microCreditNote
+        microCreditNote,
+        subgraphMicroCreditBorrowers
     } = sequelize.models as DbModels;
     // used to query from the beneficiary with incude
     beneficiary.belongsTo(appUser, {
@@ -87,5 +88,11 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'managerId',
         targetKey: 'id',
         as: 'manager'
+    });
+
+    appUser.hasOne(subgraphMicroCreditBorrowers, {
+        foreignKey: 'userId',
+        sourceKey: 'id',
+        as: 'loan'
     });
 }

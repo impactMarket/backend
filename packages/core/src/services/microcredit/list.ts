@@ -1,4 +1,3 @@
-import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { Op, Order, WhereOptions, literal } from 'sequelize';
@@ -13,56 +12,6 @@ import {
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
 import { utils } from '@impactmarket/core';
-
-// it was ChatGPT who did it, don't ask me to explain!
-// jk, here's the prompt to generate this:
-// in nodejs, I need a method that merges two arrays using a specific key common to both.
-// But with something special. I want to merge them following the array order and sometimes
-// I'll want to use the array 1 order and sometimes the array 2 order. There's also another
-// important aspect, array 1 and 2 might not have the same items. There might be a case in
-// which array 2 does not have some keys that exist in array 1 and vice versa.
-// In those cases, the order is also very important. If I want to order by array two,
-// then the rule should be to merge only the existing items from array 1 to array 2
-// only if they exist in array two and return. Same if done with array 1 order.
-function mergeArraysByOrder<T1 extends Record<string, any>, T2 extends Record<string, any>>(
-    arr1: T1[],
-    arr2: T2[],
-    key: keyof T1 & keyof T2,
-    useArr1Order: boolean
-): (T1 & T2)[] {
-    const merged: (T1 & T2)[] = [];
-
-    const getKeyIndex = (array: (T1 | T2)[], value: T1[keyof T1] & T2[keyof T2]): number => {
-        for (let i = 0; i < array.length; i++) {
-            if (array[i][key] === value) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
-    const mergeItems = (item1: T1 | T2, item2: T1 | T2): T1 & T2 => {
-        const mergedItem: T1 & T2 = { ...(item2 as T2) } as any;
-
-        for (const prop in item1) {
-            if (item1.hasOwnProperty(prop) && !mergedItem.hasOwnProperty(prop)) {
-                mergedItem[prop as keyof (T1 & T2)] = item1[prop];
-            }
-        }
-
-        return mergedItem;
-    };
-
-    for (const item of useArr1Order ? arr1 : arr2) {
-        const keyIndex = getKeyIndex(useArr1Order ? arr2 : arr1, item[key] as T1[keyof T1] & T2[keyof T2]);
-        if (keyIndex !== -1) {
-            merged.push(mergeItems(useArr1Order ? item : arr1[keyIndex], useArr1Order ? arr2[keyIndex] : item));
-        }
-    }
-
-    return merged;
-}
-
 export enum LoanStatus {
     NO_LOAN = 0,
     FORM_DRAFT = 1,
@@ -141,15 +90,6 @@ export type GetBorrowersQuery = {
         | 'performance:desc';
 };
 
-// exclude orderBy from the object to prepare it to be used on the subgraph
-function excludeDatabaseQueriesWhenSubgraph(query: GetBorrowersQuery) {
-    if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
-        const { orderBy, filter, ...rest } = query;
-        return rest;
-    }
-    return query;
-}
-
 export default class MicroCreditList {
     public listBorrowers = async (
         query: GetBorrowersQuery
@@ -161,26 +101,28 @@ export default class MicroCreditList {
             lastName: string | null;
             avatarMediaPath: string | null;
             loan: {
-                amount: string;
+                amount: number;
                 period: number;
                 dailyInterest: number;
                 claimed: number;
-                repayed: string;
+                repaid: number;
                 lastRepayment: number;
-                lastRepaymentAmount: string;
-                lastDebt: string;
+                lastRepaymentAmount: number;
+                lastDebt: number;
             };
         }[];
     }> => {
-        let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
-        let count = 0;
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
             order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
+        } else if (query.orderBy) {
+            const [field, direction] = query.orderBy.split(':');
+            order = [[literal(`"user.loan.${field}"`), direction || 'ASC']];
         }
+
         if (query.filter === 'ontrack') {
             where = {
                 performance: {
@@ -194,108 +136,62 @@ export default class MicroCreditList {
                 }
             };
         }
-        if (order || where) {
-            // performance is calculated on backend, so we need to get it from the database
-            const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
-                attributes: ['performance'],
-                where: {
-                    ...where,
-                    manager: query.addedBy
-                },
-                order,
-                limit: order ? query.limit ?? 10 : undefined,
-                offset: order ? query.offset ?? 0 : undefined,
-                include: [
-                    {
-                        model: models.appUser,
-                        attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                        as: 'user'
-                    }
-                ]
-            });
 
-            usersToFilter = rBorrowers.rows.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
-            if (where) {
-                count = rBorrowers.count;
-            }
-        }
-
-        let onlyBorrowers: string[] | undefined = undefined;
-        if (usersToFilter) {
-            // when there's already a list of users but no order, this means, all users were fetched
-            // so we need to slice to get only the ones we want
-            if (!order) {
-                const { offset, limit } = query;
-                usersToFilter = usersToFilter.slice(offset ?? 0, limit ?? 10);
-            }
-            onlyBorrowers = usersToFilter.map(b => b.address);
-        }
-        // get borrowers loans from subgraph
-        // and return only the active loan
         const mapFilterToLoanStatus = (filter: GetBorrowersQuery['filter']) => {
             switch (filter) {
                 case 'not-claimed':
-                    return 0;
+                    return {
+                        status: 0
+                    };
                 case 'repaid':
-                    return 2;
+                    return {
+                        status: 2
+                    };
                 case 'ontrack':
                 case 'need-help':
-                    return 1;
+                    return {
+                        status: 1
+                    };
                 default:
-                    return undefined;
+                    return {};
             }
         };
-        const rawBorrowers = await getBorrowers({
-            ...excludeDatabaseQueriesWhenSubgraph(query),
-            onlyBorrowers,
-            loanStatus: mapFilterToLoanStatus(query.filter)
+
+        const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
+            attributes: ['performance'],
+            where: {
+                ...where,
+                manager: query.addedBy
+            },
+            order,
+            limit: query.limit || config.defaultLimit,
+            offset: query.offset || config.defaultOffset,
+            include: [
+                {
+                    model: models.appUser,
+                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    as: 'user',
+                    required: true,
+                    include: [
+                        {
+                            model: models.subgraphMicroCreditBorrowers,
+                            as: 'loan',
+                            where: {
+                                ...mapFilterToLoanStatus(query.filter)
+                            }
+                        }
+                    ]
+                }
+            ]
         });
-        if (!where) {
-            count = rawBorrowers.count;
-        }
-        if (rawBorrowers.count !== count) {
-            count = rawBorrowers.count;
-        }
-        const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
 
-        if (!usersToFilter) {
-            // get borrowers profile from database
-            const userProfile = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                where: {
-                    address: borrowers.map(b => b.address)
-                },
-                include: [
-                    {
-                        model: models.microCreditBorrowers,
-                        attributes: ['performance'],
-                        as: 'borrower'
-                    }
-                ]
-            });
-            usersToFilter = userProfile.map(u => {
-                const user = u.toJSON();
-                delete user['borrower'];
-
-                return { ...user, performance: u.borrower?.performance };
-            });
-        }
-
-        type User = {
-            address: string;
-            firstName: string | null;
-            lastName: string | null;
-            avatarMediaPath: string | null;
-        };
-        // merge borrowers loans and profile
         return {
-            count,
-            rows: mergeArraysByOrder<any, User>(
-                borrowers,
-                usersToFilter,
-                'address',
-                !(query.orderBy && query.orderBy.indexOf('performance') !== -1)
-            )
+            count: rBorrowers.count,
+            rows: rBorrowers.rows.map(r => ({
+                ...r.user!.toJSON(),
+                loan: r.user!.loan!,
+                performance: r.performance
+            }))
         };
     };
 

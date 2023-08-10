@@ -246,6 +246,7 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt'
         | 'lastDebt:asc'
         | 'lastDebt:desc';
+    entityLastUpdated?: number;
 };
 
 export const getBorrowerRepayments = async (query: {
@@ -401,10 +402,11 @@ export const getBorrowers = async (
             lastRepayment: number;
             lastRepaymentAmount: string;
             lastDebt: string;
+            status: number;
         };
     }[];
 }> => {
-    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers } = query;
+    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers, entityLastUpdated } = query;
 
     // date 3 months ago
     const date = new Date();
@@ -426,6 +428,7 @@ export const getBorrowers = async (
                             : ''
                     }
                     ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
+                    ${entityLastUpdated ? `entityLastUpdated_gt: ${entityLastUpdated}` : ''}
                 }
                 ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
@@ -439,6 +442,7 @@ export const getBorrowers = async (
                 lastLoanLastRepayment
                 lastLoanLastRepaymentAmount
                 lastLoanLastDebt
+                lastLoanStatus
             }
         }`
     };
@@ -466,6 +470,7 @@ export const getBorrowers = async (
                             lastLoanLastRepayment: number;
                             lastLoanLastRepaymentAmount: string;
                             lastLoanLastDebt: string;
+                            lastLoanStatus: number;
                         }[];
                     };
                 };
@@ -482,7 +487,8 @@ export const getBorrowers = async (
             repaid: borrower.lastLoanRepaid,
             lastRepayment: borrower.lastLoanLastRepayment,
             lastRepaymentAmount: borrower.lastLoanLastRepaymentAmount,
-            lastDebt: borrower.lastLoanLastDebt
+            lastDebt: borrower.lastLoanLastDebt,
+            status: borrower.lastLoanStatus
         },
         id: borrower.id
     }));
