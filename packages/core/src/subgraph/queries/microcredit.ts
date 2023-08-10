@@ -453,26 +453,26 @@ export const getBorrowers = async (
     }
 
     const response = await axiosMicrocreditSubgraph.post<
-            any,
-            {
+        any,
+        {
+            data: {
                 data: {
-                    data: {
-                        borrowers: {
-                            id: string;
-                            lastLoanAmount: string;
-                            lastLoanPeriod: number;
-                            lastLoanDailyInterest: number;
-                            lastLoanClaimed: number;
-                            lastLoanRepaid: string;
-                            lastLoanLastRepayment: number;
-                            lastLoanLastRepaymentAmount: string;
-                            lastLoanLastDebt: string;
-                            lastLoanStatus: number;
-                        }[];
-                    };
+                    borrowers: {
+                        id: string;
+                        lastLoanAmount: string;
+                        lastLoanPeriod: number;
+                        lastLoanDailyInterest: number;
+                        lastLoanClaimed: number;
+                        lastLoanRepaid: string;
+                        lastLoanLastRepayment: number;
+                        lastLoanLastRepaymentAmount: string;
+                        lastLoanLastDebt: string;
+                        lastLoanStatus: number;
+                    }[];
                 };
-            }
-        >('', graphqlQuery);
+            };
+        }
+    >('', graphqlQuery);
 
     const borrowers = response.data?.data.borrowers.map(borrower => ({
         loan: {
