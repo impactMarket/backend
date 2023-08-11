@@ -296,7 +296,7 @@ export default class MicroCreditList {
     public getRepaymentsHistory = async (query: {
         offset?: number;
         limit?: number;
-        borrower: string;
+        address: string;
     }): Promise<{
         count: number;
         rows: {
@@ -305,7 +305,7 @@ export default class MicroCreditList {
             timestamp: number;
         }[];
     }> => {
-        const { borrower: userAddress, offset, limit } = query;
+        const { address: userAddress, offset, limit } = query;
 
         return await getBorrowerRepayments({ userAddress, offset, limit });
     };

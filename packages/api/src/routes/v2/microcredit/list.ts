@@ -190,7 +190,7 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: borrower
+     *         name: address
      *         schema:
      *           type: string
      *         required: true
