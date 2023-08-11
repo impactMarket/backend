@@ -300,7 +300,7 @@ export const getBorrowerRepayments = async (query: {
     >('', graphqlQuery);
 
     const repaymentsAndCount = {
-        count: response.data?.data.borrower.repaymentsCount,
+        count: response.data?.data.borrower?.repaymentsCount || 0,
         rows: response.data?.data.repayments.map((repayment: any) => ({
             amount: parseFloat(repayment.amount),
             debt: parseFloat(repayment.debt),
