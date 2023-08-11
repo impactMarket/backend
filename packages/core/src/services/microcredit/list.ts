@@ -740,7 +740,21 @@ export default class MicroCreditList {
 
         // TODO: this is hardcoded for now, but we should have a better way to do this
         if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
-            loanManagers = [5700, 5801];
+            switch (country.toLowerCase()) {
+                case 'br':
+                    loanManagers = [5857, 5855];
+                    break;
+                case 'ug':
+                    loanManagers = [5855, 5801];
+                    break;
+                case 'ng':
+                    loanManagers = [5853, 5700];
+                    break;
+                // case 've':
+                default:
+                    loanManagers = [5853, 5857, 5801];
+                    break;
+            }
         } else {
             switch (country.toLowerCase()) {
                 case 'br':
@@ -749,8 +763,9 @@ export default class MicroCreditList {
                 case 'ug':
                     loanManagers = [30880, 106251];
                     break;
-                case 'ng':
-                case 've':
+                // case 'ng':
+                // case 've':
+                default:
                     loanManagers = [106251];
                     break;
             }
