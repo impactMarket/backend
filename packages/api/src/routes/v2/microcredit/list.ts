@@ -211,7 +211,7 @@ export default (route: Router): void => {
         '/repayment-history/:query?',
         authenticateToken,
         verifySignature,
-        onlyAuthorizedRoles(['loanManager']),
+        onlyAuthorizedRoles(['loanManager', 'itself']),
         repaymentsHistoryValidator,
         cache(cacheIntervals.fiveMinutes),
         controller.getRepaymentsHistory
