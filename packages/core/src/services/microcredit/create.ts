@@ -10,7 +10,7 @@ import {
 import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationType } from '../../interfaces/app/appNotification';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
-import { Op, Optional, Transaction } from 'sequelize';
+import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -78,16 +78,27 @@ export default class MicroCreditCreate {
     public async updateApplication(applicationId: number[], status: number[], transaction?: Transaction): Promise<void>;
     public async updateApplication(walletAddress: string[], status: number[], transaction?: Transaction): Promise<void>;
     public async updateApplication(arg: (number | string)[], status: number[], transaction?: Transaction) {
-        const updateApplicationStatus = async (applicationId: number, status: number) => {
+        const updateApplicationStatus = async (applicationId: number, newStatus: number) => {
+            if (newStatus > MicroCreditApplicationStatus.CANCELED) {
+                throw new BaseError('INVALID_STATUS', 'Invalid status');
+            }
+            const where: WhereOptions<MicroCreditApplication> = {
+                id: applicationId
+            };
+            if (newStatus === MicroCreditApplicationStatus.CANCELED) {
+                where.status = MicroCreditApplicationStatus.APPROVED;
+            } else {
+                where.status = {
+                    [Op.notIn]: [MicroCreditApplicationStatus.APPROVED, MicroCreditApplicationStatus.CANCELED]
+                };
+            }
             await models.microCreditApplications.update(
                 {
-                    status,
+                    status: newStatus,
                     decisionOn: new Date()
                 },
                 {
-                    where: {
-                        id: applicationId
-                    },
+                    where,
                     transaction
                 }
             );
