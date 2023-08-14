@@ -1,5 +1,5 @@
 import { updateBorrowers } from './src/borrowers';
-import { welcome } from './src/notification';
+import { welcome, increasingInterest } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
@@ -20,6 +20,13 @@ export const notification = async (event, context) => {
     }
 
     // every 2 weeks, remind the borrower about the loan and increasing interest
+    try {
+        await increasingInterest();
+        utils.Logger.info('Remind increasing interest!');
+    } catch (error) {
+        utils.Logger.error('Error remind increasing interest: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to remind increasing interest', config.slack.lambdaChannel);
+    }
 
     // if halfway through the loan, the borrower didn't repay yet, start notifying every 2 weeks
 
