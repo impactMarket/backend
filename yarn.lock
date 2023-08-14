@@ -5892,9 +5892,10 @@ blessed@^0.1.81:
   resolved "https://registry.yarnpkg.com/blessed/-/blessed-0.1.81.tgz#f962d687ec2c369570ae71af843256e6d0ca1129"
   integrity sha512-LoF5gae+hlmfORcG1M5+5XZi4LBmvlXTzwJWzUlPryN/SJdSflZvROM2TwkT0GMpq7oqT48NRd4GS7BiVBc5OQ==
 
-"blind-threshold-bls@git+https://github.com/celo-org/blind-threshold-bls-wasm.git#e1e2f8a":
+"blind-threshold-bls@https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a":
   version "0.1.0"
-  resolved "git+https://github.com/celo-org/blind-threshold-bls-wasm.git#e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208"
+  uid e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208
+  resolved "https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208"
 
 blob@0.0.5:
   version "0.0.5"
@@ -9929,7 +9930,7 @@ glob@^6.0.1:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.5, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0, glob@^7.2.3:
+glob@^7.0.5, glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
   integrity sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==
@@ -10815,7 +10816,7 @@ is-buffer@^2.0.5:
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-2.0.5.tgz#ebc252e400d22ff8d77fa09888821a24a658c191"
   integrity sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==
 
-is-builtin-module@^3.2.0, is-builtin-module@^3.2.1:
+is-builtin-module@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/is-builtin-module/-/is-builtin-module-3.2.1.tgz#f03271717d8654cfcaf07ab0463faa3571581169"
   integrity sha512-BSLE3HnV2syZ0FK0iMA/yUGplUeMmNz4AW5fnTunbCIqZi4vG3WjJT9FHMy5D69xmAYBHXQhJdALdpwVxV501A==
@@ -16121,23 +16122,7 @@ serverless-plugin-tracing@2.0.0:
   resolved "https://registry.yarnpkg.com/serverless-plugin-tracing/-/serverless-plugin-tracing-2.0.0.tgz#df6b8b3166ac9bb70a37c7fc875014b2369158f6"
   integrity sha512-cndG6QC5ZFHSwmylOqxOzy/M9TAKtUl+wnpqdmqZ5sFfWjcUi4BLV7MkQnsIdKPKJcCv19tpNONYmGPmw6tXIg==
 
-serverless-webpack@5.11.0:
-  version "5.11.0"
-  resolved "https://registry.yarnpkg.com/serverless-webpack/-/serverless-webpack-5.11.0.tgz#1cd4397925af47943fffec79d755e15d91720406"
-  integrity sha512-0OjwSAMrf1OZZfbFwWUGuqz9eiMJIinTRWz2XNkKD3TY5EifvwU7oAF7mEXKPZTgtVhusSzz408C3FWgcIHizg==
-  dependencies:
-    archiver "^5.3.1"
-    bluebird "^3.7.2"
-    find-yarn-workspace-root "^2.0.0"
-    fs-extra "^9.1.0"
-    glob "^7.2.3"
-    is-builtin-module "^3.2.0"
-    lodash "^4.17.21"
-    semver "^7.3.8"
-  optionalDependencies:
-    ts-node ">= 8.3.0"
-
-serverless-webpack@^5.6.1:
+serverless-webpack@5.13.0, serverless-webpack@^5.6.1:
   version "5.13.0"
   resolved "https://registry.yarnpkg.com/serverless-webpack/-/serverless-webpack-5.13.0.tgz#0159dfeae10da502748db0bc761dfa2548cde22e"
   integrity sha512-isMEbXbAK1F8YZJfeKgYA5uNuXPFzdHwZyRA9SuMGXVY2L8t1JIzPvRDLZiT4F3uQm16woyal+uaoDyxQo13vg==
