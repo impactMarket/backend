@@ -1,5 +1,5 @@
 import { AppUserModel } from '../database/models/app/appUser';
-import { NotificationType } from '../interfaces/app/appNotification';
+import { NotificationParams, NotificationType } from '../interfaces/app/appNotification';
 import { models } from '../database';
 import { client as prismic } from '../utils/prismic';
 import localesConfig from '../utils/locale.json';
@@ -16,18 +16,18 @@ export async function sendNotification(
     type: NotificationType,
     isWallet: boolean = true,
     isWebApp: boolean = true,
-    params: object | undefined = undefined,
+    params: NotificationParams | NotificationParams[] | undefined = undefined,
     transaction: Transaction | undefined = undefined
 ) {
     try {
         // registry notification
         await models.appNotification.bulkCreate(
-            users.map(el => ({
+            users.map((el, i) => ({
                 userId: el.id,
                 type,
                 isWallet,
                 isWebApp,
-                params
+                params: params instanceof Array ? params[i] : params
             })),
             { transaction }
         );
@@ -68,12 +68,13 @@ export async function sendNotification(
         await Promise.all(languages.map(fetchNotificationsFromPrismic));
 
         // send notification by group of languages
-        Object.keys(prismicNotifications).forEach(async key => {
+        Object.keys(prismicNotifications).forEach(async (key, i) => {
             const prismicData = prismicNotifications[key];
             sendFirebasePushNotification(
                 prismicData.users.map(el => el.walletPNT!),
                 prismicData.title,
-                prismicData.description
+                prismicData.description,
+                params && (params instanceof Array ? params[i] : params)
             ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         });
     } catch (error) {

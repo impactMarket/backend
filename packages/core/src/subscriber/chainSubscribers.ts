@@ -1,7 +1,7 @@
 import { Logger } from '../utils/logger';
 import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
 import { Create as MicroCreditCreate } from '../services/microcredit';
-import { NotificationType } from '../interfaces/app/appNotification';
+import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
 import { Transaction } from 'sequelize';
 import { config, contracts, database, services, utils } from '../../';
 import { ethers } from 'ethers';
@@ -248,7 +248,7 @@ class ChainSubscribers {
                             true,
                             true,
                             {
-                                communityId: affectedRows[0].id
+                                path: `${NotificationParamsPath.COMMUNITY}${affectedRows[0].id}`
                             },
                             transaction
                         );
@@ -287,7 +287,7 @@ class ChainSubscribers {
                         true,
                         true,
                         {
-                            communityId: community
+                            path: `${NotificationParamsPath.COMMUNITY}${community}`
                         },
                         transaction
                     );
@@ -340,14 +340,6 @@ class ChainSubscribers {
                         this.microCreditService.updateApplication(
                             [userAddress],
                             [MicroCreditApplicationStatus.APPROVED],
-                            transaction
-                        ),
-                        sendNotification(
-                            [user.toJSON()],
-                            NotificationType.LOAN_ADDED,
-                            true,
-                            true,
-                            undefined,
                             transaction
                         )
                     ]);
