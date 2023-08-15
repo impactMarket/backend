@@ -43,7 +43,7 @@ export enum NotificationType {
     LOAN_APPLICATION_SUBMITTED,
     NEW_LOAN_SUBMITTED,
     MICROCREDIT_WELCOME,
-    REMINDER_LOAN_INTEREST,
+    REMINDER_LOAN_INTEREST
 }
 
 export interface AppNotification {
