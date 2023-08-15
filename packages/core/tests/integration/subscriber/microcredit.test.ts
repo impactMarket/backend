@@ -111,7 +111,7 @@ describe.skip('Microcredit', () => {
         assert.calledWith(notificationUpdated.getCall(0), [
             {
                 userId: user.id,
-                type: NotificationType.LOAN_ADDED,
+                type: NotificationType.LOAN_APPLICATION_APPROVED,
                 isWallet: true,
                 isWebApp: true,
                 params: undefined
