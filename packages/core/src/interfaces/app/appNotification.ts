@@ -48,7 +48,8 @@ export enum NotificationType {
     LOAN_APPLICATION_INTERVIEW = 12,
     TRANSACTION_RECEIVED = 13,
     MICROCREDIT_WELCOME=14,
-    REMINDER_LOAN_INTEREST=15
+    REMINDER_LOAN_INTEREST=15,
+    LOAN_UNPAID=16
 }
 
 export type NotificationParams = {

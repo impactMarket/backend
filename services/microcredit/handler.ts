@@ -1,5 +1,5 @@
 import { updateBorrowers } from './src/borrowers';
-import { welcome, increasingInterest } from './src/notification';
+import { welcome, increasingInterest, unpaidLoan } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
@@ -19,6 +19,15 @@ export const notification = async (event, context) => {
         utils.slack.sendSlackMessage('🚨 Error to send welcome/reminder notification', config.slack.lambdaChannel);
     }
 
+    // if halfway through the loan, the borrower didn't repay yet, start notifying every 2 weeks
+    try {
+        await unpaidLoan();
+        utils.Logger.info('Remind unpaid loan loan!');
+    } catch (error) {
+        utils.Logger.error('Error remind unpaid loan loan: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to remind unpaid loan loan', config.slack.lambdaChannel);
+    }
+
     // every 2 weeks, remind the borrower about the loan and increasing interest
     try {
         await increasingInterest();
@@ -27,8 +36,6 @@ export const notification = async (event, context) => {
         utils.Logger.error('Error remind increasing interest: ', error);
         utils.slack.sendSlackMessage('🚨 Error to remind increasing interest', config.slack.lambdaChannel);
     }
-
-    // if halfway through the loan, the borrower didn't repay yet, start notifying every 2 weeks
 
     // if the borrower repaid something, but the performance is now below 100%, notify the borrower 
 
