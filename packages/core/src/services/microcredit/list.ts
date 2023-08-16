@@ -406,7 +406,7 @@ export default class MicroCreditList {
 
         const repaymentsPromise: { date: number; amount: BigNumber }[] = [];
         // iterates from offset (or zero if offset not defined) to offset + the min between totalRepayments and limit (or 10 if limit not defined)
-        for (let i = offset ?? 0; i < (offset ?? 0) + Math.min(totalRepayments, limit ?? 10); i++) {
+        for (let i = offset ?? 0; i < Math.min(totalRepayments, ((limit ?? 10) + (offset ?? 0))); i++) {
             repaymentsPromise.push(microcredit.userLoanRepayments(borrower, loanId, i));
         }
 
