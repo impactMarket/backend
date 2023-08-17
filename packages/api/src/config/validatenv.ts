@@ -91,6 +91,9 @@ function validateEnv() {
         TWILIO_ACCOUNT_SID: str({ devDefault: onlyOnTestEnv('xyz') }),
         TWILIO_AUTH_TOKEN: str({ devDefault: onlyOnTestEnv('xyz') }),
         TWILIO_FROM_NUMBER: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // africas talking
+        AFRICAS_TALKING_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AFRICAS_TALKING_SENDER_ID: str({ devDefault: onlyOnTestEnv('xyz') }),
         // chain
         CHAIN_IS_MAINNET: bool({ devDefault: true }),
         CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),

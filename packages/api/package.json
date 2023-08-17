@@ -49,6 +49,7 @@
         "@celo/identity": "4.1.0",
         "@impactmarket/core": "1.0.0",
         "@slack/events-api": "3.0.1",
+        "africastalking": "0.6.2",
         "bignumber.js": "9.1.1",
         "body-parser": "1.20.2",
         "celebrate": "15.0.1",
