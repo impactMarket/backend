@@ -149,6 +149,16 @@ export default {
     },
 
     /**
+     * Variables for Africas Talking
+     * @see https://developers.africastalking.com/docs/sms
+     */
+    africasTalking: {
+        apiKey: validatedEnv.AFRICAS_TALKING_API_KEY,
+        username: 'libera',
+        senderId: validatedEnv.AFRICAS_TALKING_SENDER_ID
+    },
+
+    /**
      * Variables for chain
      */
     chain: {
