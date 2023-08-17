@@ -155,6 +155,67 @@ export const unpaidLoan = async () => {
         }
     });
 
-    // TODO: notify the amount
     utils.pushNotification.sendNotification(users, LOAN_UNPAID, true, true);
+}
+
+export const lowPerformance = async () => {
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const { REMINDER_LOAN_INTEREST, LOAN_UNPAID, LOW_PERFORMANCE } = interfaces.app.appNotification.NotificationType;
+
+    // get borrowers with performance bellow 100
+    const borrowersPerformance = await database.models.microCreditBorrowers.findAll({
+        attributes: ['userId'],
+        where: {
+            performance: {
+                [Op.lt]: 100
+            }
+        }
+    });
+
+    // get users that rapaid something
+    const borrowers = await database.models.subgraphMicroCreditBorrowers.findAll({
+        where: {
+            userId: {
+                [Op.in]: borrowersPerformance.map(el => el.userId)
+            },
+            status: 1,
+            repaid: {
+                [Op.gt]: 0
+            }
+        }
+    });
+
+    // get users already notified
+    const userIds = borrowers.map(borrower => borrower.userId);
+
+    const notifications = await database.models.appNotification.findAll({
+        attributes: ['userId'],
+        where: {
+            userId: {
+                [Op.in]: userIds,
+            },
+            type: {
+                [Op.or]: [REMINDER_LOAN_INTEREST, LOAN_UNPAID, LOW_PERFORMANCE]
+            },
+            createdAt: {
+                [Op.lt]: twoWeeksAgo,
+            }
+        }
+    });
+
+    const usersNotified = notifications.map(notification => notification.userId);
+    const usersToNotify = userIds.filter(el => !usersNotified.includes(el));
+
+    // send push notification
+    const users = await database.models.appUser.findAll({
+        attributes: ['walletPNT'],
+        where: {
+            id: {
+                [Op.in]: usersToNotify,
+            }
+        }
+    });
+
+    utils.pushNotification.sendNotification(users, LOW_PERFORMANCE, true, true);
 }

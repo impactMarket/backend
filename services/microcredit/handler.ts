@@ -1,5 +1,5 @@
 import { updateBorrowers } from './src/borrowers';
-import { welcome, increasingInterest, unpaidLoan } from './src/notification';
+import { welcome, increasingInterest, unpaidLoan, lowPerformance } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
@@ -38,6 +38,13 @@ export const notification = async (event, context) => {
     }
 
     // if the borrower repaid something, but the performance is now below 100%, notify the borrower 
+    try {
+        await lowPerformance();
+        utils.Logger.info('notify low performance!');
+    } catch (error) {
+        utils.Logger.error('Error notify low performance: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to notify low performance', config.slack.lambdaChannel);
+    }
 
     // if the borrower repaid something in the last month and the performance is above 100%, notify the borrower only once
 };

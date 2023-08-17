@@ -49,7 +49,8 @@ export enum NotificationType {
     TRANSACTION_RECEIVED = 13,
     MICROCREDIT_WELCOME=14,
     REMINDER_LOAN_INTEREST=15,
-    LOAN_UNPAID=16
+    LOAN_UNPAID=16,
+    LOW_PERFORMANCE=17,
 }
 
 export type NotificationParams = {
