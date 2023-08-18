@@ -51,6 +51,7 @@ export enum NotificationType {
     REMINDER_LOAN_INTEREST=15,
     LOAN_UNPAID=16,
     LOW_PERFORMANCE=17,
+    HIGH_PERFORMANCE=18
 }
 
 export type NotificationParams = {
