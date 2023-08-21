@@ -1,4 +1,4 @@
-import { database, subgraph, utils, config } from '@impactmarket/core';
+import { config, database, subgraph, utils } from '@impactmarket/core';
 import { ethers } from 'ethers';
 
 async function calculateBorrowersPerformance(): Promise<void> {
@@ -49,9 +49,10 @@ async function calculateBorrowersPerformance(): Promise<void> {
             const { repaid, amount, claimed, period } = borrower.loan;
             const elapsed = Date.now() / 1000 - claimed;
             const performance =
-                parseFloat(amount) /
-                parseFloat(repaid) /
-                (Math.round(elapsed / 2592000) / Math.round(period / 2592000));
+                (parseFloat(repaid) /
+                    parseFloat(amount) /
+                    (Math.round(elapsed / 86400) / Math.round(period / 86400))) *
+                100;
             borrowersPerformance.set(userId, performance);
         }
         // update borrowers on database
