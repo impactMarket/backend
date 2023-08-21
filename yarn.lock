@@ -4275,20 +4275,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
-  version "20.4.9"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.9.tgz#c7164e0f8d3f12dfae336af0b1f7fdec8c6b204f"
-  integrity sha512-8e2HYcg7ohnTUbHk8focoklEQYvemQmu9M/f43DZVx43kHn0tE3BY/6gSDxS7k0SprtS0NHvj+L80cGLnoOUcQ==
-
-"@types/node@18.16.4":
-  version "18.16.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.4.tgz#dfb38f0f3fb045fca84ffa7783233c63009d8a92"
-  integrity sha512-LUhvPmAKAbgm+p/K11IWszLZVoZDlMF4NRmqbhEzDz/CnCuehPkZXwZbBCKGJsgjnuVejotBwM7B3Scrq4EqDw==
-
-"@types/node@18.16.5":
-  version "18.16.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.5.tgz#bf64e42719dc2e74da24709a2e1c0b50a966120a"
-  integrity sha512-seOA34WMo9KB+UA78qaJoCO20RJzZGVXQ5Sh6FWu0g/hfT44nKXnej3/tCQl7FL97idFpBhisLYCTB50S0EirA==
+"@types/node@*", "@types/node@20.5.1", "@types/node@>=12.0.0", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
+  version "20.5.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.5.1.tgz#178d58ee7e4834152b0e8b4d30cbfab578b9bb30"
+  integrity sha512-4tT2UrL5LBqDwoed9wZ6N3umC4Yhz3W3FloMmiiG4JwmUJWpie0c7lcnUNd4gtMKuDEO4wRVS8B6Xa0uMRsMKg==
 
 "@types/node@>=12.13.0 < 13", "@types/node@^12.12.6":
   version "12.20.55"
