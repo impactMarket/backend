@@ -55,5 +55,3 @@ export const notification = async (event, context) => {
         utils.slack.sendSlackMessage('🚨 Error to remind increasing interest', config.slack.lambdaChannel);
     }
 };
-
-notification(null, null)
