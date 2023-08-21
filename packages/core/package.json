@@ -26,7 +26,7 @@
         "@types/pg": "8.10.2",
         "@types/redis": "4.0.11",
         "@types/sinon": "10.0.14",
-        "@types/validator": "13.7.16",
+        "@types/validator": "13.11.1",
         "chai": "4.3.7",
         "chai-http": "4.4.0",
         "chai-subset": "1.6.0",
