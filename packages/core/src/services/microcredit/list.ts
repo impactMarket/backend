@@ -1,4 +1,3 @@
-import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { Op, Order, WhereOptions, literal } from 'sequelize';
@@ -13,67 +12,18 @@ import {
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
 import { utils } from '@impactmarket/core';
-
-// it was ChatGPT who did it, don't ask me to explain!
-// jk, here's the prompt to generate this:
-// in nodejs, I need a method that merges two arrays using a specific key common to both.
-// But with something special. I want to merge them following the array order and sometimes
-// I'll want to use the array 1 order and sometimes the array 2 order. There's also another
-// important aspect, array 1 and 2 might not have the same items. There might be a case in
-// which array 2 does not have some keys that exist in array 1 and vice versa.
-// In those cases, the order is also very important. If I want to order by array two,
-// then the rule should be to merge only the existing items from array 1 to array 2
-// only if they exist in array two and return. Same if done with array 1 order.
-function mergeArraysByOrder<T1 extends Record<string, any>, T2 extends Record<string, any>>(
-    arr1: T1[],
-    arr2: T2[],
-    key: keyof T1 & keyof T2,
-    useArr1Order: boolean
-): (T1 & T2)[] {
-    const merged: (T1 & T2)[] = [];
-
-    const getKeyIndex = (array: (T1 | T2)[], value: T1[keyof T1] & T2[keyof T2]): number => {
-        for (let i = 0; i < array.length; i++) {
-            if (array[i][key] === value) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
-    const mergeItems = (item1: T1 | T2, item2: T1 | T2): T1 & T2 => {
-        const mergedItem: T1 & T2 = { ...(item2 as T2) } as any;
-
-        for (const prop in item1) {
-            if (item1.hasOwnProperty(prop) && !mergedItem.hasOwnProperty(prop)) {
-                mergedItem[prop as keyof (T1 & T2)] = item1[prop];
-            }
-        }
-
-        return mergedItem;
-    };
-
-    for (const item of useArr1Order ? arr1 : arr2) {
-        const keyIndex = getKeyIndex(useArr1Order ? arr2 : arr1, item[key] as T1[keyof T1] & T2[keyof T2]);
-        if (keyIndex !== -1) {
-            merged.push(mergeItems(useArr1Order ? item : arr1[keyIndex], useArr1Order ? arr2[keyIndex] : item));
-        }
-    }
-
-    return merged;
-}
-
 export enum LoanStatus {
     NO_LOAN = 0,
     FORM_DRAFT = 1,
     PENDING_REVIEW = 2,
     REQUEST_CHANGES = 3,
-    APPROVED = 4,
-    REJECTED = 5,
-    PENDING_CLAIM = 6,
-    CLAIMED = 7,
-    FULL_REPAID = 8,
-    CANCELED = 9
+    INTERVIEW = 4,
+    APPROVED = 5,
+    REJECTED = 6,
+    PENDING_CLAIM = 7,
+    CLAIMED = 8,
+    FULL_REPAID = 9,
+    CANCELED = 10
 }
 
 // verify if the user has any pending loan, from microcreditApplications
@@ -95,7 +45,7 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
     if (form.status === MicroCreditApplicationStatus.APPROVED) {
         try {
             const status = await getUserLastLoanStatusFromSubgraph(user.address);
-            return status + 6;
+            return status + 7;
         } catch (e) {
             return LoanStatus.NO_LOAN;
         }
@@ -140,15 +90,6 @@ export type GetBorrowersQuery = {
         | 'performance:desc';
 };
 
-// exclude orderBy from the object to prepare it to be used on the subgraph
-function excludeDatabaseQueriesWhenSubgraph(query: GetBorrowersQuery) {
-    if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
-        const { orderBy, filter, ...rest } = query;
-        return rest;
-    }
-    return query;
-}
-
 export default class MicroCreditList {
     public listBorrowers = async (
         query: GetBorrowersQuery
@@ -160,26 +101,28 @@ export default class MicroCreditList {
             lastName: string | null;
             avatarMediaPath: string | null;
             loan: {
-                amount: string;
+                amount: number;
                 period: number;
                 dailyInterest: number;
                 claimed: number;
-                repayed: string;
+                repaid: number;
                 lastRepayment: number;
-                lastRepaymentAmount: string;
-                lastDebt: string;
+                lastRepaymentAmount: number;
+                lastDebt: number;
             };
         }[];
     }> => {
-        let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
-        let count = 0;
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
             order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
+        } else if (query.orderBy) {
+            const [field, direction] = query.orderBy.split(':');
+            order = [[literal(`"user.loan.${field}"`), direction || 'ASC']];
         }
+
         if (query.filter === 'ontrack') {
             where = {
                 performance: {
@@ -193,108 +136,62 @@ export default class MicroCreditList {
                 }
             };
         }
-        if (order || where) {
-            // performance is calculated on backend, so we need to get it from the database
-            const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
-                attributes: ['performance'],
-                where: {
-                    ...where,
-                    manager: query.addedBy
-                },
-                order,
-                limit: order ? query.limit ?? 10 : undefined,
-                offset: order ? query.offset ?? 0 : undefined,
-                include: [
-                    {
-                        model: models.appUser,
-                        attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                        as: 'user'
-                    }
-                ]
-            });
 
-            usersToFilter = rBorrowers.rows.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
-            if (where) {
-                count = rBorrowers.count;
-            }
-        }
-
-        let onlyBorrowers: string[] | undefined = undefined;
-        if (usersToFilter) {
-            // when there's already a list of users but no order, this means, all users were fetched
-            // so we need to slice to get only the ones we want
-            if (!order) {
-                const { offset, limit } = query;
-                usersToFilter = usersToFilter.slice(offset ?? 0, limit ?? 10);
-            }
-            onlyBorrowers = usersToFilter.map(b => b.address);
-        }
-        // get borrowers loans from subgraph
-        // and return only the active loan
         const mapFilterToLoanStatus = (filter: GetBorrowersQuery['filter']) => {
             switch (filter) {
                 case 'not-claimed':
-                    return 0;
+                    return {
+                        status: 0
+                    };
                 case 'repaid':
-                    return 2;
+                    return {
+                        status: 2
+                    };
                 case 'ontrack':
                 case 'need-help':
-                    return 1;
+                    return {
+                        status: 1
+                    };
                 default:
-                    return undefined;
+                    return {};
             }
         };
-        const rawBorrowers = await getBorrowers({
-            ...excludeDatabaseQueriesWhenSubgraph(query),
-            onlyBorrowers,
-            loanStatus: mapFilterToLoanStatus(query.filter)
+
+        const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
+            attributes: ['performance'],
+            where: {
+                ...where,
+                manager: query.addedBy
+            },
+            order,
+            limit: query.limit || config.defaultLimit,
+            offset: query.offset || config.defaultOffset,
+            include: [
+                {
+                    model: models.appUser,
+                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    as: 'user',
+                    required: true,
+                    include: [
+                        {
+                            model: models.subgraphMicroCreditBorrowers,
+                            as: 'loan',
+                            where: {
+                                ...mapFilterToLoanStatus(query.filter)
+                            }
+                        }
+                    ]
+                }
+            ]
         });
-        if (!where) {
-            count = rawBorrowers.count;
-        }
-        if (rawBorrowers.count !== count) {
-            count = rawBorrowers.count;
-        }
-        const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
 
-        if (!usersToFilter) {
-            // get borrowers profile from database
-            const userProfile = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                where: {
-                    address: borrowers.map(b => b.address)
-                },
-                include: [
-                    {
-                        model: models.microCreditBorrowers,
-                        attributes: ['performance'],
-                        as: 'borrower'
-                    }
-                ]
-            });
-            usersToFilter = userProfile.map(u => {
-                const user = u.toJSON();
-                delete user['borrower'];
-
-                return { ...user, performance: u.borrower?.performance };
-            });
-        }
-
-        type User = {
-            address: string;
-            firstName: string | null;
-            lastName: string | null;
-            avatarMediaPath: string | null;
-        };
-        // merge borrowers loans and profile
         return {
-            count,
-            rows: mergeArraysByOrder<any, User>(
-                borrowers,
-                usersToFilter,
-                'address',
-                !(query.orderBy && query.orderBy.indexOf('performance') !== -1)
-            )
+            count: rBorrowers.count,
+            rows: rBorrowers.rows.map(r => ({
+                ...r.user!.toJSON(),
+                loan: r.user!.loan!,
+                performance: r.performance
+            }))
         };
     };
 
@@ -399,7 +296,7 @@ export default class MicroCreditList {
     public getRepaymentsHistory = async (query: {
         offset?: number;
         limit?: number;
-        borrower: string;
+        address: string;
     }): Promise<{
         count: number;
         rows: {
@@ -408,7 +305,7 @@ export default class MicroCreditList {
             timestamp: number;
         }[];
     }> => {
-        const { borrower: userAddress, offset, limit } = query;
+        const { address: userAddress, offset, limit } = query;
 
         return await getBorrowerRepayments({ userAddress, offset, limit });
     };
@@ -417,8 +314,34 @@ export default class MicroCreditList {
      * Get borrower profile, including docs and loans
      * @param address borrower address
      */
-    public getBorrower = async (query: { address: string; include: string[] }) => {
-        const { address, include } = query;
+    public getBorrower = async (query: { address?: string; include: string[]; formId?: number }) => {
+        const { include, formId } = query;
+        let { address } = query;
+
+        if (formId) {
+            const microcreditApplication = await models.microCreditApplications.findOne({
+                attributes: [],
+                include: [
+                    {
+                        attributes: ['address'],
+                        model: models.appUser,
+                        as: 'user'
+                    }
+                ],
+                where: {
+                    id: formId
+                }
+            });
+
+            if (microcreditApplication?.user?.address) {
+                address = microcreditApplication.user.address;
+            }
+        }
+
+        if (!address) {
+            throw new utils.BaseError('INVALID_PARAMS', 'address or formId is expected');
+        }
+
         const year = new Date().getUTCFullYear();
         const user = await models.appUser.findOne({
             attributes: [
@@ -468,7 +391,7 @@ export default class MicroCreditList {
                           {
                               model: models.appUser,
                               attributes: ['address', 'firstName', 'lastName'],
-                              as: 'user'
+                              as: 'manager'
                           }
                       ],
                       where: {
@@ -713,7 +636,21 @@ export default class MicroCreditList {
 
         // TODO: this is hardcoded for now, but we should have a better way to do this
         if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
-            loanManagers = [5700, 5801];
+            switch (country.toLowerCase()) {
+                case 'br':
+                    loanManagers = [5857, 5855];
+                    break;
+                case 'ug':
+                    loanManagers = [5855, 5801];
+                    break;
+                case 'ng':
+                    loanManagers = [5853, 5700];
+                    break;
+                // case 've':
+                default:
+                    loanManagers = [5853, 5857, 5801];
+                    break;
+            }
         } else {
             switch (country.toLowerCase()) {
                 case 'br':
@@ -722,8 +659,9 @@ export default class MicroCreditList {
                 case 'ug':
                     loanManagers = [30880, 106251];
                     break;
-                case 'ng':
-                case 've':
+                // case 'ng':
+                // case 've':
+                default:
                     loanManagers = [106251];
                     break;
             }

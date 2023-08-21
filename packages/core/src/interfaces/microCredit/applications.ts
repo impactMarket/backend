@@ -30,6 +30,8 @@ export enum MicroCreditApplicationStatus {
     PENDING = 1,
     IN_REVIEW = 2,
     REQUEST_CHANGES = 3,
-    APPROVED = 4,
-    REJECTED = 5
+    INTERVIEW = 4,
+    APPROVED = 5,
+    REJECTED = 6,
+    CANCELED = 10
 }

@@ -246,6 +246,7 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt'
         | 'lastDebt:asc'
         | 'lastDebt:desc';
+    entityLastUpdated?: number;
 };
 
 export const getBorrowerRepayments = async (query: {
@@ -299,7 +300,7 @@ export const getBorrowerRepayments = async (query: {
     >('', graphqlQuery);
 
     const repaymentsAndCount = {
-        count: response.data?.data.borrower.repaymentsCount,
+        count: response.data?.data.borrower?.repaymentsCount || 0,
         rows: response.data?.data.repayments.map((repayment: any) => ({
             amount: parseFloat(repayment.amount),
             debt: parseFloat(repayment.debt),
@@ -388,7 +389,6 @@ export const getUserLastLoanStatusFromSubgraph = async (userAddress: string): Pr
 export const getBorrowers = async (
     query: SubgraphGetBorrowersQuery
 ): Promise<{
-    count: number;
     borrowers: {
         // optional so it can be deleted from object!
         id: string;
@@ -401,10 +401,11 @@ export const getBorrowers = async (
             lastRepayment: number;
             lastRepaymentAmount: string;
             lastDebt: string;
+            status: number;
         };
     }[];
 }> => {
-    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers } = query;
+    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers, entityLastUpdated } = query;
 
     // date 3 months ago
     const date = new Date();
@@ -426,6 +427,7 @@ export const getBorrowers = async (
                             : ''
                     }
                     ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
+                    ${entityLastUpdated ? `entityLastUpdated_gt: ${entityLastUpdated}` : ''}
                 }
                 ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
@@ -439,6 +441,7 @@ export const getBorrowers = async (
                 lastLoanLastRepayment
                 lastLoanLastRepaymentAmount
                 lastLoanLastDebt
+                lastLoanStatus
             }
         }`
     };
@@ -449,29 +452,27 @@ export const getBorrowers = async (
         return JSON.parse(cacheResults);
     }
 
-    const [count, response] = await Promise.all([
-        countGetBorrowers(query),
-        axiosMicrocreditSubgraph.post<
-            any,
-            {
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
                 data: {
-                    data: {
-                        borrowers: {
-                            id: string;
-                            lastLoanAmount: string;
-                            lastLoanPeriod: number;
-                            lastLoanDailyInterest: number;
-                            lastLoanClaimed: number;
-                            lastLoanRepaid: string;
-                            lastLoanLastRepayment: number;
-                            lastLoanLastRepaymentAmount: string;
-                            lastLoanLastDebt: string;
-                        }[];
-                    };
+                    borrowers: {
+                        id: string;
+                        lastLoanAmount: string;
+                        lastLoanPeriod: number;
+                        lastLoanDailyInterest: number;
+                        lastLoanClaimed: number;
+                        lastLoanRepaid: string;
+                        lastLoanLastRepayment: number;
+                        lastLoanLastRepaymentAmount: string;
+                        lastLoanLastDebt: string;
+                        lastLoanStatus: number;
+                    }[];
                 };
-            }
-        >('', graphqlQuery)
-    ]);
+            };
+        }
+    >('', graphqlQuery);
 
     const borrowers = response.data?.data.borrowers.map(borrower => ({
         loan: {
@@ -482,13 +483,14 @@ export const getBorrowers = async (
             repaid: borrower.lastLoanRepaid,
             lastRepayment: borrower.lastLoanLastRepayment,
             lastRepaymentAmount: borrower.lastLoanLastRepaymentAmount,
-            lastDebt: borrower.lastLoanLastDebt
+            lastDebt: borrower.lastLoanLastDebt,
+            status: borrower.lastLoanStatus
         },
         id: borrower.id
     }));
-    redisClient.set(graphqlQuery.query, JSON.stringify({ count, borrowers }), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(graphqlQuery.query, JSON.stringify({ borrowers }), 'EX', intervalsInSeconds.twoMins);
 
-    return { count, borrowers };
+    return { borrowers };
 };
 
 export const getBorrowerLoansCount = async (borrower: string): Promise<number> => {

@@ -2,8 +2,15 @@ import { DbModels } from '../../../database/db';
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    const { appUser, appLog, microCreditApplications, microCreditBorrowers, appReferralCode, microCreditNote } =
-        sequelize.models as DbModels;
+    const {
+        appUser,
+        appLog,
+        microCreditApplications,
+        microCreditBorrowers,
+        appReferralCode,
+        microCreditNote,
+        subgraphMicroCreditBorrowers
+    } = sequelize.models as DbModels;
 
     appLog.belongsTo(appUser, {
         foreignKey: 'userId',
@@ -45,5 +52,17 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user'
+    });
+
+    microCreditNote.belongsTo(appUser, {
+        foreignKey: 'managerId',
+        targetKey: 'id',
+        as: 'manager'
+    });
+
+    appUser.hasOne(subgraphMicroCreditBorrowers, {
+        foreignKey: 'userId',
+        sourceKey: 'id',
+        as: 'loan'
     });
 }

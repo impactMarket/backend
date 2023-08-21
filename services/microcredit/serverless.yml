@@ -1,0 +1,34 @@
+service: microcredit
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
+    packager: yarn
+    ignorePackages:
+      - pg-native
+    forceInclude:
+      - pg
+      - pg-hstore
+  webpack:
+    includeModules: true
+    packager: yarn
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:AWS_REGION}
+
+functions:
+  borrowers:
+    handler: handler.borrowers
+    events:
+      # Invoke Lambda function every 30 minutes
+      - schedule: rate(30 minutes)
+
+plugins:
+  - serverless-webpack

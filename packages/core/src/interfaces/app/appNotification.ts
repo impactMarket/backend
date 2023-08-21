@@ -33,15 +33,31 @@
  */
 
 export enum NotificationType {
-    STORY_LIKED,
-    BENEFICIARY_ADDED,
-    MANAGER_ADDED,
-    COMMUNITY_CREATED,
-    LOAN_ADDED,
-    LEARN_AND_EARN_DO_NEW_LESSON,
-    LOAN_STATUS_CHANGED,
-    LOAN_APPLICATION_SUBMITTED,
-    NEW_LOAN_SUBMITTED
+    STORY_LIKED = 0,
+    BENEFICIARY_ADDED = 1,
+    MANAGER_ADDED = 2,
+    COMMUNITY_CREATED = 3,
+    // LOAN_ADDED = 4, // removed
+    LEARN_AND_EARN_DO_NEW_LESSON = 5,
+    // LOAN_STATUS_CHANGED = 6, // removed
+    LOAN_APPLICATION_SUBMITTED = 7,
+    LOAN_APPLICATION_RECEIVED = 8,
+    LOAN_APPLICATION_APPROVED = 9,
+    LOAN_APPLICATION_REJECTED = 10,
+    LOAN_APPLICATION_REQUEST_CHANGES = 11,
+    LOAN_APPLICATION_INTERVIEW = 12,
+    TRANSACTION_RECEIVED = 13
+}
+
+export type NotificationParams = {
+    path?: string;
+};
+
+export enum NotificationParamsPath {
+    STORY = 'stories?id=',
+    COMMUNITY = 'communities/',
+    LOAN_APPLICATION = 'microcredit/form/',
+    LOAN_APPROVED = 'microcredit/'
 }
 
 export interface AppNotification {

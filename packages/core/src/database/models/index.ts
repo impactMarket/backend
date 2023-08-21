@@ -41,6 +41,7 @@ import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeStoryUserReport } from './story/storyUserReport';
+import { initializeSubgraphMicroCreditBorrowers } from './microCredit/subgraphBorrowers';
 import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
 import { initializeUbiCommunityCampaign } from './ubi/ubiCommunityCampaign';
@@ -129,6 +130,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeMicroCreditApplication(sequelize);
     initializeMicroCreditBorrowers(sequelize);
     initializeMicroCreditNote(sequelize);
+    initializeSubgraphMicroCreditBorrowers(sequelize);
 
     // Exchange
     initializeExchangeRegistry(sequelize);

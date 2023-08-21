@@ -69,15 +69,20 @@ const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
 const queryRepaymentsHistorySchema = defaultSchema.object({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(5),
-    borrower: Joi.string().required()
+    address: Joi.string().required()
 });
 
 const queryPreSignerUrlFromAWSSchema = defaultSchema.object({
     mime: Joi.string().required()
 });
 
-const queryGetBorrowerSchema = defaultSchema.object<{ address: string; include: string | string[] }>({
-    address: Joi.string().required(),
+const queryGetBorrowerSchema = defaultSchema.object<{ address: string; formId: number; include: string | string[] }>({
+    address: Joi.alternatives().conditional('formId', {
+        is: Joi.any().valid(null, ''),
+        then: Joi.string().required(),
+        otherwise: Joi.string().optional()
+    }),
+    formId: Joi.number().optional(),
     include: Joi.alternatives(Joi.string(), Joi.array<string[]>()).optional().default([])
 });
 
@@ -93,7 +98,7 @@ interface RepaymentHistoryRequestSchema extends ValidatedRequestSchema {
     [ContainerTypes.Query]: {
         offset?: number;
         limit?: number;
-        borrower: string;
+        address: string;
     };
 }
 

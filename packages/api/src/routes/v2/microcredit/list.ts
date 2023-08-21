@@ -80,8 +80,14 @@ export default (route: Router): void => {
      *         name: address
      *         schema:
      *           type: string
-     *         required: true
-     *         description: borrower address
+     *         required: false
+     *         description: borrower address (required if formId is undefined)
+     *       - in: query
+     *         name: formId
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: form ID
      *       - in: query
      *         name: include
      *         schema:
@@ -184,7 +190,7 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: borrower
+     *         name: address
      *         schema:
      *           type: string
      *         required: true
@@ -205,7 +211,7 @@ export default (route: Router): void => {
         '/repayment-history/:query?',
         authenticateToken,
         verifySignature,
-        onlyAuthorizedRoles(['loanManager']),
+        onlyAuthorizedRoles(['loanManager', 'itself']),
         repaymentsHistoryValidator,
         cache(cacheIntervals.fiveMinutes),
         controller.getRepaymentsHistory
