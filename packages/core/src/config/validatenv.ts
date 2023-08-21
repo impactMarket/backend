@@ -112,8 +112,15 @@ function validateEnv() {
         DATABASE_POOL_IDLE: num({ default: 10000 }),
         DATABASE_POOL_EVICT: num({ default: 1000 }),
         //
+        ASSETS_ADDRESS: str({ default: '[{ "address": "xyz", "asset": "xyz" }]' }),
+        MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
         COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 }),
-        ASSETS_ADDRESS: str({ default: '[{ "address": "xyz", "asset": "xyz" }]' })
+        // chain variables
+        CHAIN_IS_MAINNET: bool({ default: false }),
+        CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),
+        CHAIN_JSON_RPC_URL_POLYGON: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // hot wallet variables
+        HOT_WALLET_HUMA: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

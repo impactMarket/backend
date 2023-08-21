@@ -179,5 +179,25 @@ export default {
     daysToLimitUsers: validatedEnv.DAYS_TO_LIMIT_USERS,
     cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
 
-    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT
+    maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
+
+    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
+
+    /**
+     * Variables for chain
+     */
+    chain: {
+        isMainnet: validatedEnv.CHAIN_IS_MAINNET,
+        // celo or alfajores
+        jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
+        // polygon or mumbai
+        jsonRPCUrlPolygon: validatedEnv.CHAIN_JSON_RPC_URL_POLYGON,
+    },
+
+    /**
+     * Variables for hot wallets
+     */
+    hotWallets: {
+        huma: validatedEnv.HOT_WALLET_HUMA,
+    }
 };
