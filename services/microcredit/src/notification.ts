@@ -183,12 +183,12 @@ const _getUsersToNotify = async (
         }
     };
 
-    if (typeof notificationType === 'number') {
-        where.type = notificationType
-    } else {
+    if (notificationType instanceof Array) {
         where.type = {
             [Op.or]: notificationType
         }
+    } else {
+        where.type = notificationType
     };
 
     const notifications = await database.models.appNotification.findAll({
@@ -210,5 +210,11 @@ export const _sendPushNotification = async (usersToNotify: number[], type: numbe
         }
     });
 
-    utils.pushNotification.sendNotification(users, type, true, true);
+    utils.pushNotification.sendNotification(
+        users,
+        type,
+        true,
+        true,
+        { path: interfaces.app.appNotification.NotificationParamsPath.LOAN_APPROVED }
+    );
 }
