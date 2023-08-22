@@ -1,5 +1,4 @@
 import { AppProposal } from '../app/appProposal';
-import { BeneficiaryAttributes } from './beneficiary';
 import { ICommunityContractParams } from '../../types';
 import { StoryCommunity } from '../story/storyCommunity';
 import { UbiClaimLocation } from './ubiClaimLocation';
@@ -150,7 +149,6 @@ export interface CommunityAttributes {
     state?: UbiCommunityState; // TODO: to be removed
     storyCommunity?: StoryCommunity[]; // TODO: to be removed
     suspect?: UbiCommunitySuspect[]; // TODO: to be removed
-    beneficiaries?: BeneficiaryAttributes[]; // TODO: to be removed
     // promoter?: UbiPromoter;
     claimLocation?: UbiClaimLocation[]; // TODO: to be removed
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed

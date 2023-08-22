@@ -11,7 +11,6 @@ import { AppProposalModel } from './models/app/appProposal';
 import { AppReferralCodeModel } from './models/app/appReferralCode';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
-import { Beneficiary } from './models/ubi/beneficiary';
 import { ClaimLocationModel } from './models/ubi/ubiClaimLocation';
 import { Community } from './models/ubi/community';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
@@ -30,7 +29,6 @@ import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
-import { Manager } from './models/ubi/manager';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
 import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { MicroCreditApplicationModel } from './models/microCredit/applications';
@@ -82,8 +80,6 @@ export type DbModels = {
     ubiCommunityLabels: ModelStatic<UbiCommunityLabelModel>;
     ubiCommunityCampaign: ModelStatic<UbiCommunityCampaignModel>;
     ubiClaimLocation: ModelStatic<ClaimLocationModel>;
-    beneficiary: ModelStatic<Beneficiary>;
-    manager: ModelStatic<Manager>;
     //
     globalDailyState: ModelStatic<GlobalDailyState>;
     globalDemographics: ModelStatic<GlobalDemographics>;

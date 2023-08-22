@@ -10,15 +10,6 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            mediaMediaId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
-                // onDelete: 'SET NULL', // default
-                allowNull: true,
-            },
             storyMediaPath: {
                 type: Sequelize.STRING(44),
                 allowNull: true,

@@ -3,7 +3,6 @@ import { SinonStub, replace, restore, stub } from 'sinon';
 import { ethers } from 'ethers';
 import { expect, use } from 'chai';
 import chaiSubset from 'chai-subset';
-import crypto from 'crypto';
 
 import * as subgraph from '../../../src/subgraph/queries/community';
 import * as userSubgraph from '../../../src/subgraph/queries/user';
@@ -13,7 +12,6 @@ import { CommunityDetailsService } from '../../../src/services/ubi/community/det
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import { sequelize as database, models } from '../../../src/database';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
-import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 
@@ -66,7 +64,6 @@ describe('community service v2', () => {
 
     describe('list', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
             returnUserRoleSubgraph.resetHistory();
@@ -665,12 +662,6 @@ describe('community service v2', () => {
                     id: community.contractAddress!,
                     claimed: 0
                 });
-                await BeneficiaryFactory(
-                    await UserFactory({
-                        n: crypto.randomInt(20)
-                    }),
-                    community.id
-                );
             }
 
             returnCommunityEntities.returns(
@@ -698,7 +689,6 @@ describe('community service v2', () => {
 
         describe('sort', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
             });
 
@@ -748,12 +738,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[0].address ? 3 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -919,12 +903,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[1].address ? 5 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -1044,12 +1022,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[2].address ? 3 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -1157,12 +1129,6 @@ describe('community service v2', () => {
                         id: community.contractAddress!,
                         claimed: 0
                     });
-                    await BeneficiaryFactory(
-                        await UserFactory({
-                            n: community.requestByAddress === users[1].address ? 5 : 4
-                        }),
-                        community.id
-                    );
                 }
 
                 returnCommunityEntities.returns([
@@ -1219,7 +1185,6 @@ describe('community service v2', () => {
 
         describe('query string filter', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();
@@ -1626,7 +1591,6 @@ describe('community service v2', () => {
 
         describe('ambassador list', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'beneficiary');
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();

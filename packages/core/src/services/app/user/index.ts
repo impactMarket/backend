@@ -231,8 +231,8 @@ export default class UserService {
                 }
             );
         } else if (action === 'manager-rules') {
-            await models.manager.update(
-                { readRules: true },
+            await models.appUser.update(
+                { readManagerRules: true },
                 {
                     where: { address }
                 }
@@ -639,15 +639,15 @@ export default class UserService {
                 attributes: ['readBeneficiaryRules'],
                 where: { address }
             }),
-            models.manager.findOne({
-                attributes: ['readRules'],
+            models.appUser.findOne({
+                attributes: ['readManagerRules'],
                 where: { address }
             })
         ]);
 
         return {
             beneficiaryRules: beneficiaryRules?.readBeneficiaryRules,
-            managerRules: managerRules?.readRules
+            managerRules: managerRules?.readManagerRules
         };
     }
 }

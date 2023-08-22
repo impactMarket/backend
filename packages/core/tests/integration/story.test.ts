@@ -7,7 +7,6 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { models } from '../../src/database';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import StoryService from '../../src/services/story';
 import UserFactory from '../factories/user';
@@ -20,7 +19,6 @@ describe('story service', () => {
     let storyContentAdd: Sinon.SinonSpy;
     let returnUserRoleSubgraph: SinonStub;
     let community1: any;
-    let community2: any;
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
@@ -70,22 +68,9 @@ describe('story service', () => {
                 maxClaim: 450
             }
         };
-        await BeneficiaryFactory(users.slice(0, 3), community1.id);
-        community2 = {
-            ...communities[0],
-            contract: {
-                baseInterval: 60 * 60 * 24,
-                claimAmount: 1,
-                communityId: 0,
-                incrementInterval: 5 * 60,
-                maxClaim: 450
-            }
-        };
-        await BeneficiaryFactory(users.slice(3, 6), community2.id);
     });
 
     after(async () => {
-        await truncate(sequelize, 'beneficiary');
         await truncate(sequelize, 'storyContent');
         await truncate(sequelize);
         await storyContentDestroy.restore();

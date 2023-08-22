@@ -1,4 +1,3 @@
-import * as beneficiary from './beneficiary';
 import * as community from './community';
 import * as ubiBeneficiarySurvey from './ubiBeneficiarySurvey';
 import * as ubiClaimLocation from './ubiClaimLocation';
@@ -14,7 +13,6 @@ import * as ubiPromoter from './ubiPromoter';
 import * as ubiPromoterSocialMedia from './ubiPromoterSocialMedia';
 
 export {
-    beneficiary,
     community,
     ubiBeneficiarySurvey,
     ubiClaimLocation,
