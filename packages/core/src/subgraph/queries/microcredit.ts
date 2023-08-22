@@ -669,7 +669,7 @@ export const getLoansSince = async (
 
     const loans = response.data?.data.loans.map(loan => ({
         borrower: loan.borrower.id,
-        loanId: loan.borrower.loansCount,
+        loanId: loan.borrower.loansCount - 1,
         amount: loan.amount,
         period: loan.period,
         claimedAt: loan.claimed
