@@ -3026,10 +3026,10 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@huma-finance/sdk@0.0.37":
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/@huma-finance/sdk/-/sdk-0.0.37.tgz#8f7f4a57601c618aa1a1bab04708dda8230e4046"
-  integrity sha512-+0MMkOKBahWabs6FpIrDTmplnecaYUH0dmErYCS2/zMJNXFmaV4C6UyB+iRg5yJ58ZrIAKEreW0S0mPrOHbjew==
+"@huma-finance/sdk@0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@huma-finance/sdk/-/sdk-0.0.41.tgz#83fe6b22773a78dd2fb0a510acc4b0ddbdc1e691"
+  integrity sha512-8yB4LgvvUjo/hb+ryFOMpFPgXnfPE4uYibvXBgk2tyRVRfNIx1IcwlgRPwexoHeWfyo+Y0E56SPv0Pp2XBpNBA==
   dependencies:
     "@bundlr-network/client" "0.11.9"
     "@ethersproject/address" "^5.7.0"
@@ -3037,7 +3037,7 @@
     "@ethersproject/constants" "^5.7.0"
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.6.0"
-    "@huma-finance/shared" "^0.0.37"
+    "@huma-finance/shared" "^0.0.41"
     arweave "^1.13.5"
     axios "^1.4.0"
     bignumber.js "^9.1.1"
@@ -3049,10 +3049,10 @@
   optionalDependencies:
     encoding "^0.1.13"
 
-"@huma-finance/shared@0.0.37", "@huma-finance/shared@^0.0.37":
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/@huma-finance/shared/-/shared-0.0.37.tgz#9074a1c2dcce899647216a1fdb1417d1d124c5ca"
-  integrity sha512-FdfVVYEs97m4b8HSFX7mVMN51QbPCsBs0/I0fUcQV4VFGoWjDV/8hgaKQ9SUEVsM2kILHuqvGTTvdDQkkMbHig==
+"@huma-finance/shared@0.0.41", "@huma-finance/shared@^0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@huma-finance/shared/-/shared-0.0.41.tgz#fc4a392b05be25b7ed79e8c577101d7f041743b9"
+  integrity sha512-W0o9t3NcmD+NMhlHN3Vdtwe0bh5b3+0isTnh4vaNS/LEMqKHwiibsUbTLE+6ORh5AHJlc68633Zldwu/PBN8Ig==
   dependencies:
     "@apollo/client" "^3.7.2"
     "@coinbase/wallet-sdk" "^3.5.3"

@@ -46,8 +46,8 @@
     "dependencies": {
         "@impact-market/subgraph": "1.0.2-beta.1",
         "@faker-js/faker": "8.0.2",
-        "@huma-finance/sdk": "0.0.37",
-        "@huma-finance/shared": "0.0.37",
+        "@huma-finance/sdk": "0.0.41",
+        "@huma-finance/shared": "0.0.41",
         "@prismicio/client": "7.2.0",
         "@prismicio/helpers": "2.3.9",
         "@sendgrid/mail": "7.7.0",
