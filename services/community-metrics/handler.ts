@@ -6,6 +6,7 @@ import {
 import { calcuateGlobalMetrics } from './src/calcuateGlobalMetrics';
 import { calculateBorrowersPerformance } from './src/calculateBorrowersPerformance';
 import { updateExchangeRates } from './src/updateExchangeRates';
+import { validateBorrowersClaimHumaFunds, validateBorrowersRepayingHumaFunds } from './src/validateHumaBorrowers';
 import { verifyDeletedAccounts } from './src/user';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
@@ -25,5 +26,7 @@ export const calculate = async (event, context) => {
         await Promise.all([verifyDeletedAccounts(), updateExchangeRates()]);
     } else if (today.getHours() <= 4) {
         await calculateBorrowersPerformance();
+    } else {
+        await Promise.all([validateBorrowersRepayingHumaFunds(), validateBorrowersClaimHumaFunds()]);
     }
 };

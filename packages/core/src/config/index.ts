@@ -191,13 +191,13 @@ export default {
         // celo or alfajores
         jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
         // polygon or mumbai
-        jsonRPCUrlPolygon: validatedEnv.CHAIN_JSON_RPC_URL_POLYGON,
+        jsonRPCUrlPolygon: validatedEnv.CHAIN_JSON_RPC_URL_POLYGON
     },
 
     /**
      * Variables for hot wallets
      */
     hotWallets: {
-        huma: validatedEnv.HOT_WALLET_HUMA,
+        huma: validatedEnv.HUMA_PRIVATE_KEY
     }
 };

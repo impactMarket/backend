@@ -120,7 +120,7 @@ function validateEnv() {
         CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),
         CHAIN_JSON_RPC_URL_POLYGON: str({ devDefault: onlyOnTestEnv('xyz') }),
         // hot wallet variables
-        HOT_WALLET_HUMA: str({ devDefault: onlyOnTestEnv('xyz') }),
+        HUMA_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') })
     });
 }
 

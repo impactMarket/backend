@@ -1,15 +1,20 @@
 import { ARWeaveService, ReceivableService, getBundlrNetworkConfig } from '@huma-finance/sdk';
 import { ChainEnum, POOL_NAME, POOL_TYPE } from '@huma-finance/shared';
+import { DbModels } from '../../database/db';
 import { Logger } from '../../utils';
 import { Wallet, ethers } from 'ethers';
+import { sequelize } from '../../database';
 import config from '../../config';
 
 type Loan = {
+    borrower: string;
+    loanId: number;
     amount: number;
     period: number;
     // The timestamp at which the loan was claimed
     claimedAt: number;
-}
+    paymentAmount?: number;
+};
 
 /*
  * We use Bundlr to upload metadata to ARWeave, which allows for users to pay in popular currencies like MATIC or ETH
@@ -20,6 +25,8 @@ type Loan = {
  * a separate network to upload a RealWorldReceivable with the resulting metadata URI.
  */
 export async function registerReceivables(loans: Loan[]) {
+    const { appUser, microCreditBorrowersHuma } = sequelize.models as DbModels;
+
     let bundlrProviderNetworkDetails: ethers.providers.Networkish = {
         name: 'Mumbai',
         chainId: ChainEnum.Mumbai
@@ -38,6 +45,7 @@ export async function registerReceivables(loans: Loan[]) {
             chainId: ChainEnum.Celo
         };
     }
+    const poolName = POOL_NAME.ImpactMarkets;
 
     // We'll be using a mumbai wallet funded with MATIC to pay for the ARWeave uploads
     const bundlrProvider = new ethers.providers.StaticJsonRpcProvider(
@@ -75,36 +83,66 @@ export async function registerReceivables(loans: Loan[]) {
     }
 
     for (let i = 0; i < loans.length; i++) {
+        const { borrower, loanId, amount, claimedAt, period } = loans[i];
         // Upload metadata to ARWeave
         const uri = await ReceivableService.uploadOrFetchMetadataURI(
             walletOnSupportedBundlrNetwork,
             config.hotWallets.huma,
             bundlrProviderNetworkDetails.chainId,
-            POOL_NAME.HumaCreditLine,
+            poolName,
             POOL_TYPE.CreditLine,
-            JSON.parse('{"test": "test"}'), // metadata
-            '1234567', // referenceId
+            { borrower, loanId }, // metadata
+            `${borrower}-${loanId}`, // referenceId
             [{ name: 'indexedIdentifier', value: 'exampleValue' }] // extraTags
         );
-    
+
         // Mint a receivable with metadata uploaded to ARWeave
         const tx = await ReceivableService.createReceivable(
             walletOnRWRNetwork,
-            POOL_NAME.HumaCreditLine,
+            poolName,
             POOL_TYPE.CreditLine,
             840, // currencyCode for USD
-            loans[i].amount, // receivableAmount
-            loans[i].claimedAt + loans[i].period, // maturityDate
+            amount, // receivableAmount
+            claimedAt + period, // maturityDate
             uri // metadataURI
         );
         await tx.wait();
+        console.log({ tx });
+
+        // register receivable to backend
+        appUser.findOne({ where: { address: borrower } }).then(user =>
+            microCreditBorrowersHuma.create({
+                userId: user!.id,
+                humaRWRReferenceId: `${borrower}-${loanId}`
+            })
+        );
     }
 }
 
-export async function registerReceivablesRepayments(loans: string[]) {
-    await ReceivableService.declareReceivablePaymentByReferenceId(
-        config.hotWallets.huma,
-        '1234567',
-        1000,
-    )
+export async function registerReceivablesRepayments(loans: Loan[]) {
+    let rwrProviderNetworkDetails: ethers.providers.Networkish = {
+        name: 'Alfajores',
+        chainId: ChainEnum.Alfajores
+    };
+    if (config.chain.isMainnet) {
+        rwrProviderNetworkDetails = {
+            name: 'Celo',
+            chainId: ChainEnum.Celo
+        };
+    }
+
+    const rwrProvider = new ethers.providers.StaticJsonRpcProvider(
+        config.chain.jsonRPCUrlCelo,
+        rwrProviderNetworkDetails
+    );
+    const walletOnRWRNetwork = new Wallet(config.hotWallets.huma, rwrProvider);
+
+    for (let i = 0; i < loans.length; i++) {
+        const { borrower, loanId, paymentAmount } = loans[i];
+        await ReceivableService.declareReceivablePaymentByReferenceId(
+            walletOnRWRNetwork,
+            `${borrower}-${loanId}`, // referenceId
+            paymentAmount!
+        );
+    }
 }
