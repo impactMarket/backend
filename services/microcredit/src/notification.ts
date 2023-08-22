@@ -8,7 +8,12 @@ export const welcome = async () => {
     const { MICROCREDIT_WELCOME } = interfaces.app.appNotification.NotificationType;
     
     const borrowers = await database.models.microCreditApplications.findAll({
-        where: where(fn('date', col('decisionOn')), '=', oneWeekAgo)
+        where: {
+            [Op.and]: [
+                where(fn('date', col('decisionOn')), '=', oneWeekAgo),
+                { status: interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED }
+            ]
+        }
     });
 
     // filter users to notify
@@ -29,7 +34,8 @@ export const increasingInterest = async () => {
         where: {
             decisionOn: {
                 [Op.lt]: twoWeeksAgo,
-            }
+            },
+            status: interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED
         },
     });
 
@@ -52,7 +58,7 @@ export const unpaidLoan = async () => {
             'decisionOn'
         ],
         where: {
-            status: 1 // claimed
+            status: interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED,
         }
     });
 

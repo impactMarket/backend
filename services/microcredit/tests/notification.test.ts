@@ -19,6 +19,7 @@ describe('notification lambda', () => {
     twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
 
     const { MICROCREDIT_WELCOME, LOAN_UNPAID, HIGH_PERFORMANCE, LOW_PERFORMANCE, REMINDER_LOAN_INTEREST } = interfaces.app.appNotification.NotificationType;
+    const { APPROVED } = interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus;    
 
 
     before(async () => {
@@ -37,7 +38,7 @@ describe('notification lambda', () => {
             await database.models.microCreditApplications.create({
                 userId: user.id,
                 decisionOn: idx === 0 ? oneWeekAgo : twoMonthsAgo,
-                status: 1
+                status: APPROVED
             });
 
             if (idx !== 0) {
