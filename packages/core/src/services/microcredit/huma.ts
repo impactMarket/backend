@@ -45,7 +45,7 @@ export async function registerReceivables(loans: Loan[]) {
             chainId: ChainEnum.Celo
         };
     }
-    const poolName = POOL_NAME.ImpactMarkets;
+    const poolName = POOL_NAME.ImpactMarket;
 
     // We'll be using a mumbai wallet funded with MATIC to pay for the ARWeave uploads
     const bundlrProvider = new ethers.providers.StaticJsonRpcProvider(
@@ -111,8 +111,8 @@ export async function registerReceivables(loans: Loan[]) {
 
         // register receivable to backend
         appUser.findOne({ where: { address: borrower } }).then(user =>
-            microCreditBorrowersHuma.create({
-                userId: user!.id,
+            user && microCreditBorrowersHuma.create({
+                userId: user.id,
                 humaRWRReferenceId: `${borrower}-${loanId}`
             })
         );
