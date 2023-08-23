@@ -2,7 +2,7 @@ import { Logger } from '../utils/logger';
 import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
-import { Transaction, Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { config, contracts, database, services, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
@@ -197,14 +197,16 @@ class ChainSubscribers {
             where: {
                 address,
                 walletPNT: {
-                    [Op.not]: null,
+                    [Op.not]: null
                 }
             }
         });
 
         // send push notification
         if (user)
-            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, { path: NotificationParamsPath.TRANSACTION_RECEIVED })
+            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, {
+                path: NotificationParamsPath.TRANSACTION_RECEIVED
+            });
     }
 
     async _processCommunityAdminEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
