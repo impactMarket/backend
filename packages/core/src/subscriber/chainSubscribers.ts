@@ -2,7 +2,7 @@ import { Logger } from '../utils/logger';
 import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
-import { Transaction } from 'sequelize';
+import { Transaction, Op } from 'sequelize';
 import { config, contracts, database, services, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
@@ -12,6 +12,7 @@ import { sendNotification } from '../utils/pushNotification';
 class ChainSubscribers {
     provider: ethers.providers.JsonRpcProvider;
     providerFallback: ethers.providers.JsonRpcProvider;
+    ifaceERC20: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceMicrocredit: ethers.utils.Interface;
@@ -26,6 +27,7 @@ class ChainSubscribers {
     ) {
         this.provider = jsonRpcProvider;
         this.providerFallback = jsonRpcProviderFallback;
+        this.ifaceERC20 = new ethers.utils.Interface(contracts.ERC20ABI);
         this.ifaceCommunityAdmin = new ethers.utils.Interface(contracts.CommunityAdminABI);
         this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
         this.ifaceMicrocredit = new ethers.utils.Interface(contracts.MicrocreditABI);
@@ -40,7 +42,8 @@ class ChainSubscribers {
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
                 ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
-                ethers.utils.id('ManagerChanged(address,address)')
+                ethers.utils.id('ManagerChanged(address,address)'),
+                ethers.utils.id('Transfer(address,address,uint256)')
             ]
         ];
         this.recover();
@@ -181,7 +184,27 @@ class ChainSubscribers {
             await this._processCommunityEvents(log, transaction);
         } else if (log.address === config.microcreditContractAddress) {
             await this._processMicrocreditEvents(log, transaction);
+        } else if (config.assetsAddress.split(',').includes(log.address)) {
+            await this._processTransfer(log);
         }
+    }
+
+    async _processTransfer(log: ethers.providers.Log): Promise<void> {
+        const parsedLog = this.ifaceERC20.parseLog(log);
+        const address = parsedLog.args[1];
+
+        const user = await database.models.appUser.findOne({
+            where: {
+                address,
+                walletPNT: {
+                    [Op.not]: null,
+                }
+            }
+        });
+
+        // send push notification
+        if (user)
+            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, { path: NotificationParamsPath.TRANSACTION_RECEIVED })
     }
 
     async _processCommunityAdminEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
