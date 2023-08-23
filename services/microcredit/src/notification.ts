@@ -208,7 +208,7 @@ const _getUsersToNotify = async (
 
 export const _sendPushNotification = async (usersToNotify: number[], type: number) => {
     const users = await database.models.appUser.findAll({
-        attributes: ['id', 'walletPNT'],
+        attributes: ['id', 'walletPNT', 'language'],
         where: {
             id: {
                 [Op.in]: usersToNotify,
