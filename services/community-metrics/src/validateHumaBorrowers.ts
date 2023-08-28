@@ -59,7 +59,7 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     humaFundingData.lastSyncAt = newLastSyncAt;
     humaFundingData.amountUsed += accumulatedAmount;
     // if all funds are used, set as finalized
-    if (accumulatedAmount + humaFundingData.amountUsed === humaFundingData.amountDeposited || loanIndex < loans.length - 1) {
+    if (accumulatedAmount + humaFundingData.amountUsed === humaFundingData.amountDeposited || loanIndex < loans.length) {
         humaFundingData.finalizedAt = Math.trunc(new Date().getTime() / 1000);
     }
 

@@ -91,7 +91,7 @@ export async function registerReceivables(loans: Loan[]) {
             bundlrProviderNetworkDetails.chainId,
             poolName,
             POOL_TYPE.CreditLine,
-            { borrower, loanId }, // metadata
+            { smartContract: config.microcreditContractAddress, borrower, loanId }, // metadata
             `${borrower}-${loanId}`, // referenceId
             [{ name: 'indexedIdentifier', value: 'exampleValue' }] // extraTags
         );
@@ -110,11 +110,13 @@ export async function registerReceivables(loans: Loan[]) {
         console.log({ tx });
 
         // register receivable to backend
-        appUser.findOne({ where: { address: borrower } }).then(user =>
-            user && microCreditBorrowersHuma.create({
-                userId: user.id,
-                humaRWRReferenceId: `${borrower}-${loanId}`
-            })
+        appUser.findOne({ where: { address: borrower } }).then(
+            user =>
+                user &&
+                microCreditBorrowersHuma.create({
+                    userId: user.id,
+                    humaRWRReferenceId: `${borrower}-${loanId}`
+                })
         );
     }
 }

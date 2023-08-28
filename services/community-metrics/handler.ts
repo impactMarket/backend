@@ -26,7 +26,7 @@ export const calculate = async (event, context) => {
         await Promise.all([verifyDeletedAccounts(), updateExchangeRates()]);
     } else if (today.getHours() <= 4) {
         await calculateBorrowersPerformance();
-    } else {
+    } else if (today.getHours() <= 6) {
         await Promise.all([validateBorrowersRepayingHumaFunds(), validateBorrowersClaimHumaFunds()]);
     }
 };

@@ -654,7 +654,7 @@ export const getLoansSince = async (
             data: {
                 data: {
                     loans: {
-                        amount: number;
+                        amount: string;
                         period: number;
                         claimed: number;
                         borrower: {
@@ -670,7 +670,7 @@ export const getLoansSince = async (
     const loans = response.data?.data.loans.map(loan => ({
         borrower: loan.borrower.id,
         loanId: loan.borrower.loansCount - 1,
-        amount: loan.amount,
+        amount: parseFloat(loan.amount),
         period: loan.period,
         claimedAt: loan.claimed
     }));
