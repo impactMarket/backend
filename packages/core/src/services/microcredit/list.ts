@@ -638,17 +638,17 @@ export default class MicroCreditList {
         if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
             switch (country.toLowerCase()) {
                 case 'br':
-                    loanManagers = [5857, 5855];
+                    loanManagers = [5857, 5855, 5898];
                     break;
                 case 'ug':
-                    loanManagers = [5855, 5801];
+                    loanManagers = [5855, 5801, 5896];
                     break;
                 case 'ng':
-                    loanManagers = [5853, 5700];
+                    loanManagers = [5853, 5700, 5893];
                     break;
                 // case 've':
                 default:
-                    loanManagers = [5853, 5857, 5801];
+                    loanManagers = [5853, 5857, 5801, 5891];
                     break;
             }
         } else {
