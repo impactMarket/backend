@@ -4,7 +4,7 @@ import { getAddress } from '@ethersproject/address';
 
 import { BaseError } from '../../utils/baseError';
 import { IAddStory, ICommunityStory, ICommunityStoryGet } from './types';
-import { NotificationType } from '../../interfaces/app/appNotification';
+import { NotificationType, NotificationParamsPath } from '../../interfaces/app/appNotification';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
 import { StoryContentModel } from '../../database/models/story/storyContent';
@@ -518,15 +518,20 @@ export default class StoryServiceV2 {
                 where: { contentId, address: userAddress }
             });
         } else {
+            const story = await models.storyContent.findOne({
+                attributes: ['byAddress'],
+                where: { id: contentId }
+            });
+            // story's creator
             const user = await models.appUser.findOne({
                 attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                 where: {
-                    address: getAddress(userAddress)
+                    address: getAddress(story!.byAddress)
                 }
             });
 
             if (user) {
-                await sendNotification([user.toJSON()], NotificationType.STORY_LIKED, false);
+                await sendNotification([user.toJSON()], NotificationType.STORY_LIKED, false, true, { path: NotificationParamsPath.STORY + contentId });
             }
 
             await models.storyUserEngagement.create({
