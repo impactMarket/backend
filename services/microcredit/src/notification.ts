@@ -1,5 +1,6 @@
 import { database, interfaces, utils } from '@impactmarket/core';
 import { Op, fn, col, WhereOptions, where } from 'sequelize';
+import admin from 'firebase-admin';
 
 export const welcome = async () => {
     const oneWeekAgo = new Date();
@@ -207,6 +208,10 @@ const _getUsersToNotify = async (
 }
 
 export const _sendPushNotification = async (usersToNotify: number[], type: number) => {
+    if (admin.apps.length === 0) {
+        utils.pushNotification.initPushNotificationService();
+    }
+
     const users = await database.models.appUser.findAll({
         attributes: ['id', 'walletPNT', 'language'],
         where: {
