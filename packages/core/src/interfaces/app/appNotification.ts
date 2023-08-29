@@ -57,8 +57,7 @@ export enum NotificationParamsPath {
     STORY = 'stories?id=',
     COMMUNITY = 'communities/',
     LOAN_APPLICATION = 'microcredit/form/',
-    LOAN_APPROVED = 'microcredit/',
-    TRANSACTION_RECEIVED = 'transactions/'
+    LOAN_APPROVED = 'microcredit/'
 }
 
 export interface AppNotification {

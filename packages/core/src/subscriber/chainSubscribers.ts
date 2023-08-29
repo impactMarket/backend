@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js';
 import { Logger } from '../utils/logger';
 import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
 import { Create as MicroCreditCreate } from '../services/microcredit';
@@ -19,6 +20,7 @@ class ChainSubscribers {
     filterTopics: string[][];
     communities: Map<string, number>;
     microCreditService: MicroCreditCreate;
+    assetsAddress: { address: string; asset: string }[];
 
     constructor(
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
@@ -46,6 +48,7 @@ class ChainSubscribers {
                 ethers.utils.id('Transfer(address,address,uint256)')
             ]
         ];
+        this.assetsAddress = JSON.parse(config.assetsAddress);
         this.recover();
     }
 
@@ -184,7 +187,7 @@ class ChainSubscribers {
             await this._processCommunityEvents(log, transaction);
         } else if (log.address === config.microcreditContractAddress) {
             await this._processMicrocreditEvents(log, transaction);
-        } else if (config.assetsAddress.split(',').includes(log.address)) {
+        } else if (this.assetsAddress.find(el => el.address === log.address)) {
             await this._processTransfer(log);
         }
     }
@@ -192,7 +195,8 @@ class ChainSubscribers {
     async _processTransfer(log: ethers.providers.Log): Promise<void> {
         const parsedLog = this.ifaceERC20.parseLog(log);
         const address = parsedLog.args[1];
-
+        const amount = new BigNumber(parseFloat(parsedLog.args[2])).dividedBy(10 ** config.cUSDDecimal).toNumber();
+        const asset = this.assetsAddress.find(el => el.address === log.address)!.asset;
         const user = await database.models.appUser.findOne({
             where: {
                 address,
@@ -204,8 +208,9 @@ class ChainSubscribers {
 
         // send push notification
         if (user)
-            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, {
-                path: NotificationParamsPath.TRANSACTION_RECEIVED
+            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, undefined, undefined, {
+                amount,
+                asset
             });
     }
 
