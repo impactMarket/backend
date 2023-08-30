@@ -2,7 +2,7 @@ import { ARWeaveService, ReceivableService, getBundlrNetworkConfig } from '@huma
 import { ChainEnum, POOL_NAME, POOL_TYPE } from '@huma-finance/shared';
 import { DbModels } from '../../database/db';
 import { Logger } from '../../utils';
-import { Wallet, ethers } from 'ethers';
+import { Wallet, ethers, utils } from 'ethers';
 import { sequelize } from '../../database';
 import config from '../../config';
 
@@ -107,10 +107,10 @@ export async function registerReceivables(loans: Loan[]) {
             uri // metadataURI
         );
         await tx.wait();
-        console.log({ tx });
 
         // register receivable to backend
-        appUser.findOne({ where: { address: borrower } }).then(
+        // we are assuming they are registered on the backend already
+        appUser.findOne({ where: { address: utils.getAddress(borrower) } }).then(
             user =>
                 user &&
                 microCreditBorrowersHuma.create({

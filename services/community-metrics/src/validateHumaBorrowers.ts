@@ -16,7 +16,7 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     // set newLastSyncAt
     // needs to be updated at the biginning so we don't risk losing any registry
     const newLastSyncAt = Math.trunc(new Date().getTime() / 1000);
-    
+
     // TODO: check if there's any HUMA funding set
     const humaFunding = await models.imMetadata.findOne({
         where: {
@@ -48,8 +48,6 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
         }
         accumulatedAmount += loans[loanIndex].amount;
     }
-
-    console.log({loans});
 
     // register all of them
     utils.Logger.info(`Registering ${loanIndex} loans...`);
