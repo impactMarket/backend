@@ -382,4 +382,4 @@ export const getBeneficiariesByChangeBlock = async (block: number): Promise<{ ad
     } catch (error) {
         throw new Error(error);
     }
-}
+};

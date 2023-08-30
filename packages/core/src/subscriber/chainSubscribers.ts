@@ -3,7 +3,7 @@ import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applicat
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
 import { Transaction } from 'sequelize';
-import { config, contracts, database, services, utils, subgraph } from '../../';
+import { config, contracts, database, services, subgraph, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { models, sequelize } from '../database';
@@ -276,14 +276,17 @@ class ChainSubscribers {
                         utils.cache.cleanBeneficiaryCache(community!);
                     } else {
                         setTimeout(async () => {
-                            const updatedBeneficiaries = await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(log.blockNumber);
+                            const updatedBeneficiaries =
+                                await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(log.blockNumber);
                             cleanCacheAndRetry(updatedBeneficiaries);
                         }, 5000);
                     }
                 }
-                
+
                 if (community) {
-                    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(log.blockNumber);
+                    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(
+                        log.blockNumber
+                    );
                     cleanCacheAndRetry(beneficiaries);
                 }
 
