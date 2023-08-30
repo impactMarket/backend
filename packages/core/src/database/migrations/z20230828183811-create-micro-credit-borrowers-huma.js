@@ -15,6 +15,11 @@ module.exports = {
             humaRWRReferenceId: {
                 allowNull: false,
                 type: Sequelize.STRING(64)
+            },
+            repaid: {
+                allowNull: false,
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
             }
         });
     },

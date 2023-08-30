@@ -2,13 +2,14 @@ import { database, services, subgraph, utils } from '@impactmarket/core';
 
 const { models } = database;
 const { microcredit } = subgraph.queries;
-const { registerReceivables } = services.MicroCredit.Huma;
+const { registerReceivables, registerReceivablesRepayments } = services.MicroCredit.Huma;
 
 type HumaFundingData = {
     amountDeposited: number;
     amountUsed: number;
     finalizedAt: number;
     lastSyncAt: number;
+    lastRepaymentSyncAt: number;
 }
 
 export async function validateBorrowersClaimHumaFunds(): Promise<void> {
@@ -71,22 +72,38 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
 export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
     utils.Logger.info('Verifying borrowers repaying HUMA funds...');
 
-    // {
-    //     repayments(
-    //         first: 5
-    //       skip: 0
-    //       where: { timestamp_gt:1689469589 }
-    //     ) {
-    //       amount
-    //       borrower {
-    //         loansCount
-    //       }
-    //     }
-    //   }
+    // TODO: check if there's any HUMA funding set
+    const humaFunding = await models.imMetadata.findOne({
+        where: {
+            key: 'humaFunding'
+        }
+    });
+
+    if (!humaFunding) {
+        utils.Logger.info('No HUMA funding set, skipping...');
+        return;
+    }
+
+    const humaFundingData: HumaFundingData = JSON.parse(humaFunding.value);
+    
+    if (humaFundingData.finalizedAt !== 0) {
+        utils.Logger.info('HUMA funding already finalized, skipping...');
+        return;
+    }
     
     // TODO: get loans with HUMA referenceId
+    const loansReferenceIds = await models.microCreditBorrowersHuma.findAll({
+        attributes: ['humaRWRReferenceId']
+    });
 
     // TODO: get all repayments to those loans since the last check
+    const repayments = await microcredit.getLoansRepaymentsSince(
+        loansReferenceIds.map(loan => loan.humaRWRReferenceId),
+        humaFundingData.lastRepaymentSyncAt
+    );
 
     // TODO: update recevables with repayments
+    await registerReceivablesRepayments(repayments);
+
+    utils.Logger.info('Updated HUMA repayments!');
 }

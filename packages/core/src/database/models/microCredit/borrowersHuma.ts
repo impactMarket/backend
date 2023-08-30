@@ -10,6 +10,7 @@ export class MicroCreditBorrowersHumaModel extends Model<MicroCreditBorrowersHum
     public id!: number;
     public userId!: number;
     public humaRWRReferenceId!: string;
+    public repaid!: boolean;
 }
 
 export function initializeMicroCreditBorrowersHuma(sequelize: Sequelize): typeof MicroCreditBorrowersHumaModel {
@@ -33,6 +34,11 @@ export function initializeMicroCreditBorrowersHuma(sequelize: Sequelize): typeof
             humaRWRReferenceId: {
                 allowNull: false,
                 type: DataTypes.STRING(64)
+            },
+            repaid: {
+                allowNull: false,
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
             }
         },
         {

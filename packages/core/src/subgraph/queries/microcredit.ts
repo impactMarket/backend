@@ -612,6 +612,65 @@ export const getLoanManager = async (
     return loanManager;
 };
 
+export const getLoansRepaymentsSince = async (
+    loans: string[],
+    since: number
+): Promise<{
+    loanReference: string;
+    debt: number;
+    amount: number;
+}[]> => {
+    const graphqlQuery = {
+        operationName: 'repayments',
+        query: `query repayments {
+            repayments(
+                where: {
+                    timestamp_gt: ${since}
+                    loan_in: ${JSON.stringify(loans)}
+                }) {
+                amount
+                debt
+                loan {
+                    id
+                }
+            }
+        }`
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    repayments: {
+                        amount: string;
+                        debt: string;
+                        loan: {
+                            id: string;
+                        };
+                    }[];
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const repayments = response.data?.data.repayments.map(loan => ({
+        loanReference: loan.loan.id,
+        debt: parseFloat(loan.debt),
+        amount: parseFloat(loan.amount)
+    }));
+
+    redisClient.set(graphqlQuery.query, JSON.stringify(repayments), 'EX', intervalsInSeconds.twoMins);
+
+    return repayments;
+};
+
 export const getLoansSince = async (
     since: number
 ): Promise<

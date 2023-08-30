@@ -121,7 +121,13 @@ export async function registerReceivables(loans: Loan[]) {
     }
 }
 
-export async function registerReceivablesRepayments(loans: Loan[]) {
+export async function registerReceivablesRepayments(
+    repayments: {
+        loanReference: string;
+        debt: number;
+        amount: number;
+    }[]
+) {
     let rwrProviderNetworkDetails: ethers.providers.Networkish = {
         name: 'Alfajores',
         chainId: ChainEnum.Alfajores
@@ -139,12 +145,22 @@ export async function registerReceivablesRepayments(loans: Loan[]) {
     );
     const walletOnRWRNetwork = new Wallet(config.hotWallets.huma, rwrProvider);
 
-    for (let i = 0; i < loans.length; i++) {
-        const { borrower, loanId, paymentAmount } = loans[i];
-        await ReceivableService.declareReceivablePaymentByReferenceId(
-            walletOnRWRNetwork,
-            `${borrower}-${loanId}`, // referenceId
-            paymentAmount!
-        );
-    }
+    await sequelize.transaction(async t => {
+        for (let i = 0; i < repayments.length; i++) {
+            const { loanReference, amount, debt } = repayments[i];
+            await ReceivableService.declareReceivablePaymentByReferenceId(
+                walletOnRWRNetwork,
+                loanReference, // referenceId
+                amount!
+            );
+
+            if (debt === 0) {
+                // update model to fully repaid
+                await sequelize.models.microCreditBorrowersHuma.update(
+                    { repaid: true },
+                    { where: { humaRWRReferenceId: loanReference }, transaction: t }
+                );
+            }
+        }
+    });
 }
