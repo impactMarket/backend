@@ -218,7 +218,7 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
         sendEmail({
             to: plainTextIdentifier,
             // TODO: move to env
-            from: 'hello@impactmarket.com',
+            from: 'no-reply@impactmarket.com',
             subject: emailValidationSubject,
             text: body
         });

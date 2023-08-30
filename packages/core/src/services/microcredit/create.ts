@@ -62,7 +62,7 @@ export default class MicroCreditCreate {
                 // send email to user
                 sendEmail({
                     to: user.email,
-                    from: 'hello@impactmarket.com',
+                    from: 'no-reply@impactmarket.com',
                     subject: `${
                         config.jsonRpcUrl.indexOf('alfajores') === -1 ? '' : '[TESTNET] '
                     }Your loan contract signed`,
@@ -385,7 +385,7 @@ export default class MicroCreditCreate {
         const sendgridData: MailDataRequired = {
             from: {
                 name: 'impactMarket',
-                email: 'hello@impactmarket.com'
+                email: 'no-reply@impactmarket.com'
             },
             personalizations,
             templateId: 'd-b257690897ff41028d7ad8cabe88f8cb'
