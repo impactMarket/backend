@@ -4,7 +4,7 @@ import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applicat
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
 import { Op, Transaction } from 'sequelize';
-import { config, contracts, database, services, utils } from '../../';
+import { config, contracts, database, services, subgraph, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { models, sequelize } from '../database';
@@ -302,9 +302,25 @@ class ChainSubscribers {
                 const community = this.communities.get(communityAddress);
                 const userAddress = parsedLog.args[1];
 
-                if (community) {
-                    utils.cache.cleanBeneficiaryCache(community);
+                async function cleanCacheAndRetry(beneficiaries: { address: string }[]) {
+                    if (beneficiaries.length) {
+                        utils.cache.cleanBeneficiaryCache(community!);
+                    } else {
+                        setTimeout(async () => {
+                            const updatedBeneficiaries =
+                                await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(log.blockNumber);
+                            cleanCacheAndRetry(updatedBeneficiaries);
+                        }, 5000);
+                    }
                 }
+
+                if (community) {
+                    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(
+                        log.blockNumber
+                    );
+                    cleanCacheAndRetry(beneficiaries);
+                }
+
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {

@@ -30,5 +30,11 @@ functions:
       # Invoke Lambda function every 30 minutes
       - schedule: rate(30 minutes)
 
+  notification:
+    handler: handler.notification
+    events:
+      # Invoke Lambda function every day
+      - schedule: rate(1 day)
+
 plugins:
   - serverless-webpack
