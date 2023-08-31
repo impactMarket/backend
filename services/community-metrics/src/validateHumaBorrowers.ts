@@ -71,6 +71,7 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
 
 export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
     utils.Logger.info('Verifying borrowers repaying HUMA funds...');
+    const newLastRepaymentSyncAt = Math.trunc(new Date().getTime() / 1000);
 
     // TODO: check if there's any HUMA funding set
     const humaFunding = await models.imMetadata.findOne({
@@ -102,8 +103,15 @@ export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
         humaFundingData.lastRepaymentSyncAt
     );
 
+    console.log(repayments)
+
     // TODO: update recevables with repayments
     await registerReceivablesRepayments(repayments);
+
+    humaFundingData.lastRepaymentSyncAt = newLastRepaymentSyncAt;
+    await humaFunding.update({
+        value: JSON.stringify(humaFundingData)
+    });
 
     utils.Logger.info('Updated HUMA repayments!');
 }

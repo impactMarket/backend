@@ -148,11 +148,14 @@ export async function registerReceivablesRepayments(
     await sequelize.transaction(async t => {
         for (let i = 0; i < repayments.length; i++) {
             const { loanReference, amount, debt } = repayments[i];
-            await ReceivableService.declareReceivablePaymentByReferenceId(
+            console.log({ loanReference, amount, debt })
+            const tx = await ReceivableService.declareReceivablePaymentByReferenceId(
                 walletOnRWRNetwork,
                 loanReference, // referenceId
                 amount!
             );
+            await tx.wait();
+            console.log(tx);
 
             if (debt === 0) {
                 // update model to fully repaid
