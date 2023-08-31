@@ -313,6 +313,7 @@ class ChainSubscribers {
 
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
+                // TODO: also clean user roles cache
 
                 if (community) {
                     utils.cache.cleanBeneficiaryCache(community);

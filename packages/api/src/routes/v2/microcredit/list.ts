@@ -63,7 +63,6 @@ export default (route: Router): void => {
         verifySignature,
         onlyAuthorizedRoles(['loanManager']),
         listBorrowersValidator,
-        cache(cacheIntervals.fiveMinutes),
         controller.listBorrowers
     );
 
@@ -112,7 +111,7 @@ export default (route: Router): void => {
         verifySignature,
         onlyAuthorizedRoles(['loanManager', 'itself']),
         queryGetBorrowerValidator,
-        cache(cacheIntervals.fiveMinutes),
+        cache(cacheIntervals.twoMinutes),
         controller.getBorrower
     );
 
