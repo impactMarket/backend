@@ -210,7 +210,8 @@ class ChainSubscribers {
         if (user)
             sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, undefined, undefined, {
                 amount,
-                asset
+                asset,
+                path: log.transactionHash
             });
     }
 
