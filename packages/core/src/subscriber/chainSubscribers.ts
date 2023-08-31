@@ -9,6 +9,8 @@ import { getAddress } from '@ethersproject/address';
 import { models, sequelize } from '../database';
 import { sendNotification } from '../utils/pushNotification';
 
+const { hasSubgraphSyncedToBlock } = subgraph.queries.beneficiary;
+
 class ChainSubscribers {
     provider: ethers.providers.JsonRpcProvider;
     providerFallback: ethers.providers.JsonRpcProvider;
@@ -174,6 +176,23 @@ class ChainSubscribers {
         });
     }
 
+    // this method will retry every 2 second to find out if the subgraph is synced
+    // it should only return when it is, until there, it will keep the event loop blocked
+    async _waitForSubgraphToIndex(log: ethers.providers.Log) {
+        return new Promise(resolve => {
+            async function check() {
+                const isSynced = await hasSubgraphSyncedToBlock(log.blockNumber);
+                console.log({ isSynced });
+                if (isSynced) {
+                    resolve({});
+                } else {
+                    setTimeout(check, 2000);
+                }
+            }
+            check();
+        });
+    }
+
     async _filterAndProcessEvent(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log, transaction);
@@ -271,23 +290,11 @@ class ChainSubscribers {
                 const community = this.communities.get(communityAddress);
                 const userAddress = parsedLog.args[1];
 
-                async function cleanCacheAndRetry(beneficiaries: { address: string }[]) {
-                    if (beneficiaries.length) {
-                        utils.cache.cleanBeneficiaryCache(community!);
-                    } else {
-                        setTimeout(async () => {
-                            const updatedBeneficiaries =
-                                await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(log.blockNumber);
-                            cleanCacheAndRetry(updatedBeneficiaries);
-                        }, 5000);
-                    }
-                }
-
                 if (community) {
-                    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiariesByChangeBlock(
-                        log.blockNumber
-                    );
-                    cleanCacheAndRetry(beneficiaries);
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanBeneficiaryCache(community);
+                        utils.cache.cleanUserRolesCache(userAddress);
+                    });
                 }
 
                 const user = await models.appUser.findOne({
@@ -313,10 +320,13 @@ class ChainSubscribers {
 
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
-                // TODO: also clean user roles cache
+                const userAddress = parsedLog.args[1];
 
                 if (community) {
-                    utils.cache.cleanBeneficiaryCache(community);
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanBeneficiaryCache(community);
+                        utils.cache.cleanUserRolesCache(userAddress);
+                    });
                 }
             }
         } catch (error) {
@@ -361,6 +371,9 @@ class ChainSubscribers {
                         )
                     ]);
                     if (!created) {
+                        this._waitForSubgraphToIndex(log).then(() => {
+                            utils.cache.cleanUserRolesCache(userAddress);
+                        });
                         await borrower.update(
                             {
                                 manager: transactionsReceipt.from,
