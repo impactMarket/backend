@@ -208,11 +208,18 @@ class ChainSubscribers {
 
         // send push notification
         if (user)
-            sendNotification([user], NotificationType.TRANSACTION_RECEIVED, true, true, undefined, undefined, {
-                amount,
-                asset,
-                path: log.transactionHash
-            });
+            sendNotification(
+                [user],
+                NotificationType.TRANSACTION_RECEIVED,
+                true,
+                true,
+                { path: log.transactionHash },
+                undefined,
+                {
+                    amount,
+                    asset
+                }
+            );
     }
 
     async _processCommunityAdminEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
