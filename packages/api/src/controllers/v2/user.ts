@@ -143,14 +143,14 @@ class UserController {
                 appPNT,
                 firstName,
                 lastName,
-                year: age ? new Date().getUTCFullYear() - age : null,
                 children,
                 avatarMediaPath,
                 email,
                 gender,
                 bio,
                 country,
-                phone
+                phone,
+                ...(age && { year: new Date().getUTCFullYear() - age })
             })
             .then(user =>
                 standardResponse(res, 200, true, {
