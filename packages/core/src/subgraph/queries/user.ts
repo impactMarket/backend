@@ -100,70 +100,45 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             }`
         };
 
-        const [cacheDAO, cacheCouncil, microcredit] = await Promise.all([
-            redisClient.get(graphqlQuery.query),
-            redisClient.get(councilGraphqlQuery.query),
-            redisClient.get(microcreditGraphqlQuery.query)
-        ]);
+        const cachedRoles = await redisClient.get(`account-roles-${address.toLowerCase()}`);
 
         let responseDAO: DAOResponse | null = null;
         let responseCouncilMember: CouncilMemberResponse | null = null;
         let responseMicroCredit: MicroCreditResponse | null = null;
 
-        if (cacheDAO && cacheCouncil && microcredit) {
-            responseDAO = JSON.parse(cacheDAO);
-            responseCouncilMember = JSON.parse(cacheCouncil);
-            responseMicroCredit = JSON.parse(microcredit);
-        } else {
-            const [rawResponseDAO, rawResponseCouncilMember, rawResponseMicroCredit] = await Promise.all([
-                axiosSubgraph.post<
-                    any,
-                    {
-                        data: {
-                            data: DAOResponse;
-                        };
-                    }
-                >('', graphqlQuery),
-                axiosCouncilSubgraph.post<
-                    any,
-                    {
-                        data: {
-                            data: CouncilMemberResponse;
-                        };
-                    }
-                >('', councilGraphqlQuery),
-                axiosMicrocreditSubgraph.post<
-                    any,
-                    {
-                        data: {
-                            data: MicroCreditResponse;
-                        };
-                    }
-                >('', microcreditGraphqlQuery)
-            ]);
-
-            responseDAO = rawResponseDAO.data?.data;
-
-            redisClient.set(graphqlQuery.query, JSON.stringify(responseDAO), 'EX', intervalsInSeconds.oneHour);
-
-            responseCouncilMember = rawResponseCouncilMember.data?.data;
-
-            redisClient.set(
-                councilGraphqlQuery.query,
-                JSON.stringify(responseCouncilMember),
-                'EX',
-                intervalsInSeconds.oneHour
-            );
-
-            responseMicroCredit = rawResponseMicroCredit.data?.data;
-
-            redisClient.set(
-                microcreditGraphqlQuery.query,
-                JSON.stringify(responseMicroCredit),
-                'EX',
-                intervalsInSeconds.oneHour
-            );
+        if (cachedRoles) {
+            return JSON.parse(cachedRoles);
         }
+        const [rawResponseDAO, rawResponseCouncilMember, rawResponseMicroCredit] = await Promise.all([
+            axiosSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: DAOResponse;
+                    };
+                }
+            >('', graphqlQuery),
+            axiosCouncilSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: CouncilMemberResponse;
+                    };
+                }
+            >('', councilGraphqlQuery),
+            axiosMicrocreditSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: MicroCreditResponse;
+                    };
+                }
+            >('', microcreditGraphqlQuery)
+        ]);
+
+        responseDAO = rawResponseDAO.data?.data;
+        responseCouncilMember = rawResponseCouncilMember.data?.data;
+        responseMicroCredit = rawResponseMicroCredit.data?.data;
 
         const beneficiary = !responseDAO?.beneficiaryEntity
             ? null
@@ -204,7 +179,8 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             : {
                   id: responseMicroCredit.borrower?.id
               };
-        return {
+
+        const roles = {
             beneficiary,
             borrower,
             manager,
@@ -212,6 +188,14 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             ambassador,
             loanManager
         };
+
+        redisClient.set(
+            `account-roles-${address.toLowerCase()}`,
+            JSON.stringify(roles),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
+        return roles;
     } catch (error) {
         throw new Error(error);
     }

@@ -1,7 +1,7 @@
 import { utils } from 'ethers';
 
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
-import { axiosSubgraph } from '../config';
+import { axiosMicrocreditSubgraph, axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -346,19 +346,15 @@ export const countInactiveBeneficiaries = async (community: string, lastActivity
     }
 };
 
-export const getBeneficiariesByChangeBlock = async (block: number): Promise<{ address: string }[]> => {
+export const hasSubgraphSyncedToBlock = async (block: number): Promise<boolean> => {
     try {
         const graphqlQuery = {
-            operationName: 'beneficiaryEntities',
-            query: `query beneficiaryEntities {
-                beneficiaryEntities(
-                    where: {
-                        _change_block:{
-                            number_gte: ${block}
-                        }
+            operationName: 'lastBlockSubgraph',
+            query: `query lastBlockSubgraph {
+                _meta {
+                    block {
+                        number
                     }
-                ) {
-                    address
                 }
             }`
         };
@@ -368,18 +364,36 @@ export const getBeneficiariesByChangeBlock = async (block: number): Promise<{ ad
             {
                 data: {
                     data: {
-                        beneficiaryEntities: {
-                            address: string;
-                        }[];
+                        _meta: {
+                            block: {
+                                number: number;
+                            };
+                        };
                     };
                 };
             }
         >('', graphqlQuery);
 
-        const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+        const responseSubgraphMicroCredit = await axiosMicrocreditSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        _meta: {
+                            block: {
+                                number: number;
+                            };
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
 
-        return beneficiaryEntities;
+        const lastSubgraphBlock = response.data?.data._meta.block.number;
+        const lastSubgraphBlockMicrocredit = responseSubgraphMicroCredit.data?.data._meta.block.number;
+
+        return lastSubgraphBlock >= block && lastSubgraphBlockMicrocredit >= block;
     } catch (error) {
-        throw new Error(error);
+        return false;
     }
 };

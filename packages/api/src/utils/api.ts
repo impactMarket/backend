@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { utils } from '@impactmarket/core';
 
 export const cacheIntervals = {
+    twoMinutes: 120,
     fiveMinutes: 300,
     tenMinutes: 600,
     halfHour: 1800,
