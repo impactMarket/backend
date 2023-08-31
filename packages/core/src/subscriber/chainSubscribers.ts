@@ -111,6 +111,7 @@ class ChainSubscribers {
                     transactions.push(this._filterAndProcessEvent(logs[x], t));
                 }
                 await Promise.all(transactions);
+                database.redisClient.set('lastBlock', logs[logs.length - 1].blockNumber);
                 services.app.ImMetadataService.setLastBlock(logs[logs.length - 1].blockNumber);
             });
         } catch (error) {
