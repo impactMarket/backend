@@ -67,7 +67,7 @@ export async function checkLearnAndEarnBalances() {
         if (balance < levels[i].totalReward * 100) {
             sendEmail({
                 to: levels[i].adminUser?.email || 'developers@impactmarket.com',
-                from: 'hello@impactmarket.com',
+                from: 'no-reply@impactmarket.com',
                 subject: `${config.chain.isMainnet ? '' : '[TESTNET] '}LearnAndEarn low balance`,
                 text: `LearnAndEarn balance for level ${levels[i].id} is ${balance}`
             });

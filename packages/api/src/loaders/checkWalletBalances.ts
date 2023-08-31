@@ -42,7 +42,7 @@ export async function checkWalletBalances() {
         if (balance.lt(parseEther('0.05'))) {
             sendEmail({
                 to: 'developers@impactmarket.com',
-                from: 'hello@impactmarket.com',
+                from: 'no-reply@impactmarket.com',
                 subject: `${config.chain.isMainnet ? '' : '[TESTNET] '}Low cUSD balance`,
                 text: `cUSD balance for ${account} is ${formatEther(balance)}`
             });
