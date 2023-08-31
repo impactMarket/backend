@@ -62,7 +62,7 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
-    status: Joi.number().optional().min(0).max(5),
+    status: Joi.number().optional().min(0),
     orderBy: Joi.string().optional().valid('appliedOn', 'appliedOn:asc', 'appliedOn:desc')
 });
 
