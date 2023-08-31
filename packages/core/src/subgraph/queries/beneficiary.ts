@@ -345,3 +345,41 @@ export const countInactiveBeneficiaries = async (community: string, lastActivity
         throw new Error(error);
     }
 };
+
+export const getBeneficiariesByChangeBlock = async (block: number): Promise<{ address: string }[]> => {
+    try {
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntities',
+            query: `query beneficiaryEntities {
+                beneficiaryEntities(
+                    where: {
+                        _change_block:{
+                            number_gte: ${block}
+                        }
+                    }
+                ) {
+                    address
+                }
+            }`
+        };
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        beneficiaryEntities: {
+                            address: string;
+                        }[];
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+
+        return beneficiaryEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
