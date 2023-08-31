@@ -68,6 +68,11 @@ export default {
     impactMarketContractAddress: validatedEnv.IMPACT_MARKET_CONTRACT_ADDRESS,
 
     /**
+     * Assets address separated by colon
+     */
+    assetsAddress: validatedEnv.ASSETS_ADDRESS,
+
+    /**
      * Contract Address to use in dev
      */
     impactMarketContractBlockNumber: validatedEnv.IMPACT_MARKET_CONTRACT_BLOCK,
