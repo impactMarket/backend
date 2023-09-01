@@ -12,6 +12,7 @@ export class LearnAndEarnPrismicLevelModel extends Model<LearnAndEarnPrismicLeve
     public levelId!: number;
     public language!: string;
     public isLive!: boolean;
+    public availableAt!: Date;
 }
 
 export function initializeLearnAndEarnPrismicLevel(sequelize: Sequelize): typeof LearnAndEarnPrismicLevelModel {
@@ -45,6 +46,10 @@ export function initializeLearnAndEarnPrismicLevel(sequelize: Sequelize): typeof
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false
+            },
+            availableAt: {
+                type: DataTypes.DATE,
+                allowNull: true
             }
         },
         {

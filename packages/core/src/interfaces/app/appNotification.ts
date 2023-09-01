@@ -46,7 +46,9 @@ export enum NotificationType {
     LOAN_APPLICATION_REJECTED = 10,
     LOAN_APPLICATION_REQUEST_CHANGES = 11,
     LOAN_APPLICATION_INTERVIEW = 12,
-    TRANSACTION_RECEIVED = 13
+    TRANSACTION_RECEIVED = 13,
+    LEARN_AND_EARN_FINISH_LEVEL= 19,
+    LEARN_AND_EARN_NEW_LEVEL= 20,
 }
 
 export type NotificationParams = {
@@ -57,7 +59,8 @@ export enum NotificationParamsPath {
     STORY = 'stories?id=',
     COMMUNITY = 'communities/',
     LOAN_APPLICATION = 'microcredit/form/',
-    LOAN_APPROVED = 'microcredit/'
+    LOAN_APPROVED = 'microcredit/',
+    LEARN_AND_EARN = 'learn-and-earn/'
 }
 
 export interface AppNotification {
