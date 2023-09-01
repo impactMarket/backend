@@ -106,7 +106,8 @@ function validateEnv() {
         DAYS_TO_LIMIT_USERS: num({ default: 30 }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
         MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
-        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 })
+        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 }),
+        ASSETS_ADDRESS: str({ default: '[{ "address": "xyz", "asset": "xyz" }]' })
     });
 }
 

@@ -1,7 +1,7 @@
 import { utils } from 'ethers';
 
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
-import { axiosSubgraph } from '../config';
+import { axiosMicrocreditSubgraph, axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -343,5 +343,57 @@ export const countInactiveBeneficiaries = async (community: string, lastActivity
         return beneficiaryEntities.length;
     } catch (error) {
         throw new Error(error);
+    }
+};
+
+export const hasSubgraphSyncedToBlock = async (block: number): Promise<boolean> => {
+    try {
+        const graphqlQuery = {
+            operationName: 'lastBlockSubgraph',
+            query: `query lastBlockSubgraph {
+                _meta {
+                    block {
+                        number
+                    }
+                }
+            }`
+        };
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        _meta: {
+                            block: {
+                                number: number;
+                            };
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const responseSubgraphMicroCredit = await axiosMicrocreditSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        _meta: {
+                            block: {
+                                number: number;
+                            };
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const lastSubgraphBlock = response.data?.data._meta.block.number;
+        const lastSubgraphBlockMicrocredit = responseSubgraphMicroCredit.data?.data._meta.block.number;
+
+        return lastSubgraphBlock >= block && lastSubgraphBlockMicrocredit >= block;
+    } catch (error) {
+        return false;
     }
 };

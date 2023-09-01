@@ -17,7 +17,13 @@ export async function sendNotification(
     isWallet: boolean = true,
     isWebApp: boolean = true,
     params: NotificationParams | NotificationParams[] | undefined = undefined,
-    transaction: Transaction | undefined = undefined
+    transaction: Transaction | undefined = undefined,
+    transfer:
+        | {
+              amount: Number;
+              asset: string;
+          }
+        | undefined = undefined
 ) {
     try {
         // registry notification
@@ -56,7 +62,16 @@ export async function sendNotification(
             });
             const { data } = response[0];
             const title = data[`type${type}title`];
-            const description = data[`type${type}description`];
+            let description = data[`type${type}description`];
+
+            if (type === NotificationType.TRANSACTION_RECEIVED && transfer) {
+                const amountPlaceholder = '{{amount}}';
+                const assetPlaceholder = '{{asset}}';
+
+                description = description
+                    .replace(amountPlaceholder, transfer.amount)
+                    .replace(assetPlaceholder, transfer.asset);
+            }
 
             prismicNotifications[language] = {
                 title,

@@ -63,7 +63,6 @@ export default (route: Router): void => {
         verifySignature,
         onlyAuthorizedRoles(['loanManager']),
         listBorrowersValidator,
-        cache(cacheIntervals.fiveMinutes),
         controller.listBorrowers
     );
 
@@ -112,7 +111,7 @@ export default (route: Router): void => {
         verifySignature,
         onlyAuthorizedRoles(['loanManager', 'itself']),
         queryGetBorrowerValidator,
-        cache(cacheIntervals.fiveMinutes),
+        cache(cacheIntervals.twoMinutes),
         controller.getBorrower
     );
 
@@ -142,7 +141,7 @@ export default (route: Router): void => {
      *         schema:
      *           type: integer
      *         required: false
-     *         description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: approved, 5: rejected"
+     *         description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
      *       - in: query
      *         name: orderBy
      *         schema:

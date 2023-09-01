@@ -3299,13 +3299,13 @@
     "@opentelemetry/instrumentation" "0.39.1"
     "@opentelemetry/sdk-trace-base" "1.13.0"
 
-"@prismicio/client@7.1.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@prismicio/client/-/client-7.1.0.tgz#456c641648b7117c44e4eaef3eb68d9bef02bde3"
-  integrity sha512-9UvPjPae+7KfdZpUvdDCQG+9GCrR/A0BVFrixj1O7lv7SCJuyp50ZIVm9cc6G49E0HMSHFH592isRKj/xKjP+w==
+"@prismicio/client@7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@prismicio/client/-/client-7.2.0.tgz#8e1aab9183e98a390bff335be4c405e04c474ea8"
+  integrity sha512-bfbs2ZMLd3ba7Bp1qI4qAz+13FIWE/JDT9+h+3hL/MVpK4iDpjz3vmOlYJs25myhryU9HP8Og7qKoaeE9hPzmA==
   dependencies:
     "@prismicio/richtext" "^2.1.5"
-    imgix-url-builder "^0.0.3"
+    imgix-url-builder "^0.0.4"
 
 "@prismicio/helpers@2.3.9":
   version "2.3.9"
@@ -10443,6 +10443,11 @@ imgix-url-builder@^0.0.3:
   resolved "https://registry.yarnpkg.com/imgix-url-builder/-/imgix-url-builder-0.0.3.tgz#9f386de64cdd1363d352a7f6313fd7dacd8fb282"
   integrity sha512-8Oc2Cn4+jF06sEfJcVPlWYfD2F6RjrwIMbk1xEzux8unoB5LsvFc/GL1BQ47HPaeE12ReX2nMUcjUslGYWLxHA==
 
+imgix-url-builder@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/imgix-url-builder/-/imgix-url-builder-0.0.4.tgz#c0e9569eb069178b1462d6ce0b8d0943cb334a1c"
+  integrity sha512-JRLydfxGTTbSSOG82ewuCgnmw/CzIPzoDqpP3UYD7RE+QWS8ZZbpF87ZuRqtcbEKdxahRsExinuKRxPZVvukWA==
+
 immediate@~3.0.5:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
@@ -17483,10 +17488,10 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==
 
-twilio@4.14.0:
-  version "4.14.0"
-  resolved "https://registry.yarnpkg.com/twilio/-/twilio-4.14.0.tgz#caa968ae03d7681be5edbac3e5aba4757544e59a"
-  integrity sha512-LRXvEYVzFBuo0BDLAJkb5fM9NgXH163nhmL/7jhz3pg84GNIiUsEKA8G65xDskaCJjFPjwBkZYyzen64zs+foQ==
+twilio@4.16.0:
+  version "4.16.0"
+  resolved "https://registry.yarnpkg.com/twilio/-/twilio-4.16.0.tgz#5fdbc674add02df9a35d52af078d4c748f0b6137"
+  integrity sha512-hY3ol03QrDKowKS4Px6BrCYyrQfv7IyCz4AjiwIZIes/iwievPGyewKHaAzKKLZp1hRWmhGu26aWyhPyfTXudA==
   dependencies:
     axios "^0.26.1"
     dayjs "^1.11.9"

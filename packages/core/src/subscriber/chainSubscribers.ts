@@ -1,23 +1,28 @@
+import { BigNumber } from 'bignumber.js';
 import { Logger } from '../utils/logger';
 import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
-import { Transaction } from 'sequelize';
-import { config, contracts, database, services, utils } from '../../';
+import { Op, Transaction } from 'sequelize';
+import { config, contracts, database, services, subgraph, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { models, sequelize } from '../database';
 import { sendNotification } from '../utils/pushNotification';
 
+const { hasSubgraphSyncedToBlock } = subgraph.queries.beneficiary;
+
 class ChainSubscribers {
     provider: ethers.providers.JsonRpcProvider;
     providerFallback: ethers.providers.JsonRpcProvider;
+    ifaceERC20: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceMicrocredit: ethers.utils.Interface;
     filterTopics: string[][];
     communities: Map<string, number>;
     microCreditService: MicroCreditCreate;
+    assetsAddress: { address: string; asset: string }[];
 
     constructor(
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
@@ -26,6 +31,7 @@ class ChainSubscribers {
     ) {
         this.provider = jsonRpcProvider;
         this.providerFallback = jsonRpcProviderFallback;
+        this.ifaceERC20 = new ethers.utils.Interface(contracts.ERC20ABI);
         this.ifaceCommunityAdmin = new ethers.utils.Interface(contracts.CommunityAdminABI);
         this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
         this.ifaceMicrocredit = new ethers.utils.Interface(contracts.MicrocreditABI);
@@ -40,9 +46,11 @@ class ChainSubscribers {
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
                 ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
-                ethers.utils.id('ManagerChanged(address,address)')
+                ethers.utils.id('ManagerChanged(address,address)'),
+                ethers.utils.id('Transfer(address,address,uint256)')
             ]
         ];
+        this.assetsAddress = JSON.parse(config.assetsAddress);
         this.recover();
     }
 
@@ -103,6 +111,7 @@ class ChainSubscribers {
                     transactions.push(this._filterAndProcessEvent(logs[x], t));
                 }
                 await Promise.all(transactions);
+                database.redisClient.set('lastBlock', logs[logs.length - 1].blockNumber);
                 services.app.ImMetadataService.setLastBlock(logs[logs.length - 1].blockNumber);
             });
         } catch (error) {
@@ -174,6 +183,23 @@ class ChainSubscribers {
         });
     }
 
+    // this method will retry every 2 second to find out if the subgraph is synced
+    // it should only return when it is, until there, it will keep the event loop blocked
+    async _waitForSubgraphToIndex(log: ethers.providers.Log) {
+        return new Promise(resolve => {
+            async function check() {
+                const isSynced = await hasSubgraphSyncedToBlock(log.blockNumber);
+                console.log({ isSynced });
+                if (isSynced) {
+                    resolve({});
+                } else {
+                    setTimeout(check, 2000);
+                }
+            }
+            check();
+        });
+    }
+
     async _filterAndProcessEvent(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log, transaction);
@@ -181,7 +207,39 @@ class ChainSubscribers {
             await this._processCommunityEvents(log, transaction);
         } else if (log.address === config.microcreditContractAddress) {
             await this._processMicrocreditEvents(log, transaction);
+        } else if (this.assetsAddress.find(el => el.address === log.address)) {
+            await this._processTransfer(log);
         }
+    }
+
+    async _processTransfer(log: ethers.providers.Log): Promise<void> {
+        const parsedLog = this.ifaceERC20.parseLog(log);
+        const address = parsedLog.args[1];
+        const amount = new BigNumber(parseFloat(parsedLog.args[2])).dividedBy(10 ** config.cUSDDecimal).toNumber();
+        const asset = this.assetsAddress.find(el => el.address === log.address)!.asset;
+        const user = await database.models.appUser.findOne({
+            where: {
+                address,
+                walletPNT: {
+                    [Op.not]: null
+                }
+            }
+        });
+
+        // send push notification
+        if (user)
+            sendNotification(
+                [user],
+                NotificationType.TRANSACTION_RECEIVED,
+                true,
+                true,
+                { path: log.transactionHash },
+                undefined,
+                {
+                    amount,
+                    asset
+                }
+            );
     }
 
     async _processCommunityAdminEvents(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
@@ -272,8 +330,12 @@ class ChainSubscribers {
                 const userAddress = parsedLog.args[1];
 
                 if (community) {
-                    utils.cache.cleanBeneficiaryCache(community);
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanBeneficiaryCache(community);
+                        utils.cache.cleanUserRolesCache(userAddress);
+                    });
                 }
+
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
@@ -297,9 +359,13 @@ class ChainSubscribers {
 
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
+                const userAddress = parsedLog.args[1];
 
                 if (community) {
-                    utils.cache.cleanBeneficiaryCache(community);
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanBeneficiaryCache(community);
+                        utils.cache.cleanUserRolesCache(userAddress);
+                    });
                 }
             }
         } catch (error) {
@@ -344,6 +410,9 @@ class ChainSubscribers {
                         )
                     ]);
                     if (!created) {
+                        this._waitForSubgraphToIndex(log).then(() => {
+                            utils.cache.cleanUserRolesCache(userAddress);
+                        });
                         await borrower.update(
                             {
                                 manager: transactionsReceipt.from,
