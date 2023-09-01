@@ -120,7 +120,11 @@ function validateEnv() {
         CHAIN_JSON_RPC_URL_CELO: str({ default: 'https://alfajores-forno.celo-testnet.org' }),
         CHAIN_JSON_RPC_URL_POLYGON: str({ default: 'https://rpc-mumbai.maticvigil.com' }),
         // hot wallet variables
-        HUMA_PRIVATE_KEY: str({ default: '0785969a6f070bce78c7259252413d3e5099e990c042b27c561d6af59c8e506e' })
+        HUMA_PRIVATE_KEY: str({ default: '0785969a6f070bce78c7259252413d3e5099e990c042b27c561d6af59c8e506e' }),
+        // wallets
+        RECURRING_DONATION_PRIVATE_KEY: str({
+            default: 'xg8rprh6vzjja31xx2b6db5wwo2i5gmcc37c239wyp6jhyiefapev5738nvj77c4'
+        })
     });
 }
 
