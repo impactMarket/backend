@@ -81,7 +81,7 @@ async function getPrismicLearnAndEarn() {
                         levelId: prismicLevel.data.id,
                         language: lang,
                         isLive: prismicLevel.data.is_live,
-                        availableAt,
+                        availableAt
                     },
                     {
                         transaction: t
