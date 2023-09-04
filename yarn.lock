@@ -2191,6 +2191,11 @@
   resolved "https://registry.yarnpkg.com/@hutson/parse-repository-url/-/parse-repository-url-3.0.2.tgz#98c23c950a3d9b6c8f0daed06da6c3af06981340"
   integrity sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==
 
+"@impact-market/subgraph@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@impact-market/subgraph/-/subgraph-1.0.0.tgz#8cdc58e05572ddbbb5fe2ee54b9111dec9f5631b"
+  integrity sha512-h14MbSgxmX96btJmM3RJ7/lzxt0P0vT+gPJUYAhqAgoRV9UExYMZVu4GLw6g7KDay1IfWQhEB22WQ/rXKJSliQ==
+
 "@ioredis/commands@^1.1.1":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@ioredis/commands/-/commands-1.2.0.tgz#6d61b3097470af1fdbbe622795b8921d42018e11"

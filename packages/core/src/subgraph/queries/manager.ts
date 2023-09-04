@@ -1,7 +1,5 @@
-import { ManagerSubgraph } from '../interfaces/manager';
-import { axiosSubgraph } from '../config';
-import { intervalsInSeconds } from '../../types';
-import { redisClient } from '../../database';
+import { CommunityEntity, ManagerEntity } from '@impact-market/subgraph/dist/index';
+import { queryAndTransformResponse } from './utils';
 
 export const getCommunityManagers = async (
     communityAddress: string,
@@ -11,110 +9,57 @@ export const getCommunityManagers = async (
     orderDirection?: string,
     limit?: number,
     offset?: number
-): Promise<ManagerSubgraph[]> => {
-    try {
-        const idsFormated = addresses?.map(el => `"${el.toLowerCase()}"`);
-        const graphqlQuery = {
-            operationName: 'managerEntities',
-            query: `query managerEntities {
-                managerEntities(
-                    ${limit ? `first: ${limit}` : ''}
-                    ${offset ? `skip: ${offset}` : ''}
-                    ${orderBy ? orderBy : ''}
-                    ${orderDirection ? orderDirection : ''}
-                    where: {
-                        community: "${communityAddress.toLowerCase()}"
-                        ${state ? state : ''}
-                        ${idsFormated && idsFormated.length > 0 ? `address_in: [${idsFormated}]` : ''}
+): Promise<ManagerEntity[]> => {
+    const graphqlQuery = {
+        operationName: 'managerEntities',
+        query: `query managerEntities {
+            managerEntities(
+                ${limit ? `first: ${limit}` : ''}
+                ${offset ? `skip: ${offset}` : ''}
+                ${orderBy ?? ''}
+                ${orderDirection ?? ''}
+                where: {
+                    community: "${communityAddress.toLowerCase()}"
+                    ${state ?? ''}
+                    ${
+                        addresses && addresses.length > 0
+                            ? `address_in: ${JSON.stringify(addresses?.map(el => el.toLowerCase()))}`
+                            : ''
                     }
-                ) {
-                    address
-                    state
-                    added
-                    removed
-                    since
-                    until
                 }
-            }`
-        };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
-
-        if (cacheResults) {
-            return JSON.parse(cacheResults);
-        }
-
-        const response = await axiosSubgraph.post<
-            any,
-            {
-                data: {
-                    data: {
-                        managerEntities: {
-                            address: string;
-                            state: number;
-                            added: number;
-                            removed: number;
-                            since: number;
-                            until: number;
-                        }[];
-                    };
-                };
+            ) {
+                address
+                state
+                added
+                removed
+                since
+                until
             }
-        >('', graphqlQuery);
+        }`
+    };
 
-        const managerEntities = response.data?.data.managerEntities;
-
-        redisClient.set(graphqlQuery.query, JSON.stringify(managerEntities), 'EX', intervalsInSeconds.oneHour);
-
-        return managerEntities;
-    } catch (error) {
-        throw new Error(error);
-    }
+    return queryAndTransformResponse<ManagerEntity[]>(graphqlQuery);
 };
 
 export const countManagers = async (community: string, state?: number): Promise<number> => {
-    try {
-        const graphqlQuery = {
-            operationName: 'communityEntity',
-            query: `query communityEntity {
-                communityEntity(
-                    id: "${community.toLowerCase()}"
-                ) {
-                    managers
-                    removedManagers
-                }
-            }`
-        };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
-
-        if (cacheResults) {
-            return JSON.parse(cacheResults);
-        }
-
-        const response = await axiosSubgraph.post<
-            any,
-            {
-                data: {
-                    data: {
-                        communityEntity: {
-                            managers: number;
-                            removedManagers: number;
-                        };
-                    };
-                };
+    const graphqlQuery = {
+        operationName: 'communityEntity',
+        query: `query communityEntity {
+            communityEntity(
+                id: "${community.toLowerCase()}"
+            ) {
+                managers
+                removedManagers
             }
-        >('', graphqlQuery);
+        }`
+    };
 
-        const communityEntity = response.data?.data.communityEntity;
-
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.oneHour);
-
+    return queryAndTransformResponse<CommunityEntity, number>(graphqlQuery, v => {
         if (state === 0) {
-            return communityEntity.managers;
+            return v.managers;
         } else if (state === 1) {
-            return communityEntity.removedManagers;
+            return v.removedManagers;
         }
-        return communityEntity.managers + communityEntity.removedManagers;
-    } catch (error) {
-        throw new Error(error);
-    }
+        return v.managers + v.removedManagers;
+    });
 };
