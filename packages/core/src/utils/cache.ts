@@ -20,3 +20,10 @@ export const cleanStoryCache = async () => {
         redisClient.del(key);
     });
 };
+
+export const cleanLearnAndEarnCache = async (ip?: string) => {
+    const cachedBody = await redisClient.keys('__express__/api/v2/learn-and-earn/*' + (ip || ''));
+    cachedBody.forEach(key => {
+        redisClient.del(key);
+    });
+};

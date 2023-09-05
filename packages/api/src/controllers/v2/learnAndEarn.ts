@@ -5,7 +5,7 @@ import {
     StartLessonRequestType
 } from 'validators/learnAndEarn';
 import { Request, Response } from 'express';
-import { config, services } from '@impactmarket/core';
+import { config, services, utils } from '@impactmarket/core';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -107,7 +107,10 @@ class LearnAndEarnController {
 
         services.learnAndEarn
             .answer(req.user, answers, lesson)
-            .then(r => standardResponse(res, 200, true, r))
+            .then(r => {
+                utils.cache.cleanLearnAndEarnCache(req.ip);
+                return standardResponse(res, 200, true, r);
+            })
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -126,14 +129,20 @@ class LearnAndEarnController {
 
         services.learnAndEarn
             .startLesson(req.user.userId, lesson)
-            .then(r => standardResponse(res, 200, true, r))
+            .then(r => {
+                utils.cache.cleanLearnAndEarnCache(req.ip);
+                return standardResponse(res, 200, true, r);
+            })
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     webhook = (_: Request, res: Response) => {
         services.learnAndEarn
             .webhook()
-            .then(r => standardResponse(res, 200, true, r))
+            .then(r => {
+                utils.cache.cleanLearnAndEarnCache();
+                return standardResponse(res, 200, true, r);
+            })
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 

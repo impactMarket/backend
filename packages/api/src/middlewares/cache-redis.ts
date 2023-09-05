@@ -12,7 +12,8 @@ export const cache =
     (duration: number) =>
     // "res" needs to not have any type, otherwise, typescript will fail
     async (req: Request, res: any, next: NextFunction) => {
-        const key = '__express__' + req.originalUrl || req.url;
+        const cacheByUser = req['cacheByUser'];
+        const key = '__express__' + (req.originalUrl || req.url) + (cacheByUser ? req.ip : '');
         const cachedBody = await redis.get(key);
         if (cachedBody) {
             res.send(cachedBody);
@@ -28,3 +29,8 @@ export const cache =
             next();
         }
     };
+
+export const cacheByUser = (duration: number) => async (req: Request, res: any, next: NextFunction) => {
+    req['cacheByUser'] = true;
+    await cache(duration)(req, res, next);
+};
