@@ -7,7 +7,9 @@ module.exports = {
             return;
         }
 
-        await queryInterface.removeConstraint('story_content', 'story_content_mediaMediaId_fkey');
+        try {
+            await queryInterface.removeConstraint('story_content', 'story_content_mediaMediaId_fkey');
+        } catch (_) {}
         await queryInterface.removeColumn('story_content', 'mediaMediaId');
 
         await queryInterface.sequelize.query(`drop table ubi_claim`, { type: Sequelize.QueryTypes.DELETE });
