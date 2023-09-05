@@ -105,7 +105,12 @@ function validateEnv() {
         INTERVAL_BETWEEN_LESSONS: num({ default: 7 }),
         DAYS_TO_LIMIT_USERS: num({ default: 30 }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
-        MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
+        // database pool config
+        DATABASE_POOL_MAX_CONNECTIONS: num({ default: 5 }),
+        DATABASE_POOL_ACQUIRE: num({ default: 60000 }),
+        DATABASE_POOL_IDLE: num({ default: 10000 }),
+        DATABASE_POOL_EVICT: num({ default: 1000 }),
+        //
         COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 }),
         ASSETS_ADDRESS: str({ default: '[{ "address": "xyz", "asset": "xyz" }]' })
     });

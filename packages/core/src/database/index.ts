@@ -17,19 +17,13 @@ if (process.env.NODE_ENV === 'development') {
 const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
-        connectTimeout: 60000,
         ssl: {
             require: true,
             rejectUnauthorized: false
         }
     },
     dialectModule: pg,
-    pool: {
-        max: config.maxDatabasePoolConnections,
-        min: 0,
-        acquire: 60000,
-        idle: 15000
-    },
+    pool: config.databasePool,
     protocol: 'postgres',
     native: !config.aws.lambda, // if lambda = true, then native = false
     logging,

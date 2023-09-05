@@ -121,6 +121,16 @@ export default {
     },
 
     /**
+     * database pool config
+     */
+    databasePool: {
+        max: validatedEnv.DATABASE_POOL_MAX_CONNECTIONS,
+        acquire: validatedEnv.DATABASE_POOL_ACQUIRE,
+        idle: validatedEnv.DATABASE_POOL_IDLE,
+        evict: validatedEnv.DATABASE_POOL_EVICT
+    },
+
+    /**
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
@@ -160,8 +170,6 @@ export default {
     intervalBetweenLessons: validatedEnv.INTERVAL_BETWEEN_LESSONS,
     daysToLimitUsers: validatedEnv.DAYS_TO_LIMIT_USERS,
     cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
-
-    maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
 
     communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT
 };
