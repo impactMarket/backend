@@ -172,6 +172,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             });
 
             // return wrong answers
+            sequelize.close();
             return {
                 success: false,
                 wrongAnswers,
@@ -272,6 +273,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             }
 
             await t.commit();
+            sequelize.close();
             return {
                 success: true,
                 attempts,
@@ -282,6 +284,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             };
         }
         await t.commit();
+        sequelize.close();
         return {
             success: true,
             attempts,
