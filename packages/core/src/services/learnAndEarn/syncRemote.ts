@@ -1,4 +1,5 @@
 import { BaseError } from '../../utils/baseError';
+import { cleanLearnAndEarnCache } from '../../utils/cache';
 import { models, sequelize } from '../../database';
 import { client as prismic } from '../../utils/prismic';
 
@@ -105,6 +106,7 @@ async function getPrismicLearnAndEarn() {
 export async function webhook() {
     try {
         await getPrismicLearnAndEarn();
+        cleanLearnAndEarnCache();
     } catch (error) {
         throw new BaseError(error.name ? error.name : 'GET_DOCUMENT_FAILED', error.message);
     }

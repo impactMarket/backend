@@ -1,4 +1,5 @@
-import { NextFunction, Request } from 'express';
+import { NextFunction } from 'express';
+import { RequestWithUser } from './core';
 import { database } from '@impactmarket/core';
 
 const { redisClient: redis } = database;
@@ -9,11 +10,11 @@ const { redisClient: redis } = database;
  * @returns void
  */
 export const cache =
-    (duration: number) =>
+    (duration: number, useUserCache: boolean = false) =>
     // "res" needs to not have any type, otherwise, typescript will fail
-    async (req: Request, res: any, next: NextFunction) => {
-        const cacheByUser = req['cacheByUser'];
-        const key = '__express__' + (req.originalUrl || req.url) + (cacheByUser ? req.ip : '');
+    async (req: RequestWithUser, res: any, next: NextFunction) => {
+        // adding 'user' to user key to avoid cache collision netween user ids and level ids
+        const key = '__express__' + (req.originalUrl || req.url) + (useUserCache ?? `user${req.user!.userId}`);
         const cachedBody = await redis.get(key);
         if (cachedBody) {
             res.send(cachedBody);
@@ -29,8 +30,3 @@ export const cache =
             next();
         }
     };
-
-export const cacheByUser = (duration: number) => async (req: Request, res: any, next: NextFunction) => {
-    req['cacheByUser'] = true;
-    await cache(duration)(req, res, next);
-};

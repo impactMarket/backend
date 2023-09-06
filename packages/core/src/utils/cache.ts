@@ -21,8 +21,8 @@ export const cleanStoryCache = async () => {
     });
 };
 
-export const cleanLearnAndEarnCache = async (ip?: string) => {
-    const cachedBody = await redisClient.keys('__express__/api/v2/learn-and-earn/*' + (ip || ''));
+export const cleanLearnAndEarnCache = async (userId?: number) => {
+    const cachedBody = await redisClient.keys('__express__/api/v2/learn-and-earn/*' + (userId ?? `user${userId}`));
     cachedBody.forEach(key => {
         redisClient.del(key);
     });
