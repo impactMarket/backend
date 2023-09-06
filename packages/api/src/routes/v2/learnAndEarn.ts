@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
 import LearnAndEarnValidator from '../../validators/learnAndEarn';
 
@@ -44,7 +46,13 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/levels', optionalAuthentication, learnAndEarnValidator.listLevels, learnAndEarnController.listLevels);
+    route.get(
+        '/levels',
+        optionalAuthentication,
+        cache(cacheIntervals.halfHour, true),
+        learnAndEarnValidator.listLevels,
+        learnAndEarnController.listLevels
+    );
 
     /**
      * @swagger
@@ -106,7 +114,12 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/levels/:id', optionalAuthentication, learnAndEarnController.listLessons);
+    route.get(
+        '/levels/:id',
+        optionalAuthentication,
+        cache(cacheIntervals.halfHour, true),
+        learnAndEarnController.listLessons
+    );
 
     /**
      * @swagger
@@ -179,5 +192,5 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/', authenticateToken, learnAndEarnController.total);
+    route.get('/', authenticateToken, cache(cacheIntervals.halfHour, true), learnAndEarnController.total);
 };

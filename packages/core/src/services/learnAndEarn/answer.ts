@@ -7,6 +7,7 @@ import { client as prismic } from '../../utils/prismic';
 import BigNumber from 'bignumber.js';
 
 import { BaseError } from '../../utils/baseError';
+import { cleanLearnAndEarnCache } from '../../utils/cache';
 import { models, sequelize } from '../../database';
 import config from '../../config';
 
@@ -173,6 +174,7 @@ export async function answer(user: { userId: number; address: string }, answers:
 
             // return wrong answers
             await t.rollback();
+            cleanLearnAndEarnCache(user.userId);
             return {
                 success: false,
                 wrongAnswers,
@@ -273,6 +275,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             }
 
             await t.commit();
+            cleanLearnAndEarnCache(user.userId);
             return {
                 success: true,
                 attempts,
@@ -283,6 +286,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             };
         }
         await t.commit();
+        cleanLearnAndEarnCache(user.userId);
         return {
             success: true,
             attempts,
