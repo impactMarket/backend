@@ -657,7 +657,7 @@ export default class MicroCreditList {
                     loanManagers = [12928, 106251];
                     break;
                 case 'ug':
-                    loanManagers = [30880, 106251];
+                    loanManagers = [30880, 106251, 99878, 101542, 52493, 47511, 32522, 27371, 107433, 56673];
                     break;
                 // case 'ng':
                 // case 've':
