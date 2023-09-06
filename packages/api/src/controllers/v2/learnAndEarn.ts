@@ -5,7 +5,7 @@ import {
     StartLessonRequestType
 } from 'validators/learnAndEarn';
 import { Request, Response } from 'express';
-import { config, services, utils } from '@impactmarket/core';
+import { config, services } from '@impactmarket/core';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
