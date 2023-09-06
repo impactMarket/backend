@@ -18,7 +18,7 @@ export async function startLesson(userId: number, prismicId: string) {
 
         const { lessonId, levelId } = lesson;
 
-        const [[userLesson, successLesson], [userLevel, sucessLevel]] = await sequelize.transaction(async t => {
+        const [[userLesson], [userLevel]] = await sequelize.transaction(async t => {
             return await Promise.all([
                 models.learnAndEarnUserLesson.findOrCreate({
                     where: {
@@ -51,10 +51,6 @@ export async function startLesson(userId: number, prismicId: string) {
                 cleanLearnAndEarnCache(userId)
             ]);
         });
-
-        if (!successLesson || !sucessLevel) {
-            throw new BaseError('START_LESSON_FAILED', 'failed to start a lesson');
-        }
 
         return {
             lesson: userLesson.toJSON(),
