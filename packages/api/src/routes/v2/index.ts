@@ -5,6 +5,7 @@ import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
 import global from './global';
+import internal from './internal';
 import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
 import protocol from './protocol';
@@ -25,6 +26,7 @@ export default (): Router => {
     microcredit(app);
     protocol(app);
     referrals(app);
+    internal(app);
 
     return app;
 };

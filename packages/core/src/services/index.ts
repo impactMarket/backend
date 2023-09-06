@@ -10,6 +10,7 @@ import { registerClaimRewards } from './learnAndEarn/claimRewards';
 import { startLesson } from './learnAndEarn/start';
 import { total } from './learnAndEarn/userData';
 import { webhook } from './learnAndEarn/syncRemote';
+import InternalDataService from './internal/data';
 import Protocol from './protocol';
 import StoryServiceV2 from './story/index';
 
@@ -24,4 +25,4 @@ const learnAndEarn = {
     total,
     createLevel
 };
-export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol };
+export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol, InternalDataService };
