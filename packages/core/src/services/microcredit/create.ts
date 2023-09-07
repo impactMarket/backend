@@ -12,6 +12,7 @@ import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationParamsPath, NotificationType } from '../../interfaces/app/appNotification';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
 import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
+import { cleanMicroCreditApplicationsCache } from '../../utils/cache';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -225,7 +226,7 @@ export default class MicroCreditCreate {
                 models.appUser
                     .findOne({
                         where: {
-                            id: userForm.selectedLoanManagerId
+                            id: selectedLoanManagerId!
                         }
                     })
                     .then(
@@ -272,6 +273,7 @@ export default class MicroCreditCreate {
                 selectedLoanManagerId,
                 ...updateStatus
             });
+            cleanMicroCreditApplicationsCache(selectedLoanManagerId);
 
             return data;
         } catch (error) {
