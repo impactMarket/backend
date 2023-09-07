@@ -14,7 +14,8 @@ export const cache =
     // "res" needs to not have any type, otherwise, typescript will fail
     async (req: RequestWithUser, res: any, next: NextFunction) => {
         // adding 'user' to user key to avoid cache collision netween user ids and level ids
-        const key = '__express__' + (req.originalUrl || req.url) + (useUserCache ?? `user${req.user!.userId}`);
+        const key =
+            '__express__' + (req.originalUrl || req.url) + ((useUserCache && req.user) ?? `user${req.user!.userId}`);
         const cachedBody = await redis.get(key);
         if (cachedBody) {
             res.send(cachedBody);
