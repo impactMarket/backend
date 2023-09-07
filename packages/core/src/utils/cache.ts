@@ -27,3 +27,17 @@ export const cleanLearnAndEarnCache = async (userId?: number) => {
         redisClient.del(key);
     });
 };
+
+export const cleanMicroCreditBorrowersCache = async (userId?: number) => {
+    const cachedBody = await redisClient.keys('__express__/api/v2/learn-and-earn/borrowers/*' + (userId ?? `user${userId}`));
+    cachedBody.forEach(key => {
+        redisClient.del(key);
+    });
+};
+
+export const cleanMicroCreditApplicationsCache = async (userId?: number) => {
+    const cachedBody = await redisClient.keys('__express__/api/v2/learn-and-earn/applications/*' + (userId ?? `user${userId}`));
+    cachedBody.forEach(key => {
+        redisClient.del(key);
+    });
+};
