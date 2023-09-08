@@ -152,7 +152,7 @@ export async function registerReceivablesRepayments(
             const tx = await ReceivableService.declareReceivablePaymentByReferenceId(
                 walletOnRWRNetwork,
                 loanReference, // referenceId
-                BigNumber(amount).multipliedBy(1e18).toString() as any, // amount
+                BigNumber(amount).multipliedBy(1e18).toString() as any // amount
             );
             await tx.wait();
 

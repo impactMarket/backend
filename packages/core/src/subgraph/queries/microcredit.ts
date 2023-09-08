@@ -615,11 +615,13 @@ export const getLoanManager = async (
 export const getLoansRepaymentsSince = async (
     loans: string[],
     since: number
-): Promise<{
-    loanReference: string;
-    debt: number;
-    amount: number;
-}[]> => {
+): Promise<
+    {
+        loanReference: string;
+        debt: number;
+        amount: number;
+    }[]
+> => {
     const graphqlQuery = {
         operationName: 'repayments',
         query: `query repayments {
