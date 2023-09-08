@@ -46,15 +46,9 @@
     "dependencies": {
         "@impact-market/subgraph": "1.0.2-beta.1",
         "@faker-js/faker": "8.0.2",
-<<<<<<< HEAD
-        "@huma-finance/sdk": "0.0.41",
-        "@huma-finance/shared": "0.0.41",
+        "@huma-finance/sdk": "0.0.44-beta.145",
+        "@huma-finance/shared": "0.0.43-beta.112",
         "@prismicio/client": "7.2.0",
-=======
-        "@huma-finance/sdk": "0.0.42-beta.94",
-        "@huma-finance/shared": "0.0.42-beta.94",
-        "@prismicio/client": "7.2.0",
->>>>>>> 6bbb9d51 (update package + prevent undefined user)
         "@prismicio/helpers": "2.3.9",
         "@sendgrid/mail": "7.7.0",
         "@slack/web-api": "6.8.1",
@@ -80,5 +74,8 @@
         "sequelize": "6.33.0",
         "sequelize-cli": "6.6.0",
         "winston": "3.10.0"
+    },
+    "resolutions": {
+        "@huma-finance/shared": "0.0.43-beta.112"
     }
 }

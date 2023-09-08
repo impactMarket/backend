@@ -4,6 +4,7 @@ import { DbModels } from '../../database/db';
 import { Logger } from '../../utils';
 import { Wallet, ethers, utils } from 'ethers';
 import { sequelize } from '../../database';
+import BigNumber from 'bignumber.js';
 import config from '../../config';
 
 type Loan = {
@@ -148,14 +149,12 @@ export async function registerReceivablesRepayments(
     await sequelize.transaction(async t => {
         for (let i = 0; i < repayments.length; i++) {
             const { loanReference, amount, debt } = repayments[i];
-            console.log({ loanReference, amount, debt })
             const tx = await ReceivableService.declareReceivablePaymentByReferenceId(
                 walletOnRWRNetwork,
                 loanReference, // referenceId
-                amount!
+                BigNumber(amount).multipliedBy(1e18).toString() as any, // amount
             );
             await tx.wait();
-            console.log(tx);
 
             if (debt === 0) {
                 // update model to fully repaid

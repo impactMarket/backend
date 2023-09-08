@@ -27,6 +27,9 @@ export const calculate = async (event, context) => {
     } else if (today.getHours() <= 4) {
         await calculateBorrowersPerformance();
     } else if (today.getHours() <= 6) {
-        await Promise.all([validateBorrowersRepayingHumaFunds(), validateBorrowersClaimHumaFunds()]);
+        // can't execute in parallel because someone can get a loan
+        // and repay it before this function is executed
+        await validateBorrowersClaimHumaFunds();
+        await validateBorrowersRepayingHumaFunds();
     }
 };

@@ -18,7 +18,7 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     // needs to be updated at the biginning so we don't risk losing any registry
     const newLastSyncAt = Math.trunc(new Date().getTime() / 1000);
 
-    // TODO: check if there's any HUMA funding set
+    // check if there's any HUMA funding set
     const humaFunding = await models.imMetadata.findOne({
         where: {
             key: 'humaFunding'
@@ -73,7 +73,7 @@ export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
     utils.Logger.info('Verifying borrowers repaying HUMA funds...');
     const newLastRepaymentSyncAt = Math.trunc(new Date().getTime() / 1000);
 
-    // TODO: check if there's any HUMA funding set
+    // check if there's any HUMA funding set
     const humaFunding = await models.imMetadata.findOne({
         where: {
             key: 'humaFunding'
@@ -92,20 +92,18 @@ export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
         return;
     }
     
-    // TODO: get loans with HUMA referenceId
+    // get loans with HUMA referenceId
     const loansReferenceIds = await models.microCreditBorrowersHuma.findAll({
         attributes: ['humaRWRReferenceId']
     });
 
-    // TODO: get all repayments to those loans since the last check
+    // get all repayments to those loans since the last check
     const repayments = await microcredit.getLoansRepaymentsSince(
         loansReferenceIds.map(loan => loan.humaRWRReferenceId),
         humaFundingData.lastRepaymentSyncAt
     );
 
-    console.log(repayments)
-
-    // TODO: update recevables with repayments
+    // update recevables with repayments
     await registerReceivablesRepayments(repayments);
 
     humaFundingData.lastRepaymentSyncAt = newLastRepaymentSyncAt;
