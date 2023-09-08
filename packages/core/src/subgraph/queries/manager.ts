@@ -1,4 +1,4 @@
-import { CommunityEntity, ManagerEntity } from '@impact-market/subgraph/dist/index';
+import { CommunityEntity, ManagerEntity } from '@impact-market/subgraph';
 import { queryAndTransformResponse } from './utils';
 
 export const getCommunityManagers = async (
