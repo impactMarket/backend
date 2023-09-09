@@ -18,7 +18,7 @@ module.exports = {
             },
             repaid: {
                 allowNull: false,
-                type: DataTypes.BOOLEAN,
+                type: Sequelize.BOOLEAN,
                 defaultValue: false
             }
         });
