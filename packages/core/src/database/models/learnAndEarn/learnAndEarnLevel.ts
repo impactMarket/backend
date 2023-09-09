@@ -11,6 +11,8 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
     public languages?: string[]; // TODO: remove
     public active!: boolean; // TODO: remove
     public isLive!: boolean; // TODO: remove
+    public lessons!: number;
+    public clients!: number[];
     public totalReward!: number;
     public rewardLimit?: number;
     public asset!: string;
@@ -69,6 +71,16 @@ export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnA
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false
+            },
+            lessons: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            },
+            clients: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                allowNull: false,
+                defaultValue: [1]
             },
             rules: {
                 type: DataTypes.JSONB,

@@ -22,6 +22,18 @@ export default (app: Router): void => {
      *     summary: "List levels"
      *     parameters:
      *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for pagination
+     *       - in: query
      *         name: status
      *         schema:
      *           type: string
@@ -35,11 +47,17 @@ export default (app: Router): void => {
      *         required: false
      *         description: Lesson category (Prismic ID)
      *       - in: query
-     *         name: level
+     *         name: language
      *         schema:
      *           type: string
+     *         required: true
+     *         description: Levels language
+     *       - in: query
+     *         name: client
+     *         schema:
+     *           type: number
      *         required: false
-     *         description: Lesson level (Prismic ID)
+     *         description: Client id
      *     responses:
      *       "200":
      *         description: OK

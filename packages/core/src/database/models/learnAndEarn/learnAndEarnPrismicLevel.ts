@@ -1,6 +1,7 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { DbModels } from '../../../database/db';
+import { LearnAndEarnLevelModel } from './learnAndEarnLevel';
 import {
     LearnAndEarnPrismicLevel,
     LearnAndEarnPrismicLevelCreation
@@ -12,6 +13,8 @@ export class LearnAndEarnPrismicLevelModel extends Model<LearnAndEarnPrismicLeve
     public levelId!: number;
     public language!: string;
     public isLive!: boolean;
+
+    public level?: LearnAndEarnLevelModel;
 }
 
 export function initializeLearnAndEarnPrismicLevel(sequelize: Sequelize): typeof LearnAndEarnPrismicLevelModel {
