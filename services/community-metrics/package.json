@@ -12,11 +12,11 @@
         "node": "18.x"
     },
     "dependencies": {
+        "@huma-finance/sdk": "0.0.44-beta.145",
+        "@huma-finance/shared": "0.0.43-beta.112",
         "@impactmarket/core": "1.0.0"
     },
     "devDependencies": {
-        "@huma-finance/sdk": "0.0.44-beta.145",
-        "@huma-finance/shared": "0.0.43-beta.112",
         "serverless": "3.31.0",
         "serverless-plugin-tracing": "2.0.0",
         "serverless-webpack": "5.11.0",
