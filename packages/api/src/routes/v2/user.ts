@@ -26,6 +26,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "users"
      *     summary: "Create user"
+     *     parameters:
+     *       - in: header
+     *         name: clientId
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
      *     requestBody:
      *       required: true
      *       content:

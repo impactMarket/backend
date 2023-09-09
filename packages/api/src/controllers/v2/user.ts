@@ -16,7 +16,7 @@ class UserController {
         this.userLogService = new services.app.UserLogService();
     }
 
-    public create = (req: Request, res: Response) => {
+    public create = (req: RequestWithUser, res: Response) => {
         const {
             address,
             phone,
@@ -33,9 +33,9 @@ class UserController {
             gender,
             bio,
             overwrite,
-            recover,
-            clientId
+            recover
         } = req.body;
+        const { clientId } = req;
         this.userService
             .create(
                 {
@@ -52,7 +52,8 @@ class UserController {
                     email,
                     gender,
                     bio,
-                    phone
+                    phone,
+                    clientId
                 },
                 overwrite,
                 recover,

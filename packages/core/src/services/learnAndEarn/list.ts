@@ -13,7 +13,7 @@ export async function listLevels(
     _limit: number,
     status: 'available' | 'started' | 'completed',
     language: string,
-    client: number,
+    clientId: number,
     userId?: number
 ): Promise<{
     count: number;
@@ -37,7 +37,7 @@ export async function listLevels(
                         new Date().getTime() - 24 * 60 * 60 * 1000 * config.daysToLimitUsers
                     ).toISOString()}') OR ule.status = \'completed\')) OR "level"."rules" IS NULL)`
                 ),
-                client ? { client: { [Op.contains]: [client] } } : {}
+                clientId ? { clients: { [Op.contains]: [clientId] } } : {}
             ]
         },
         as: 'level',

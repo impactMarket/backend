@@ -12,7 +12,7 @@ module.exports = {
             allowNull: false,
             defaultValue: 0
         });
-        await queryInterface.addColumn('learn_and_earn_level', 'client', {
+        await queryInterface.addColumn('learn_and_earn_level', 'clients', {
             type: Sequelize.ARRAY(Sequelize.INTEGER),
             allowNull: false,
             defaultValue: [1]

@@ -15,6 +15,7 @@ const { redisClient } = database;
 export function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
+    const clientIdHeader = req.headers['clientid'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token === null || token === undefined) {
         if ((req as any).authTokenIsOptional) {
@@ -23,6 +24,10 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
         }
         res.sendStatus(401); // if there isn't any token
         return;
+    }
+
+    if (clientIdHeader) {
+        req.clientId = parseInt(clientIdHeader as string, 10);
     }
 
     verify(token, config.jwtSecret, async (err, _user) => {
@@ -36,30 +41,30 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
             return;
         }
 
-        if (_user.clientId) {
-            // validate external token
-            const credential = await database.models.appClientCredential.findOne({
-                where: {
-                    clientId: _user.clientId,
-                    status: 'active'
-                }
-            });
-            if (credential && credential.roles) {
-                let path = req.path.split('/')[1];
-                if (!path) {
-                    const baseUrl = req.baseUrl.split('/');
-                    path = baseUrl[baseUrl.length - 1];
-                }
-                const authorization = checkRoles(credential.roles, path, req.method);
-                if (!authorization) {
-                    res.send(`User has no permition to ${req.path}`).status(403);
-                    return;
-                }
-            } else {
-                res.sendStatus(403);
-                return;
-            }
-        }
+        // if (_user.clientId) {
+        //     // validate external token
+        //     const credential = await database.models.appClientCredential.findOne({
+        //         where: {
+        //             clientId: _user.clientId,
+        //             status: 'active'
+        //         }
+        //     });
+        //     if (credential && credential.roles) {
+        //         let path = req.path.split('/')[1];
+        //         if (!path) {
+        //             const baseUrl = req.baseUrl.split('/');
+        //             path = baseUrl[baseUrl.length - 1];
+        //         }
+        //         const authorization = checkRoles(credential.roles, path, req.method);
+        //         if (!authorization) {
+        //             res.send(`User has no permition to ${req.path}`).status(403);
+        //             return;
+        //         }
+        //     } else {
+        //         res.sendStatus(403);
+        //         return;
+        //     }
+        // }
         const user = _user as UserInRequest;
         req.user = user;
         //

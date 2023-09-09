@@ -21,6 +21,12 @@ export default (app: Router): void => {
      *       - "learn-and-earn"
      *     summary: "List levels"
      *     parameters:
+     *       - in: header
+     *         name: clientId
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
      *       - in: query
      *         name: offset
      *         schema:
@@ -52,12 +58,6 @@ export default (app: Router): void => {
      *           type: string
      *         required: true
      *         description: Levels language
-     *       - in: query
-     *         name: client
-     *         schema:
-     *           type: number
-     *         required: false
-     *         description: Client id
      *     responses:
      *       "200":
      *         description: OK

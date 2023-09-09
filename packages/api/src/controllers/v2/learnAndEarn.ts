@@ -29,7 +29,7 @@ class LearnAndEarnController {
     };
 
     listLevels = (req: RequestWithUser<never, never, never, ListLevelsRequestType>, res: Response) => {
-        const { status, language, client } = req.query;
+        const { status, language } = req.query;
         let { limit, offset } = req.query;
 
         if (offset === undefined || typeof offset !== 'string') {
@@ -40,7 +40,7 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .listLevels(parseInt(offset, 10), parseInt(limit, 10), status!, language!, client!, req.user?.userId)
+            .listLevels(parseInt(offset, 10), parseInt(limit, 10), status!, language!, req.clientId || 1, req.user?.userId)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
