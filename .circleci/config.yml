@@ -35,6 +35,7 @@ jobs:
       - run: yarn
       - run: yarn prettier:dryrun
       - run: yarn eslint:dryrun
+      - run: yarn build
 
 workflows:
   version: 2

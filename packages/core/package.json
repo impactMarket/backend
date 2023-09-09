@@ -74,8 +74,5 @@
         "sequelize": "6.33.0",
         "sequelize-cli": "6.6.0",
         "winston": "3.10.0"
-    },
-    "resolutions": {
-        "@huma-finance/shared": "0.0.43-beta.112"
     }
 }

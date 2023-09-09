@@ -1,8 +1,8 @@
-import { database, services, subgraph, utils } from '@impactmarket/core';
+import { database, subgraph, utils } from '@impactmarket/core';
+import { registerReceivables, registerReceivablesRepayments } from './huma';
 
 const { models } = database;
 const { microcredit } = subgraph.queries;
-const { registerReceivables, registerReceivablesRepayments } = services.MicroCredit.Huma;
 
 type HumaFundingData = {
     amountDeposited: number;
