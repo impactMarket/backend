@@ -9232,10 +9232,10 @@ exponential-backoff@^3.1.1:
   resolved "https://registry.yarnpkg.com/exponential-backoff/-/exponential-backoff-3.1.1.tgz#64ac7526fe341ab18a39016cd22c787d01e00bf6"
   integrity sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==
 
-express-rate-limit@*, express-rate-limit@6.9.0:
-  version "6.9.0"
-  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-6.9.0.tgz#afecb23936d9cd1d133a3c20056708b9955cad0f"
-  integrity sha512-AnISR3V8qy4gpKM62/TzYdoFO9NV84fBx0POXzTryHU/qGUJBWuVGd+JhbvtVmKBv37t8/afmqdnv16xWoQxag==
+express-rate-limit@*, express-rate-limit@6.11.1:
+  version "6.11.1"
+  resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-6.11.1.tgz#52e05c5d379cd5d06ae29665862436eb712e414a"
+  integrity sha512-8+UpWtQY25lJaa4+3WxDBGDcAu4atcTruSs3QSL5VPEplYy6kmk84wutG9rUkkK5LmMQQ7TFHWLZYITwVNbbEg==
 
 express-status-monitor@1.3.4:
   version "1.3.4"
