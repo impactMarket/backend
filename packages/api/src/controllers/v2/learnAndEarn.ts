@@ -23,7 +23,7 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .total(req.user.userId)
+            .total(req.user.userId, req.clientId || 1)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

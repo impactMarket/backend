@@ -4,7 +4,10 @@ import { BaseError } from '../../utils/baseError';
 import { formatObjectToNumber } from '../../utils';
 import { models } from '../../database';
 
-export async function total(userId: number): Promise<{
+export async function total(
+    userId: number,
+    clientId: number
+): Promise<{
     lesson: {
         completed: number;
         total: number;
@@ -90,6 +93,11 @@ export async function total(userId: number): Promise<{
         type Steps = { completed: number; total: number };
         const level = formatObjectToNumber<Steps>(levels[0]);
         const lesson = formatObjectToNumber<Steps>(lessons[0]);
+
+        if (clientId === 2) {
+            level.total = 1;
+            lesson.total = 7;
+        }
 
         return {
             lesson,
