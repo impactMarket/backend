@@ -10,14 +10,17 @@ import initModels from './models';
 const databaseUriToObject = (uri: string) => {
     // not performant but not problematic
     const re = /postgres:\/\/(\w+):(\w+)@([\w-.]+):(\d+)\/(\w+)/i;
-    const found = uri.match(re)!;
-    return {
-        username: found[1],
-        password: found[2],
-        host: found[3],
-        port: parseInt(found[4], 10),
-        database: found[5]
-    };
+    const found = uri.match(re);
+    if (found) {
+        return {
+            username: found[1],
+            password: found[2],
+            host: found[3],
+            port: parseInt(found[4], 10),
+            database: found[5]
+        };
+    }
+    return {};
 };
 
 let logging: boolean | ((sql: string, timing?: number | undefined) => void) | undefined;
