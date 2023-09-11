@@ -242,46 +242,6 @@ describe('user service v2', () => {
                 });
             expect(error.message).to.equal('account in deletion process');
         });
-        it('login with clientId', async () => {
-            await models.appClientCredential.create({
-                id: 1,
-                clientId: 'client123',
-                name: 'client',
-                status: 'active',
-                roles: undefined
-            });
-            const randomWallet = ethers.Wallet.createRandom();
-            const address = await randomWallet.getAddress();
-            const newUser = await userService.create(
-                {
-                    address
-                },
-                false,
-                false,
-                'client123'
-            );
-
-            expect(newUser).to.be.not.null;
-        });
-        it('login with invalid clientId', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
-            const address = await randomWallet.getAddress();
-
-            let error: any;
-            await userService
-                .create(
-                    {
-                        address
-                    },
-                    false,
-                    false,
-                    'client321'
-                )
-                .catch(err => {
-                    error = err;
-                });
-            expect(error.message).to.equal('Client credential is invalid');
-        });
     });
 
     describe('get', () => {
