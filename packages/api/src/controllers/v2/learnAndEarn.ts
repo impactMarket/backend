@@ -40,7 +40,14 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .listLevels(parseInt(offset, 10), parseInt(limit, 10), status!, language!, req.clientId || 1, req.user?.userId)
+            .listLevels(
+                parseInt(offset, 10),
+                parseInt(limit, 10),
+                status!,
+                language!,
+                req.clientId || 1,
+                req.user?.userId
+            )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

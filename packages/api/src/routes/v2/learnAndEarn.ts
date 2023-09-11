@@ -22,7 +22,7 @@ export default (app: Router): void => {
      *     summary: "List levels"
      *     parameters:
      *       - in: header
-     *         name: clientId
+     *         name: client-id
      *         schema:
      *           type: integer
      *         required: false

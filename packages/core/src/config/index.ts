@@ -135,7 +135,7 @@ export default {
      */
     database: {
         replicas: validatedEnv.DATABASE_NUMBER_OF_REPLICAS,
-        main: validatedEnv.DATABASE_URL,
+        main: validatedEnv.DATABASE_URL
     },
 
     /**

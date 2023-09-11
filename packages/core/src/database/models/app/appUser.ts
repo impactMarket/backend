@@ -129,7 +129,7 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             },
             clientId: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
