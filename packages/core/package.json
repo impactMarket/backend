@@ -59,7 +59,7 @@
         "connect-timeout": "1.9.0",
         "dotenv": "16.3.1",
         "envalid": "7.3.1",
-        "ethers": "5.7.2",
+        "ethers": "6.7.1",
         "express": "4.18.2",
         "firebase-admin": "11.10.1",
         "graphql": "16.8.0",
