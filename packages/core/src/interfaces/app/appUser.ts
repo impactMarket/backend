@@ -82,6 +82,7 @@ export interface AppUser {
     phoneValidated: boolean;
     readBeneficiaryRules?: boolean | null;
     readManagerRules?: boolean | null;
+    clientId: number | null;
 
     // timestamps
     createdAt: Date;
@@ -127,4 +128,5 @@ export interface AppUserCreationAttributes {
     phone?: string;
     readBeneficiaryRules?: boolean;
     readManagerRules?: boolean;
+    clientId?: number;
 }

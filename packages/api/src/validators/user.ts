@@ -24,7 +24,6 @@ const create = celebrate({
         email: Joi.alternatives(Joi.string().email({ tlds: { allow: false } }), null).optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
-        clientId: Joi.string().optional(),
         country: Joi.string().optional()
     })
 });

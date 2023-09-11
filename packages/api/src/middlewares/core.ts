@@ -8,5 +8,6 @@ export interface UserInRequest {
 export interface RequestWithUser<P = core.ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = core.Query>
     extends Request<P, ResBody, ReqBody, ReqQuery> {
     user?: UserInRequest;
+    clientId?: number;
     hasValidTypedSignature?: boolean;
 }

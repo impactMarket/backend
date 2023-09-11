@@ -21,6 +21,24 @@ export default (app: Router): void => {
      *       - "learn-and-earn"
      *     summary: "List levels"
      *     parameters:
+     *       - in: header
+     *         name: client-id
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for pagination
      *       - in: query
      *         name: status
      *         schema:
@@ -35,11 +53,11 @@ export default (app: Router): void => {
      *         required: false
      *         description: Lesson category (Prismic ID)
      *       - in: query
-     *         name: level
+     *         name: language
      *         schema:
      *           type: string
      *         required: false
-     *         description: Lesson level (Prismic ID)
+     *         description: Levels language
      *     responses:
      *       "200":
      *         description: OK

@@ -3,6 +3,7 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
 import { LearnAndEarnLevel, LearnAndEarnLevelCreation } from '../../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnUserLevelModel } from './learnAndEarnUserLevel';
 
 export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEarnLevelCreation> {
     public id!: number;
@@ -11,6 +12,8 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
     public languages?: string[]; // TODO: remove
     public active!: boolean; // TODO: remove
     public isLive!: boolean; // TODO: remove
+    public lessons!: number;
+    public clients!: number[];
     public totalReward!: number;
     public rewardLimit?: number;
     public asset!: string;
@@ -23,6 +26,7 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
     };
 
     public adminUser?: AppUserModel;
+    public userLevel?: LearnAndEarnUserLevelModel;
 }
 
 export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnAndEarnLevelModel {
@@ -69,6 +73,16 @@ export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnA
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false
+            },
+            lessons: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            },
+            clients: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                allowNull: false,
+                defaultValue: [1]
             },
             rules: {
                 type: DataTypes.JSONB,

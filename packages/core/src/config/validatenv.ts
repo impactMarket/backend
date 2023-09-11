@@ -36,6 +36,7 @@ function validateEnv() {
         NODE_ENV: str(),
         PORT: port({ devDefault: onlyOnTestEnv(5000) }),
         DATABASE_URL: str(),
+        DATABASE_NUMBER_OF_REPLICAS: num({ default: 0 }),
         CHAIN_JSON_RPC_URL: str({
             devDefault: onlyOnTestEnv('http://localhost:8545')
         }),

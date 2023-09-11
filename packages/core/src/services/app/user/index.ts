@@ -1,4 +1,4 @@
-import { Op, WhereOptions } from 'sequelize';
+import { Attributes, Op, WhereOptions } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
@@ -25,7 +25,7 @@ export default class UserService {
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
         recover: boolean = false,
-        clientId?: string
+        clientId?: number
     ) {
         const exists = await this._exists(userParams.address);
 
@@ -67,6 +67,9 @@ export default class UserService {
             // create new user
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
+            if (clientId === 2) {
+                // TODO: validate phone number with SocialConnect and save
+            }
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -82,35 +85,27 @@ export default class UserService {
                     throw new BaseError('DELETION_PROCESS', 'account in deletion process');
                 }
 
+                const updateFields: {
+                    [key in keyof Attributes<AppUserModel>]?: Attributes<AppUserModel>[key];
+                } = {};
+
                 // if a phone number is provided, verify if it
                 // is associated with another account
                 // and if not, update the user's phone number
                 const jsonUser = _user.toJSON();
                 if (userParams.phone && userParams.phone !== jsonUser.phone) {
-                    await models.appUser.update(
-                        {
-                            phone: userParams.phone
-                        },
-                        {
-                            where: {
-                                id: jsonUser.id
-                            }
-                        }
-                    );
-                    _user.phone = userParams.phone;
+                    updateFields.phone = userParams.phone;
                 }
 
-                const pushNotification = {
-                    walletPNT: userParams.walletPNT,
-                    appPNT: userParams.appPNT
-                };
+                // update token only if provided
+                if (userParams.walletPNT || userParams.appPNT) {
+                    updateFields.walletPNT = userParams.walletPNT;
+                    updateFields.appPNT = userParams.appPNT;
+                }
 
-                await models.appUser.update(
-                    {
-                        ...pushNotification
-                    },
-                    { where: { address: userParams.address } }
-                );
+                if (Object.keys(updateFields).length > 0) {
+                    await _user.update(updateFields);
+                }
 
                 return _user;
             };
@@ -130,24 +125,7 @@ export default class UserService {
 
         this._updateLastLogin(user.id);
 
-        let token: string;
-        if (clientId) {
-            const credential = await models.appClientCredential.findOne({
-                where: {
-                    clientId,
-                    status: 'active'
-                }
-            });
-            if (credential) {
-                token = generateAccessToken(userParams.address, user.id, clientId);
-            } else {
-                throw new BaseError('INVALID_CREDENTIAL', 'Client credential is invalid');
-            }
-        } else {
-            // generate access token for future interactions that require authentication
-            token = generateAccessToken(userParams.address, user.id);
-        }
-
+        const token = generateAccessToken(userParams.address, user.id);
         const jsonUser = user.toJSON();
         return {
             ...jsonUser,
@@ -634,20 +612,14 @@ export default class UserService {
     }
 
     private async _userRules(address: string) {
-        const [beneficiaryRules, managerRules] = await Promise.all([
-            models.appUser.findOne({
-                attributes: ['readBeneficiaryRules'],
-                where: { address }
-            }),
-            models.appUser.findOne({
-                attributes: ['readManagerRules'],
-                where: { address }
-            })
-        ]);
+        const user = await models.appUser.findOne({
+            attributes: ['readBeneficiaryRules', 'readManagerRules'],
+            where: { address }
+        });
 
         return {
-            beneficiaryRules: beneficiaryRules?.readBeneficiaryRules,
-            managerRules: managerRules?.readManagerRules
+            beneficiaryRules: user?.readBeneficiaryRules || false,
+            managerRules: user?.readManagerRules || false
         };
     }
 }

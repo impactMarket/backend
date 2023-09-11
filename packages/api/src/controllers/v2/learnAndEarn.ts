@@ -3,7 +3,7 @@ import {
     ListLevelsRequestType,
     RegisterClaimRewardsRequestType,
     StartLessonRequestType
-} from 'validators/learnAndEarn';
+} from '../../validators/learnAndEarn';
 import { Request, Response } from 'express';
 import { config, services } from '@impactmarket/core';
 
@@ -29,7 +29,7 @@ class LearnAndEarnController {
     };
 
     listLevels = (req: RequestWithUser<never, never, never, ListLevelsRequestType>, res: Response) => {
-        const { status, level, language } = req.query;
+        const { status, language } = req.query;
         let { limit, offset } = req.query;
 
         if (offset === undefined || typeof offset !== 'string') {
@@ -40,7 +40,14 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .listLevels(parseInt(offset, 10), parseInt(limit, 10), req.user?.userId, status, level, language)
+            .listLevels(
+                parseInt(offset, 10),
+                parseInt(limit, 10),
+                req.clientId || 1,
+                status,
+                language,
+                req.user?.userId
+            )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -4,8 +4,8 @@ let database = '';
 let host = '';
 
 if (process.env.API_ENVIRONMENT && process.env.DATABASE_URL) {
-    var re = /postgres:\/\/(\w+):(\w+)@([\w-.]+):5432\/(\w+)/i;
-    var found = process.env.DATABASE_URL.match(re);
+    const re = /postgres:\/\/(\w+):(\w+)@([\w-.]+):5432\/(\w+)/i;
+    const found = process.env.DATABASE_URL.match(re);
     if (found.length > 3) {
         username = found[1];
         password = found[2];
