@@ -17,6 +17,11 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
     const authHeader = req.headers['authorization'];
     const clientIdHeader = req.headers['clientid'];
     const token = authHeader && authHeader.split(' ')[1];
+
+    if (clientIdHeader) {
+        req.clientId = parseInt(clientIdHeader as string, 10);
+    }
+
     if (token === null || token === undefined) {
         if ((req as any).authTokenIsOptional) {
             next();
@@ -24,10 +29,6 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
         }
         res.sendStatus(401); // if there isn't any token
         return;
-    }
-
-    if (clientIdHeader) {
-        req.clientId = parseInt(clientIdHeader as string, 10);
     }
 
     verify(token, config.jwtSecret, async (err, _user) => {

@@ -131,6 +131,14 @@ export default {
     },
 
     /**
+     * Database config
+     */
+    database: {
+        replicas: validatedEnv.DATABASE_NUMBER_OF_REPLICAS,
+        main: validatedEnv.DATABASE_URL,
+    },
+
+    /**
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
