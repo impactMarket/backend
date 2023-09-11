@@ -42,6 +42,31 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
             return;
         }
 
+        // TODO: need to unify with header client-id
+        if (_user.clientId) {
+            // validate external token
+            const credential = await database.models.appClientCredential.findOne({
+                where: {
+                    clientId: _user.clientId,
+                    status: 'active'
+                }
+            });
+            if (credential && credential.roles) {
+                let path = req.path.split('/')[1];
+                if (!path) {
+                    const baseUrl = req.baseUrl.split('/');
+                    path = baseUrl[baseUrl.length - 1];
+                }
+                const authorization = checkRoles(credential.roles, path, req.method);
+                if (!authorization) {
+                    res.send(`User has no permition to ${req.path}`).status(403);
+                    return;
+                }
+            } else {
+                res.sendStatus(403);
+                return;
+            }
+        }
         const user = _user as UserInRequest;
         req.user = user;
         //
@@ -212,6 +237,25 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
         });
     }
 }
+
+const checkRoles = (roles: string[], path: string, reqMethod: string) => {
+    let authorizate = false;
+    for (let i = 0; i < roles.length; i++) {
+        const [service, method] = roles[i].split(':');
+        if (service === path.replace('/', '')) {
+            if (
+                method === '*' ||
+                (reqMethod === 'GET' && method === 'read') ||
+                (reqMethod === 'DELETE' && method === 'delete') ||
+                ((reqMethod === 'POST' || reqMethod === 'PUT' || reqMethod === 'PATCH') && method === 'write')
+            ) {
+                authorizate = true;
+                break;
+            }
+        }
+    }
+    return authorizate;
+};
 
 export const onlyAuthorizedRoles =
     (authorisedRoles: string[]) => async (req: RequestWithUser, res: Response, next: NextFunction) => {
