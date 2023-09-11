@@ -204,6 +204,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "learn-and-earn"
      *     summary: "Get user metrics"
+     *     parameters:
+     *       - in: header
+     *         name: client-id
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
      *     responses:
      *       "200":
      *         description: OK
