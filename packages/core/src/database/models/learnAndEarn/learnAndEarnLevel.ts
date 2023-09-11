@@ -3,6 +3,7 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
 import { LearnAndEarnLevel, LearnAndEarnLevelCreation } from '../../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnUserLevelModel } from './learnAndEarnUserLevel';
 
 export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEarnLevelCreation> {
     public id!: number;
@@ -25,6 +26,7 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
     };
 
     public adminUser?: AppUserModel;
+    public userLevel?: LearnAndEarnUserLevelModel;
 }
 
 export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnAndEarnLevelModel {

@@ -43,9 +43,9 @@ class LearnAndEarnController {
             .listLevels(
                 parseInt(offset, 10),
                 parseInt(limit, 10),
-                status!,
-                language!,
                 req.clientId || 1,
+                status,
+                language,
                 req.user?.userId
             )
             .then(r => standardResponse(res, 200, true, r))

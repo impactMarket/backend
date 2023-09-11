@@ -40,11 +40,11 @@ class LearnAndEarnValidator {
 
     listLevels = celebrate({
         query: {
-            status: Joi.string().optional().valid('available', 'started', 'completed').default('available'),
+            status: Joi.string().optional().valid('available', 'started', 'completed'), // TODO: add .default('available'),
             category: Joi.string().optional(),
             limit: Joi.number().optional(),
             offset: Joi.number().optional(),
-            language: Joi.string().required(),
+            language: Joi.string().optional(), // TODO: make required
             client: Joi.number().optional().default(1)
         }
     });

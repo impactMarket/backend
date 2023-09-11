@@ -56,7 +56,7 @@ export default (app: Router): void => {
      *         name: language
      *         schema:
      *           type: string
-     *         required: true
+     *         required: false
      *         description: Levels language
      *     responses:
      *       "200":

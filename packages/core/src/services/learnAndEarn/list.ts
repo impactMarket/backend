@@ -6,14 +6,14 @@ import { LearnAndEarnPrismicLevel } from '../../interfaces/learnAndEarn/learnAnd
 import { models } from '../../database';
 import config from '../../config';
 
-const { learnAndEarnLevel, learnAndEarnPrismicLevel } = models;
+const { learnAndEarnLevel, learnAndEarnPrismicLevel, appUser } = models;
 
 export async function listLevels(
     _offset: number,
     _limit: number,
-    status: 'available' | 'started' | 'completed',
-    language: string,
     clientId: number,
+    status?: 'available' | 'started' | 'completed',
+    language?: string,
     userId?: number
 ): Promise<{
     count: number;
@@ -22,10 +22,27 @@ export async function listLevels(
         prismicId: string;
         totalReward: number;
         totalLessons: number;
+        status: string; // TODO: to be removed
     }[];
 }> {
     const include: Includeable[] = [];
     let where: WhereOptions<LearnAndEarnPrismicLevel> | undefined;
+
+    // query user language or default to english if no user is provided
+    if (!language) {
+        if (userId) {
+            const user = await appUser.findOne({
+                attributes: ['language'],
+                where: { id: userId }
+            });
+
+            if (user?.language) {
+                language = user.language;
+            }
+        } else {
+            language = 'en';
+        }
+    }
 
     include.push({
         attributes: ['id', 'totalReward', 'lessons'],
@@ -46,7 +63,7 @@ export async function listLevels(
 
     if (userId) {
         include.push({
-            attributes: [],
+            attributes: ['status'],
             model: models.learnAndEarnUserLevel,
             as: 'userLevel',
             required: false,
@@ -57,11 +74,13 @@ export async function listLevels(
         });
         where = {
             [Op.and]: [
-                status === 'available'
-                    ? {
-                          [Op.or]: [{ '$userLevel.status$': 'started' }, { '$userLevel.status$': null }]
-                      }
-                    : { '$userLevel.status$': status },
+                status
+                    ? status === 'available'
+                        ? {
+                              [Op.or]: [{ '$userLevel.status$': 'started' }, { '$userLevel.status$': null }]
+                          }
+                        : { '$userLevel.status$': status }
+                    : {},
                 { language },
                 process.env.API_ENVIRONMENT === 'production' ? { isLive: true } : {}
             ]
@@ -82,7 +101,8 @@ export async function listLevels(
             id: level!.id,
             prismicId,
             totalReward: level!.totalReward,
-            totalLessons: level!.lessons
+            totalLessons: level!.lessons,
+            status: level!.userLevel?.status || 'available'
         }))
     };
 }
