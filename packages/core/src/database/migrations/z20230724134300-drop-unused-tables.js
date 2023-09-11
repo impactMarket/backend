@@ -17,6 +17,9 @@ module.exports = {
             await queryInterface.removeConstraint('user', 'user_avatarMediaId_fkey');
         } catch (e) { console.error(e); }
         try {
+            await queryInterface.removeConstraint('community', 'community_coverMediaId_fkey');
+        } catch (e) { console.error(e); }
+        try {
             await queryInterface.removeColumn('story_content', 'mediaMediaId');
         } catch (e) { console.error(e); }
         try {
@@ -37,8 +40,12 @@ module.exports = {
         try {
             await queryInterface.sequelize.query(`drop table ubi_organization`, { type: Sequelize.QueryTypes.DELETE });
         } catch (_) { }
-        await queryInterface.sequelize.query(`drop table app_media_thumbnail`, { type: Sequelize.QueryTypes.DELETE });
-        await queryInterface.sequelize.query(`drop table app_media_content`, { type: Sequelize.QueryTypes.DELETE });
+        try {
+            await queryInterface.sequelize.query(`drop table app_media_thumbnail`, { type: Sequelize.QueryTypes.DELETE });
+        } catch (_) { }
+        try {
+            await queryInterface.sequelize.query(`drop table app_media_content`, { type: Sequelize.QueryTypes.DELETE });
+        } catch (_) { }
         try {
             await queryInterface.sequelize.query(`drop table beneficiary`, { type: Sequelize.QueryTypes.DELETE });
         } catch (_) { }
