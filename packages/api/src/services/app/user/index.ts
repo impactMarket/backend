@@ -1,21 +1,30 @@
 import { Attributes, Op, WhereOptions } from 'sequelize';
+import { database, interfaces, services, subgraph, utils } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
-import { AppNotification } from '../../../interfaces/app/appNotification';
-import { AppUserCreationAttributes, AppUserUpdate } from '../../../interfaces/app/appUser';
-import { AppUserModel } from '../../../database/models/app/appUser';
-import { BaseError } from '../../../utils/baseError';
-import { LogTypes } from '../../../interfaces/app/appLog';
-import { ProfileContentStorage } from '../../../services/storage';
-import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
-import { generateAccessToken } from '../../../utils/jwt';
-import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
-import { models } from '../../../database';
-import { sendFirebasePushNotification } from '../../../utils/pushNotification';
-import { utils } from '../../../..';
 import UserLogService from './log';
-import config from '../../../config';
+import config from '~config/index';
+
+const { models } = database;
+const { getUserRoles } = subgraph.queries.user;
+const { getAllBeneficiaries } = subgraph.queries.beneficiary;
+const { ProfileContentStorage } = services.storage;
+
+type AppNotification = interfaces.app.appNotification.AppNotification;
+type AppUserCreationAttributes = interfaces.app.appUser.AppUserCreationAttributes;
+type AppUserUpdate = interfaces.app.appUser.AppUserUpdate;
+type AppUserModel = any;
+const { LogTypes } = interfaces.app.appLog;
+
+type UserRoles = {
+    beneficiary: { community: string; state: number; address: string } | null;
+    borrower: { id: string } | null;
+    manager: { community: string; state: number } | null;
+    councilMember: { state: number } | null;
+    ambassador: { communities: string[]; state: number } | null;
+    loanManager: { state: number } | null;
+};
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -59,7 +68,7 @@ export default class UserService {
                 : false;
 
             if (existsPhone) {
-                throw new BaseError('PHONE_CONFLICT', 'phone associated with another account');
+                throw new utils.BaseError('PHONE_CONFLICT', 'phone associated with another account');
             }
         }
 
@@ -68,7 +77,7 @@ export default class UserService {
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
             if (clientId === 2) {
-                // TODO: validate phone number with SocialConnect and save
+                // TODO: include phone number validation
             }
         } else {
             const findAndUpdate = async () => {
@@ -78,11 +87,11 @@ export default class UserService {
                 }))!;
 
                 if (!_user.active) {
-                    throw new BaseError('INACTIVE_USER', 'user is inactive');
+                    throw new utils.BaseError('INACTIVE_USER', 'user is inactive');
                 }
 
                 if (_user.deletedAt) {
-                    throw new BaseError('DELETION_PROCESS', 'account in deletion process');
+                    throw new utils.BaseError('DELETION_PROCESS', 'account in deletion process');
                 }
 
                 const updateFields: {
@@ -125,7 +134,7 @@ export default class UserService {
 
         this._updateLastLogin(user.id);
 
-        const token = generateAccessToken(userParams.address, user.id);
+        const token = utils.jwt.generateAccessToken(userParams.address, user.id);
         const jsonUser = user.toJSON();
         return {
             ...jsonUser,
@@ -146,7 +155,7 @@ export default class UserService {
         ]);
 
         if (user === null) {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
+            throw new utils.BaseError('USER_NOT_FOUND', 'user not found');
         }
         const notificationsCount = await models.appNotification.count({
             where: {
@@ -167,7 +176,7 @@ export default class UserService {
         const { ambassador, manager, councilMember, loanManager } = await this._userRoles(authoriedAddress);
 
         if (!ambassador && !manager && !councilMember && !loanManager) {
-            throw new BaseError(
+            throw new utils.BaseError(
                 'UNAUTHORIZED',
                 'user must be ambassador, ubi manager, loand manager or council member'
             );
@@ -180,7 +189,7 @@ export default class UserService {
         if (user.phone) {
             const existsPhone = await this._existsAccountByPhone(user.phone, user.address);
 
-            if (existsPhone) throw new BaseError('PHONE_CONFLICT', 'phone associated with another account');
+            if (existsPhone) throw new utils.BaseError('PHONE_CONFLICT', 'phone associated with another account');
         }
 
         const updated = await models.appUser.update(user, {
@@ -188,7 +197,7 @@ export default class UserService {
             where: { address: user.address }
         });
         if (updated[0] === 0) {
-            throw new BaseError('UPDATE_FAILED', 'user was not updated!');
+            throw new utils.BaseError('UPDATE_FAILED', 'user was not updated!');
         }
 
         this.userLogService.create(updated[1][0].id, LogTypes.EDITED_PROFILE, user);
@@ -222,7 +231,7 @@ export default class UserService {
         const roles = await getUserRoles(address);
 
         if (roles.manager !== null && roles.manager.state === 0) {
-            throw new BaseError('MANAGER', "Active managers can't delete accounts");
+            throw new utils.BaseError('MANAGER', "Active managers can't delete accounts");
         }
 
         const updated = await models.appUser.update(
@@ -238,7 +247,7 @@ export default class UserService {
         );
 
         if (updated[0] === 0) {
-            throw new BaseError('UPDATE_FAILED', 'User was not updated');
+            throw new utils.BaseError('UPDATE_FAILED', 'User was not updated');
         }
         return updated[1][0].toJSON();
     }
@@ -263,7 +272,7 @@ export default class UserService {
         const userRoles = await getUserRoles(user);
 
         if (!userRoles.ambassador || userRoles.ambassador.communities.length === 0) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
+            throw new utils.BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
         }
 
         const { communities } = userRoles.ambassador;
@@ -279,7 +288,7 @@ export default class UserService {
             });
 
             if (!community?.contractAddress || communities.indexOf(community?.contractAddress?.toLowerCase()) === -1) {
-                throw new BaseError('NOT_AMBASSADOR', 'user is not an ambassador of this community');
+                throw new utils.BaseError('NOT_AMBASSADOR', 'user is not an ambassador of this community');
             }
             addresses.push(community.contractAddress);
         } else {
@@ -322,7 +331,7 @@ export default class UserService {
                 }
             );
         } catch (error) {
-            throw new BaseError('UNEXPECTED_ERROR', error.message);
+            throw new utils.BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
@@ -392,7 +401,7 @@ export default class UserService {
             }
         );
         if (updated[0] === 0) {
-            throw new BaseError('UPDATE_FAILED', 'notifications were not updated!');
+            throw new utils.BaseError('UPDATE_FAILED', 'notifications were not updated!');
         }
         return true;
     }
@@ -414,12 +423,14 @@ export default class UserService {
                     }
                 }
             });
-            sendFirebasePushNotification(
-                users.map(el => el.walletPNT!),
-                title,
-                body,
-                data
-            ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
+            utils.pushNotification
+                .sendFirebasePushNotification(
+                    users.map(el => el.walletPNT!),
+                    title,
+                    body,
+                    data
+                )
+                .catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else if (communitiesIds && communitiesIds.length) {
             const communities = await models.community.findAll({
                 attributes: ['contractAddress'],
@@ -454,14 +465,16 @@ export default class UserService {
                     }
                 }
             });
-            sendFirebasePushNotification(
-                users.map(el => el.walletPNT!),
-                title,
-                body,
-                data
-            ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
+            utils.pushNotification
+                .sendFirebasePushNotification(
+                    users.map(el => el.walletPNT!),
+                    title,
+                    body,
+                    data
+                )
+                .catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
-            throw new BaseError('INVALID_OPTION', 'invalid option');
+            throw new utils.BaseError('INVALID_OPTION', 'invalid option');
         }
     }
 
@@ -504,7 +517,7 @@ export default class UserService {
 
             await Promise.all(promises);
         } catch (error) {
-            throw new BaseError('UNEXPECTED_ERROR', error.message);
+            throw new utils.BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
