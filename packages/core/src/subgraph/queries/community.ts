@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
 import { axiosCouncilSubgraph, axiosSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 import config from '../../config';
@@ -25,7 +26,8 @@ export const getCommunityProposal = async (): Promise<string[]> => {
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -46,7 +48,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
 
         const proposalEntities = response.data?.data.proposalEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(proposalEntities), 'EX', intervalsInSeconds.oneHour);
+        redisClient.set(queryHash, JSON.stringify(proposalEntities), 'EX', intervalsInSeconds.oneHour);
 
         return proposalEntities.map(proposal => proposal.calldatas[0]);
     } catch (error) {
@@ -79,7 +81,8 @@ export const getClaimed = async (
             }`,
             variables: {}
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -100,7 +103,7 @@ export const getClaimed = async (
         >('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
+        redisClient.set(queryHash, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntities;
     } catch (error) {
@@ -144,7 +147,8 @@ export const getCommunityState = async (
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -177,7 +181,7 @@ export const getCommunityState = async (
 
         const communityEntity = response.data?.data.communityEntity;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
+        redisClient.set(queryHash, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntity;
     } catch (error) {
@@ -214,7 +218,8 @@ export const getCommunityUBIParams = async (
             }`,
             variables: {}
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -240,7 +245,7 @@ export const getCommunityUBIParams = async (
         >('', graphqlQuery);
         const communityEntity = response.data?.data.communityEntity;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
+        redisClient.set(queryHash, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntity;
     } catch (error) {
@@ -261,7 +266,8 @@ export const communityEntities = async (where: string, fields: string) => {
             }`,
             variables: {}
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -270,7 +276,7 @@ export const communityEntities = async (where: string, fields: string) => {
         const response = await axiosSubgraph.post('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
+        redisClient.set(queryHash, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntities;
     } catch (error) {
@@ -293,7 +299,8 @@ export const getBiggestCommunities = async (limit: number, offset: number, order
             }
         }`
     };
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -314,7 +321,7 @@ export const getBiggestCommunities = async (limit: number, offset: number, order
     >('', graphqlQuery);
     const communities = response.data?.data.communityEntities;
 
-    redisClient.set(graphqlQuery.query, JSON.stringify(communities), 'EX', intervalsInSeconds.halfHour);
+    redisClient.set(queryHash, JSON.stringify(communities), 'EX', intervalsInSeconds.halfHour);
 
     return communities;
 };
@@ -336,7 +343,8 @@ export const getCommunityAmbassador = async (community: string) => {
         }`,
         variables: {}
     };
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -345,7 +353,7 @@ export const getCommunityAmbassador = async (community: string) => {
     const response = await axiosCouncilSubgraph.post('', graphqlQuery);
     const ambassador = response.data?.data.ambassadorEntities[0];
 
-    redisClient.set(graphqlQuery.query, JSON.stringify(ambassador), 'EX', intervalsInSeconds.sixHours);
+    redisClient.set(queryHash, JSON.stringify(ambassador), 'EX', intervalsInSeconds.sixHours);
 
     return ambassador;
 };
@@ -367,7 +375,8 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
             }`,
             variables: {}
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -388,7 +397,7 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
         >('', graphqlQuery);
         const ambassadorEntities = response.data?.data.ambassadorEntities[0];
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(ambassadorEntities), 'EX', intervalsInSeconds.sixHours);
+        redisClient.set(queryHash, JSON.stringify(ambassadorEntities), 'EX', intervalsInSeconds.sixHours);
 
         return ambassadorEntities;
     } catch (error) {
@@ -423,7 +432,8 @@ export const getCommunityStateByAddresses = async (
             }`,
             variables: {}
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -445,7 +455,7 @@ export const getCommunityStateByAddresses = async (
         >('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.oneHour);
+        redisClient.set(queryHash, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.oneHour);
 
         return communityEntities;
     } catch (error) {

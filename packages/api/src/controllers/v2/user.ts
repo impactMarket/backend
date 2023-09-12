@@ -79,8 +79,9 @@ class UserController {
             });
             return;
         }
+        const clientId = parseInt(req.headers['client-id'] as string, 10);
         this.userService
-            .get(req.user.address)
+            .get(req.user.address, clientId)
             .then(user =>
                 standardResponse(res, 201, true, {
                     ...user,

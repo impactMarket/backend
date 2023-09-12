@@ -1,4 +1,5 @@
 import { axiosSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -25,7 +26,8 @@ export const getReferralCampaigns = async (): Promise<
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -47,7 +49,7 @@ export const getReferralCampaigns = async (): Promise<
         >('', graphqlQuery);
 
         redisClient.set(
-            graphqlQuery.query,
+            queryHash,
             JSON.stringify(response.data?.data.referralCampaigns),
             'EX',
             intervalsInSeconds.oneHour
