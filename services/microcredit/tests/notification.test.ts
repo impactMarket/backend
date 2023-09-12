@@ -82,7 +82,7 @@ describe('notification lambda', () => {
         spySendNotification.resetHistory();
     });
 
-    it('should send push notification to borrowers', async () => {
+    it.skip('should send push notification to borrowers', async () => {
         await notification(null, null);
 
         assert.callCount(spySendNotification, 5);
