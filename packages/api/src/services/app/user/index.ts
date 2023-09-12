@@ -3,9 +3,9 @@ import { database, interfaces, services, subgraph, utils } from '@impactmarket/c
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
-import { lookup } from '~services/attestation';
+import { lookup } from '../../../services/attestation';
 import UserLogService from './log';
-import config from '~config/index';
+import config from '../../../config/index';
 
 const { models } = database;
 const { getUserRoles } = subgraph.queries.user;
