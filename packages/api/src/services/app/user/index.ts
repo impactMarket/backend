@@ -125,8 +125,23 @@ export default class UserService {
 
             [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
-                this._userRoles(userParams.address),
-                this._userRules(userParams.address)
+                clientId !== 2
+                    ? this._userRoles(userParams.address)
+                    : {
+                          roles: [],
+                          beneficiary: null,
+                          borrower: null,
+                          manager: null,
+                          councilMember: null,
+                          ambassador: null,
+                          loanManager: null
+                      },
+                clientId !== 2
+                    ? this._userRules(userParams.address)
+                    : {
+                          beneficiaryRules: false,
+                          managerRules: false
+                      }
             ]);
             notificationsCount = await models.appNotification.count({
                 where: {
@@ -149,13 +164,28 @@ export default class UserService {
         };
     }
 
-    public async get(address: string) {
+    public async get(address: string, clientId?: number) {
         const [user, userRoles, userRules] = await Promise.all([
             models.appUser.findOne({
                 where: { address }
             }),
-            this._userRoles(address),
-            this._userRules(address)
+            clientId !== 2
+                ? this._userRoles(address)
+                : {
+                      roles: [],
+                      beneficiary: null,
+                      borrower: null,
+                      manager: null,
+                      councilMember: null,
+                      ambassador: null,
+                      loanManager: null
+                  },
+            clientId !== 2
+                ? this._userRules(address)
+                : {
+                      beneficiaryRules: false,
+                      managerRules: false
+                  }
         ]);
 
         if (user === null) {
