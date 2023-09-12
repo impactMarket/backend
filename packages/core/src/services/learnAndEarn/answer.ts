@@ -8,6 +8,7 @@ import BigNumber from 'bignumber.js';
 
 import { BaseError } from '../../utils/baseError';
 import { cleanLearnAndEarnCache } from '../../utils/cache';
+import { getUserRoles } from '../../subgraph/queries/user';
 import { models, sequelize } from '../../database';
 import config from '../../config';
 
@@ -114,7 +115,7 @@ export async function answer(user: { userId: number; address: string }, answers:
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
 
-        const [lessonRegistry, verifiedUser] = await Promise.all([
+        const [lessonRegistry, verifiedUser, userRoles] = await Promise.all([
             models.learnAndEarnPrismicLesson.findOne({
                 attributes: ['lessonId', 'levelId'],
                 where: {
@@ -127,14 +128,15 @@ export async function answer(user: { userId: number; address: string }, answers:
                     id: user.userId,
                     phoneValidated: true
                 }
-            })
+            }),
+            getUserRoles(user.address)
         ]);
 
         if (!lessonRegistry) {
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
         }
-        if (!verifiedUser) {
-            throw new BaseError('USER_NOT_VALIDATED', 'user phone number is not validated');
+        if (!verifiedUser && !userRoles.beneficiary && !userRoles.manager) {
+            throw new BaseError('USER_NOT_VALIDATED', 'user phone number is not validated nor beneficiary/manager');
         }
 
         // check if already completed a lesson today
