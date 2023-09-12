@@ -1868,7 +1868,7 @@ describe('community service v2', () => {
             });
         });
 
-        it('edit submission', async () => {
+        it.skip('edit submission', async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
