@@ -3,6 +3,7 @@ import { database, interfaces, services, subgraph, utils } from '@impactmarket/c
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
+import { lookup } from '~services/attestation';
 import UserLogService from './log';
 import config from '~config/index';
 
@@ -76,8 +77,11 @@ export default class UserService {
             // create new user
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
+            // we could prevent this update, but we don't want to make the user wait
             if (clientId === 2) {
-                // TODO: include phone number validation
+                lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
+                    user.update({ phoneValidated: verified })
+                );
             }
         } else {
             const findAndUpdate = async () => {

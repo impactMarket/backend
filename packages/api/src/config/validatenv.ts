@@ -87,6 +87,8 @@ function validateEnv() {
         }),
         ATTESTATION_DEK_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         ATTESTATION_ODIS_PROXY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        ATTESTATION_FEDERATED_ATTESTATIONS_PROXY: str({ default: '0x0' }),
+        ATTESTATION_ISSUER_ADDRESS_CLIENT2: str({ default: '0x0' }),
         // twilio
         TWILIO_ACCOUNT_SID: str({ devDefault: onlyOnTestEnv('xyz') }),
         TWILIO_AUTH_TOKEN: str({ devDefault: onlyOnTestEnv('xyz') }),

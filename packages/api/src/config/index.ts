@@ -134,8 +134,10 @@ export default {
      */
     attestations: {
         issuerPrivateKey: validatedEnv.ATTESTATION_ISSUER_PRIVATE_KEY,
+        issuerAddressClient2: validatedEnv.ATTESTATION_ISSUER_ADDRESS_CLIENT2,
         dekPrivateKey: validatedEnv.ATTESTATION_DEK_PRIVATE_KEY,
-        odisProxy: validatedEnv.ATTESTATION_ODIS_PROXY
+        odisProxy: validatedEnv.ATTESTATION_ODIS_PROXY,
+        federatedAttestations: validatedEnv.ATTESTATION_FEDERATED_ATTESTATIONS_PROXY
     },
 
     /**

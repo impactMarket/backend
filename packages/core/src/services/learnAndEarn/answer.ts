@@ -114,15 +114,27 @@ export async function answer(user: { userId: number; address: string }, answers:
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
 
-        const lessonRegistry = await models.learnAndEarnPrismicLesson.findOne({
-            attributes: ['lessonId', 'levelId'],
-            where: {
-                prismicId
-            }
-        });
+        const [lessonRegistry, verifiedUser] = await Promise.all([
+            models.learnAndEarnPrismicLesson.findOne({
+                attributes: ['lessonId', 'levelId'],
+                where: {
+                    prismicId
+                }
+            }),
+            models.appUser.findOne({
+                attributes: ['id'],
+                where: {
+                    id: user.userId,
+                    phoneValidated: true
+                }
+            })
+        ]);
 
         if (!lessonRegistry) {
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
+        }
+        if (!verifiedUser) {
+            throw new BaseError('USER_NOT_VALIDATED', 'user phone number is not validated');
         }
 
         // check if already completed a lesson today
