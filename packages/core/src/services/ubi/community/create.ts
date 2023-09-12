@@ -8,12 +8,10 @@ import { CommunityDetailsService } from './details';
 import { LogTypes } from '../../../interfaces/app/appLog';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { models, sequelize } from '../../../database';
-import UserLogService from '../../app/user/log';
 
 export class CommunityCreateService {
     sequelize = sequelize;
     communityDetailsService = new CommunityDetailsService();
-    userLogService = new UserLogService();
 
     public async create({
         requestByAddress,
@@ -245,7 +243,12 @@ export class CommunityCreateService {
         }
 
         if (userId) {
-            this.userLogService.create(userId, LogTypes.EDITED_COMMUNITY, params, communityId);
+            await models.appLog.create({
+                userId,
+                type: LogTypes.EDITED_COMMUNITY,
+                detail: params,
+                communityId
+            });
         }
 
         return this.communityDetailsService.findById(communityId, address);

@@ -79,7 +79,7 @@ function validateEnv() {
         LEARN_AND_EARN_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SIGNATURE_EXPIRATION: num({ default: 15 }),
-        ADMIN_AUTHORISED_ADDRESSES: str(),
+        ADMIN_AUTHORISED_ADDRESSES: str({ default: '0x0' }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         // attestation service (ASv2)
         ATTESTATION_ISSUER_PRIVATE_KEY: str({
@@ -87,6 +87,8 @@ function validateEnv() {
         }),
         ATTESTATION_DEK_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         ATTESTATION_ODIS_PROXY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        ATTESTATION_FEDERATED_ATTESTATIONS_PROXY: str({ default: '0x0' }),
+        ATTESTATION_ISSUER_ADDRESS_CLIENT2: str({ default: '0x0' }),
         // twilio
         TWILIO_ACCOUNT_SID: str({ devDefault: onlyOnTestEnv('xyz') }),
         TWILIO_AUTH_TOKEN: str({ devDefault: onlyOnTestEnv('xyz') }),

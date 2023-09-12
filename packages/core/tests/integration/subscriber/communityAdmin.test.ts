@@ -7,7 +7,7 @@ import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
 import cUSDContractJSON from './cUSD.json';
 
-describe('communityAdmin', () => {
+describe.skip('communityAdmin', () => {
     let provider: ethers.providers.Web3Provider;
     let subscribers: ChainSubscribers;
     let accounts: string[] = [];

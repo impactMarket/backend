@@ -1,0 +1,33 @@
+[
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "trustedIssuers",
+        "type": "address[]"
+      }
+    ],
+    "name": "lookupIdentifiers",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "countsPerIssuer",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "identifiers",
+        "type": "bytes32[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

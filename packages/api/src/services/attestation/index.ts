@@ -14,6 +14,7 @@ import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
 import config from '../../config';
 import erc20ABI from './erc20ABI.json';
+import federatedAttestationsABI from './federatedAttestationsABI.json';
 import odisABI from './odisABI.json';
 
 const { client: prismic } = utils.prismic;
@@ -240,4 +241,22 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
     });
 
     return true;
+};
+
+/**
+ * Lookup if user has attestation by issuer
+ * @param userAddress user address to lookup
+ * @param issuer issuer address to use for lookup
+ * @returns boolean indicating if user has attestation by that issuer
+ */
+export const lookup = async (userAddress: string, issuer: string) => {
+    const provider = new JsonRpcProvider(config.chain.jsonRPCUrlCelo);
+    const federatedAttestationsContract = new Contract(
+        config.attestations.federatedAttestations,
+        federatedAttestationsABI,
+        provider
+    );
+    const attestations = await federatedAttestationsContract.lookupIdentifiers(userAddress, [issuer]);
+
+    return attestations.identifiers.length > 0;
 };

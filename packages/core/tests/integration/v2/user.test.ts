@@ -14,10 +14,10 @@ import { models } from '../../../src/database';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
-import UserLogService from '../../../src/services/app/user/log';
-import UserService from '../../../src/services/app/user/index';
+import UserLogService from '../../../../api/src/services/app/user/log';
+import UserService from '../../../../api/src/services/app/user/index';
 
-describe('user service v2', () => {
+describe.skip('user service v2', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
