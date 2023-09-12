@@ -76,13 +76,7 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            user = await models.appUser.create(userParams);
-            // we could prevent this update, but we don't want to make the user wait
-            if (clientId === 2) {
-                lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
-                    user.update({ phoneValidated: verified })
-                );
-            }
+            user = await models.appUser.create(clientId ? { ...userParams, clientId } : userParams);
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -149,6 +143,14 @@ export default class UserService {
                     read: false
                 }
             });
+        }
+
+        // we could prevent this update, but we don't want to make the user wait
+        // TODO: this is temporarly here, will be moved back to "if (!exists)" block
+        if (clientId === 2) {
+            lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
+                user.update({ phoneValidated: verified })
+            );
         }
 
         this._updateLastLogin(user.id);
