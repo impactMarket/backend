@@ -15,7 +15,7 @@ export const cache =
     async (req: RequestWithUser, res: any, next: NextFunction) => {
         // adding 'user' to user key to avoid cache collision netween user ids and level ids
         const key =
-            '__express__' + (req.originalUrl || req.url) + (useUserCache && req.user && `user${req.user!.userId}`);
+            '__express__' + (req.originalUrl || req.url) + (useUserCache && req.user ? `user${req.user!.userId}` : '');
         const cachedBody = await redis.get(key);
         if (cachedBody) {
             res.send(cachedBody);
