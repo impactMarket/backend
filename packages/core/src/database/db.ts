@@ -32,6 +32,7 @@ import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUs
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
 import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { MicroCreditApplicationModel } from './models/microCredit/applications';
+import { MicroCreditBorrowersHumaModel } from './models/microCredit/borrowersHuma';
 import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
 import { MicroCreditNoteModel } from './models/microCredit/note';
@@ -115,6 +116,7 @@ export type DbModels = {
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
     microCreditApplications: ModelStatic<MicroCreditApplicationModel>;
     microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
+    microCreditBorrowersHuma: ModelStatic<MicroCreditBorrowersHumaModel>;
     microCreditNote: ModelStatic<MicroCreditNoteModel>;
     subgraphMicroCreditBorrowers: ModelStatic<SubgraphMicroCreditBorrowersModel>;
     //
