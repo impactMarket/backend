@@ -35,6 +35,14 @@ jobs:
       - run: yarn
       - run: yarn prettier:dryrun
       - run: yarn eslint:dryrun
+      - run: yarn build
+  build:
+    docker:
+      - image: cimg/node:18.12.1
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn build
 
 workflows:
   version: 2
@@ -42,3 +50,4 @@ workflows:
     jobs:
       - lint
       - coverage
+      - build
