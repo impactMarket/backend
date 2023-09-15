@@ -27,6 +27,7 @@ import { initializeLearnAndEarnPrismicLesson } from './learnAndEarn/learnAndEarn
 import { initializeLearnAndEarnPrismicLevel } from './learnAndEarn/learnAndEarnPrismicLevel';
 import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
 import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
+import { initializeLearnAndEarnUserData } from './learnAndEarn/learnAndEarnUserData';
 import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUserLesson';
 import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
@@ -124,6 +125,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserLesson(sequelize);
     initializeLearnAndEarnUserLevel(sequelize);
     initializeLearnAndEarnPayment(sequelize);
+    initializeLearnAndEarnUserData(sequelize);
 
     // MicroCredit
     initializeMicroCreditDocs(sequelize);
