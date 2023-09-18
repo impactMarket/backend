@@ -8878,9 +8878,10 @@ blessed@^0.1.81:
   resolved "https://registry.yarnpkg.com/blessed/-/blessed-0.1.81.tgz#f962d687ec2c369570ae71af843256e6d0ca1129"
   integrity sha512-LoF5gae+hlmfORcG1M5+5XZi4LBmvlXTzwJWzUlPryN/SJdSflZvROM2TwkT0GMpq7oqT48NRd4GS7BiVBc5OQ==
 
-"blind-threshold-bls@git+https://github.com/celo-org/blind-threshold-bls-wasm.git#e1e2f8a":
+"blind-threshold-bls@https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a":
   version "0.1.0"
-  resolved "git+https://github.com/celo-org/blind-threshold-bls-wasm.git#e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208"
+  uid e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208
+  resolved "https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208"
 
 blob-to-it@^1.0.1:
   version "1.0.4"
@@ -21585,10 +21586,10 @@ range-parser@^1.2.1, range-parser@~1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
-rate-limit-redis@*, rate-limit-redis@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/rate-limit-redis/-/rate-limit-redis-3.1.0.tgz#1af407dbe43e8d04b0234ca0b5d0318df8db4e55"
-  integrity sha512-guCQGRQhsOlTR4VNHRnksMeet/3ImfdxIQgWP6In4FphJjUbORe0F4XeFshLnbc9xcuFUv9jZL44TgUMSz4XPQ==
+rate-limit-redis@*, rate-limit-redis@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/rate-limit-redis/-/rate-limit-redis-4.0.0.tgz#efe61939818b7b269d611c4ec3f1029caf5f9acf"
+  integrity sha512-JEFxvflLPihvSvawLn4cZSldkfTTdmoZQvZRHxAgVrY/Hthp3qfC/MZJv75aA48lhLc7siB7yPJVzEecw5IbXQ==
 
 raw-body@2.5.1:
   version "2.5.1"

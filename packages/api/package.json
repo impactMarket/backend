@@ -63,7 +63,7 @@
         "module-alias": "2.2.2",
         "morgan": "1.10.0",
         "multer": "1.4.5-lts.1",
-        "rate-limit-redis": "3.1.0",
+        "rate-limit-redis": "4.0.0",
         "swagger-jsdoc": "6.2.8",
         "swagger-ui-express": "5.0.0",
         "ts-node": "10.9.1",
