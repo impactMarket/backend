@@ -31,12 +31,7 @@ export default class UserService {
     private userLogService = new UserLogService();
     private profileContentStorage = new ProfileContentStorage();
 
-    public async create(
-        userParams: AppUserCreationAttributes,
-        overwrite: boolean = false,
-        recover: boolean = false,
-        clientId?: number
-    ) {
+    public async create(userParams: AppUserCreationAttributes, overwrite: boolean = false, recover: boolean = false) {
         const exists = await this._exists(userParams.address);
 
         if (overwrite) {
@@ -76,7 +71,7 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            user = await models.appUser.create(clientId ? { ...userParams, clientId } : userParams);
+            user = await models.appUser.create(userParams);
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -119,7 +114,7 @@ export default class UserService {
 
             [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
-                clientId !== 2
+                userParams.clientId !== 2
                     ? this._userRoles(userParams.address)
                     : {
                           roles: [],
@@ -130,7 +125,7 @@ export default class UserService {
                           ambassador: null,
                           loanManager: null
                       },
-                clientId !== 2
+                userParams.clientId !== 2
                     ? this._userRules(userParams.address)
                     : {
                           beneficiaryRules: false,
@@ -147,10 +142,15 @@ export default class UserService {
 
         // we could prevent this update, but we don't want to make the user wait
         // TODO: this is temporarly here, will be moved back to "if (!exists)" block
-        if (clientId === 2) {
-            lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
-                user.update({ phoneValidated: verified })
-            );
+        if (userParams.clientId === 2) {
+            if (!user.phoneValidated) {
+                lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
+                    user.update({ phoneValidated: verified })
+                );
+            }
+            if (!user.clientId) {
+                user.update({ clientId: 2 });
+            }
         }
 
         this._updateLastLogin(user.id);
