@@ -571,7 +571,7 @@ export default class UserService {
                 councilMember: null,
                 ambassador: null,
                 loanManager: null
-            }
+            };
         }
         const [userRoles, user] = await Promise.all([
             getUserRoles(address),
@@ -646,7 +646,7 @@ export default class UserService {
             return {
                 beneficiaryRules: false,
                 managerRules: false
-            }
+            };
         }
         const user = await models.appUser.findOne({
             attributes: ['readBeneficiaryRules', 'readManagerRules'],
