@@ -114,23 +114,8 @@ export default class UserService {
 
             [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
-                userParams.clientId !== 2
-                    ? this._userRoles(userParams.address)
-                    : {
-                          roles: [],
-                          beneficiary: null,
-                          borrower: null,
-                          manager: null,
-                          councilMember: null,
-                          ambassador: null,
-                          loanManager: null
-                      },
-                userParams.clientId !== 2
-                    ? this._userRules(userParams.address)
-                    : {
-                          beneficiaryRules: false,
-                          managerRules: false
-                      }
+                this._userRoles(userParams.address, userParams.clientId),
+                this._userRules(userParams.address, userParams.clientId)
             ]);
             notificationsCount = await models.appNotification.count({
                 where: {
@@ -171,23 +156,8 @@ export default class UserService {
             models.appUser.findOne({
                 where: { address }
             }),
-            clientId !== 2
-                ? this._userRoles(address)
-                : {
-                      roles: [],
-                      beneficiary: null,
-                      borrower: null,
-                      manager: null,
-                      councilMember: null,
-                      ambassador: null,
-                      loanManager: null
-                  },
-            clientId !== 2
-                ? this._userRules(address)
-                : {
-                      beneficiaryRules: false,
-                      managerRules: false
-                  }
+            this._userRoles(address, clientId),
+            this._userRules(address, clientId)
         ]);
 
         if (user === null) {
@@ -591,7 +561,18 @@ export default class UserService {
         await models.appUser.update({ lastLogin: new Date() }, { where: { id } });
     }
 
-    private async _userRoles(address: string) {
+    private async _userRoles(address: string, clientId?: number) {
+        if (clientId === 2) {
+            return {
+                roles: [],
+                beneficiary: null,
+                borrower: null,
+                manager: null,
+                councilMember: null,
+                ambassador: null,
+                loanManager: null
+            }
+        }
         const [userRoles, user] = await Promise.all([
             getUserRoles(address),
             models.appUser.findOne({
@@ -660,7 +641,13 @@ export default class UserService {
         };
     }
 
-    private async _userRules(address: string) {
+    private async _userRules(address: string, clientId?: number) {
+        if (clientId === 2) {
+            return {
+                beneficiaryRules: false,
+                managerRules: false
+            }
+        }
         const user = await models.appUser.findOne({
             attributes: ['readBeneficiaryRules', 'readManagerRules'],
             where: { address }
