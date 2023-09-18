@@ -2,8 +2,6 @@ import { Router } from 'express';
 
 import { ClaimLocationController } from '../../controllers/v2/claimLocation';
 import { authenticateToken } from '../../middlewares';
-import { cache } from '../../middlewares/cache-redis';
-import { cacheIntervals } from '../../utils/api';
 import claimLocationValidators from '../../validators/claimLocation';
 
 export default (app: Router): void => {
@@ -25,7 +23,8 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      */
-    route.get('/', cache(cacheIntervals.oneDay), controller.getAll);
+    route.get('/', controller.getAll);
+    // route.get('/', cache(cacheIntervals.oneDay), controller.getAll);
 
     /**
      * @swagger
