@@ -25,7 +25,8 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      */
-    route.get('/', cache(cacheIntervals.oneDay), controller.getAll);
+    route.get('/', controller.getAll);
+    // route.get('/', cache(cacheIntervals.oneDay), controller.getAll);
 
     /**
      * @swagger
