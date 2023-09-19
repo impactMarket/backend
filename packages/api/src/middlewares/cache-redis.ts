@@ -1,7 +1,7 @@
+import { json as JSON } from 'typia';
 import { NextFunction } from 'express';
 import { RequestWithUser } from './core';
 import { database } from '@impactmarket/core';
-import { json as JSON } from 'typia';
 
 const { redisClient: redis } = database;
 
