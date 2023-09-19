@@ -1,6 +1,7 @@
 import { NextFunction } from 'express';
 import { RequestWithUser } from './core';
 import { database } from '@impactmarket/core';
+import { json as JSON } from 'typia';
 
 const { redisClient: redis } = database;
 
@@ -18,7 +19,7 @@ export const cache =
             '__express__' + (req.originalUrl || req.url) + (useUserCache && req.user ? `user${req.user!.userId}` : '');
         const cachedBody = await redis.get(key);
         if (cachedBody) {
-            res.send(JSON.parse(cachedBody));
+            res.send(JSON.isParse(cachedBody));
         } else {
             res.sendResponse = res.send;
             res.send = (body: any) => {
