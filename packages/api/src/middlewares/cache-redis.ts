@@ -18,13 +18,13 @@ export const cache =
             '__express__' + (req.originalUrl || req.url) + (useUserCache && req.user ? `user${req.user!.userId}` : '');
         const cachedBody = await redis.get(key);
         if (cachedBody) {
-            res.send(cachedBody);
+            res.send(JSON.parse(cachedBody));
         } else {
             res.sendResponse = res.send;
             res.send = (body: any) => {
                 // Only cache if the response is 200
                 if (res.statusCode === 200) {
-                    redis.set(key, body, 'EX', duration);
+                    redis.set(key, JSON.stringify(body), 'EX', duration);
                 }
                 res.sendResponse(body);
             };
