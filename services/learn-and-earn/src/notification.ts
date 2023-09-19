@@ -1,5 +1,5 @@
 import { database, utils, interfaces } from '@impactmarket/core';
-import { fn, col, Op } from 'sequelize';
+import { fn, col, Op, literal } from 'sequelize';
 import admin from 'firebase-admin';
 
 export async function availableCourses() {
@@ -42,42 +42,36 @@ export async function availableCourses() {
     
 }
 
-export async function incompleteCouses(): Promise<void> {
+export async function incompleteCourses(): Promise<void> {
     const { learnAndEarnUserLevel } = database.models;
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const users = await learnAndEarnUserLevel.findAll({
+    const usersToNotify = await learnAndEarnUserLevel.findAll({
         attributes: [
-            [fn('DISTINCT', col('userId')) ,'userId'],
+            [fn('DISTINCT', col('userId')), 'userId'],
         ],
         where: {
             status: 'started',
             createdAt: {
                 [Op.lt]: oneWeekAgo,
-            }
-        }
-    });
-
-    // avoid who already was notified
-    const userIds = users.map(user => user.userId);
-    const notifications = await database.models.appNotification.findAll({
-        attributes: ['userId'],
-        where: {
-            userId: {
-                [Op.in]: userIds,
             },
-            type: interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL,
-            createdAt: {
-                [Op.gt]: oneWeekAgo,
-            }
+            userId: {
+                [Op.notIn]: literal(`(
+                    SELECT DISTINCT "userId" FROM "app_notification"
+                    WHERE "type" = ${interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL}
+                    AND "createdAt" > '${oneWeekAgo.toISOString()}'
+                )`),
+            },
         },
+        raw: true,
     });
 
-    const usersNotified = notifications.map(notification => notification.userId);
-    const usersToNotify = userIds.filter(el => !usersNotified.includes(el));
+    if (usersToNotify.length === 0) {
+        return;
+    }
 
-    await _sendPushNotification(usersToNotify, interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL)
+    await _sendPushNotification(usersToNotify.map(user => user.userId), interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL)
 }
 
 export const _sendPushNotification = async (usersToNotify: number[], type: number) => {
