@@ -2,9 +2,9 @@ import { Router } from 'express';
 
 import { ClaimLocationController } from '../../controllers/v2/claimLocation';
 import { authenticateToken } from '../../middlewares';
-import claimLocationValidators from '../../validators/claimLocation';
 import { cache } from '../../middlewares/cache-redis';
 import { cacheIntervals } from '../../utils/api';
+import claimLocationValidators from '../../validators/claimLocation';
 
 export default (app: Router): void => {
     const controller = new ClaimLocationController();
