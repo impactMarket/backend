@@ -9,6 +9,7 @@ export async function availableCourses() {
     yesterday.setHours(0, 0, 0, 0);
 
     const newCourses = await learnAndEarnPrismicLevel.findAll({
+        attributes: ['language'],
         where: {
             availableAt: {
                 [Op.gt]: yesterday
