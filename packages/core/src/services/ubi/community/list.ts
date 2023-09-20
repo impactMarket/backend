@@ -3,12 +3,11 @@ import { Literal } from 'sequelize/types/utils';
 import { ethers } from 'ethers';
 
 import { BaseError } from '../../../utils/baseError';
-import { Community } from '../../../database/models/ubi/community';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { CommunityDetailsService } from './details';
 import { UbiCommunityLabel } from '../../../interfaces/ubi/ubiCommunityLabel';
-import { communityEntities, getAmbassadorByAddress, getCommunityProposal } from '../../../subgraph/queries/community';
 import { fetchData } from '../../../utils/dataFetching';
+import { getAmbassadorByAddress, getCommunityProposal } from '../../../subgraph/queries/community';
 import { getSearchInput } from '../../../utils/util';
 import { models } from '../../../database';
 import config from '../../../config';
