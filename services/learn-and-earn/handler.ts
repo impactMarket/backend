@@ -23,5 +23,3 @@ export const notification = async (event, context) => {
         utils.slack.sendSlackMessage('🚨 Error notify available courses and lessons', config.slack.lambdaChannel);
     }
 };
-
-notification(null, null)
