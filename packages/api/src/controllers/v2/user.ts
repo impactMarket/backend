@@ -36,7 +36,7 @@ class UserController {
             overwrite,
             recover
         } = req.body;
-        const clientId = parseInt(req.headers['client-id'] as string, 10);
+        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .create(
                 {
@@ -57,8 +57,7 @@ class UserController {
                     clientId
                 },
                 overwrite,
-                recover,
-                clientId
+                recover
             )
             .then(user =>
                 standardResponse(res, 201, true, {
@@ -79,7 +78,7 @@ class UserController {
             });
             return;
         }
-        const clientId = parseInt(req.headers['client-id'] as string, 10);
+        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .get(req.user.address, clientId)
             .then(user =>

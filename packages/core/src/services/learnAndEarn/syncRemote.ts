@@ -1,6 +1,6 @@
 import { BaseError } from '../../utils/baseError';
 import { cleanLearnAndEarnCache } from '../../utils/cache';
-import { models, sequelize } from '../../database';
+import { models, redisClient, sequelize } from '../../database';
 import { client as prismic } from '../../utils/prismic';
 
 async function getPrismicLearnAndEarn() {
@@ -95,6 +95,8 @@ async function getPrismicLearnAndEarn() {
                 }
             }
         }
+
+        await redisClient.del('countAllLevelsAndLessons');
 
         await t.commit();
     } catch (error) {

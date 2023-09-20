@@ -11,6 +11,7 @@ const { models } = database;
 const { getUserRoles } = subgraph.queries.user;
 const { getAllBeneficiaries } = subgraph.queries.beneficiary;
 const { ProfileContentStorage } = services.storage;
+const { recalculate } = services.learnAndEarn;
 
 type AppNotification = interfaces.app.appNotification.AppNotification;
 type AppUserCreationAttributes = interfaces.app.appUser.AppUserCreationAttributes;
@@ -31,12 +32,7 @@ export default class UserService {
     private userLogService = new UserLogService();
     private profileContentStorage = new ProfileContentStorage();
 
-    public async create(
-        userParams: AppUserCreationAttributes,
-        overwrite: boolean = false,
-        recover: boolean = false,
-        clientId?: number
-    ) {
+    public async create(userParams: AppUserCreationAttributes, overwrite: boolean = false, recover: boolean = false) {
         const exists = await this._exists(userParams.address);
 
         if (overwrite) {
@@ -76,7 +72,7 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            user = await models.appUser.create(clientId ? { ...userParams, clientId } : userParams);
+            user = await models.appUser.create(userParams);
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -119,23 +115,8 @@ export default class UserService {
 
             [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
-                clientId !== 2
-                    ? this._userRoles(userParams.address)
-                    : {
-                          roles: [],
-                          beneficiary: null,
-                          borrower: null,
-                          manager: null,
-                          councilMember: null,
-                          ambassador: null,
-                          loanManager: null
-                      },
-                clientId !== 2
-                    ? this._userRules(userParams.address)
-                    : {
-                          beneficiaryRules: false,
-                          managerRules: false
-                      }
+                this._userRoles(userParams.address, userParams.clientId),
+                this._userRules(userParams.address, userParams.clientId)
             ]);
             notificationsCount = await models.appNotification.count({
                 where: {
@@ -147,10 +128,15 @@ export default class UserService {
 
         // we could prevent this update, but we don't want to make the user wait
         // TODO: this is temporarly here, will be moved back to "if (!exists)" block
-        if (clientId === 2) {
-            lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
-                user.update({ phoneValidated: verified })
-            );
+        if (userParams.clientId === 2) {
+            if (!user.phoneValidated) {
+                lookup(userParams.address, config.attestations.issuerAddressClient2).then(verified =>
+                    user.update({ phoneValidated: verified })
+                );
+            }
+            if (!user.clientId) {
+                user.update({ clientId: 2 });
+            }
         }
 
         this._updateLastLogin(user.id);
@@ -171,23 +157,8 @@ export default class UserService {
             models.appUser.findOne({
                 where: { address }
             }),
-            clientId !== 2
-                ? this._userRoles(address)
-                : {
-                      roles: [],
-                      beneficiary: null,
-                      borrower: null,
-                      manager: null,
-                      councilMember: null,
-                      ambassador: null,
-                      loanManager: null
-                  },
-            clientId !== 2
-                ? this._userRules(address)
-                : {
-                      beneficiaryRules: false,
-                      managerRules: false
-                  }
+            this._userRoles(address, clientId),
+            this._userRules(address, clientId)
         ]);
 
         if (user === null) {
@@ -228,18 +199,22 @@ export default class UserService {
             if (existsPhone) throw new utils.BaseError('PHONE_CONFLICT', 'phone associated with another account');
         }
 
-        const updated = await models.appUser.update(user, {
+        const [updated, rows] = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address }
         });
-        if (updated[0] === 0) {
+        if (updated === 0) {
             throw new utils.BaseError('UPDATE_FAILED', 'user was not updated!');
         }
 
-        this.userLogService.create(updated[1][0].id, LogTypes.EDITED_PROFILE, user);
+        if (user.language) {
+            recalculate(rows[0].id, user.language);
+        }
+
+        this.userLogService.create(rows[0].id, LogTypes.EDITED_PROFILE, user);
 
         return {
-            ...updated[1][0].toJSON(),
+            ...rows[0].toJSON(),
             ...(await this._userRoles(user.address)),
             ...(await this._userRules(user.address))
         };
@@ -591,7 +566,18 @@ export default class UserService {
         await models.appUser.update({ lastLogin: new Date() }, { where: { id } });
     }
 
-    private async _userRoles(address: string) {
+    private async _userRoles(address: string, clientId?: number) {
+        if (clientId === 2) {
+            return {
+                roles: [],
+                beneficiary: null,
+                borrower: null,
+                manager: null,
+                councilMember: null,
+                ambassador: null,
+                loanManager: null
+            };
+        }
         const [userRoles, user] = await Promise.all([
             getUserRoles(address),
             models.appUser.findOne({
@@ -660,7 +646,13 @@ export default class UserService {
         };
     }
 
-    private async _userRules(address: string) {
+    private async _userRules(address: string, clientId?: number) {
+        if (clientId === 2) {
+            return {
+                beneficiaryRules: false,
+                managerRules: false
+            };
+        }
         const user = await models.appUser.findOne({
             attributes: ['readBeneficiaryRules', 'readManagerRules'],
             where: { address }

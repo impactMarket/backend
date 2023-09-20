@@ -27,6 +27,7 @@ import { LearnAndEarnPrismicLessonModel } from './models/learnAndEarn/learnAndEa
 import { LearnAndEarnPrismicLevelModel } from './models/learnAndEarn/learnAndEarnPrismicLevel';
 import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
+import { LearnAndEarnUserDataModel } from './models/learnAndEarn/learnAndEarnUserData';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
@@ -109,6 +110,7 @@ export type DbModels = {
     learnAndEarnUserLesson: ModelStatic<LearnAndEarnUserLessonModel>;
     learnAndEarnUserLevel: ModelStatic<LearnAndEarnUserLevelModel>;
     learnAndEarnPayment: ModelStatic<LearnAndEarnPaymentModel>;
+    learnAndEarnUserData: ModelStatic<LearnAndEarnUserDataModel>;
     //
     merchantRegistry: ModelStatic<MerchantRegistryModel>;
     merchantCommunity: ModelStatic<MerchantCommunityModel>;
