@@ -11,6 +11,7 @@ const { models } = database;
 const { getUserRoles } = subgraph.queries.user;
 const { getAllBeneficiaries } = subgraph.queries.beneficiary;
 const { ProfileContentStorage } = services.storage;
+const { recalculate } = services.learnAndEarn;
 
 type AppNotification = interfaces.app.appNotification.AppNotification;
 type AppUserCreationAttributes = interfaces.app.appUser.AppUserCreationAttributes;
@@ -198,18 +199,22 @@ export default class UserService {
             if (existsPhone) throw new utils.BaseError('PHONE_CONFLICT', 'phone associated with another account');
         }
 
-        const updated = await models.appUser.update(user, {
+        const [updated, rows] = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address }
         });
-        if (updated[0] === 0) {
+        if (updated === 0) {
             throw new utils.BaseError('UPDATE_FAILED', 'user was not updated!');
         }
 
-        this.userLogService.create(updated[1][0].id, LogTypes.EDITED_PROFILE, user);
+        if (user.language) {
+            recalculate(rows[0].id, user.language);
+        }
+
+        this.userLogService.create(rows[0].id, LogTypes.EDITED_PROFILE, user);
 
         return {
-            ...updated[1][0].toJSON(),
+            ...rows[0].toJSON(),
             ...(await this._userRoles(user.address)),
             ...(await this._userRules(user.address))
         };

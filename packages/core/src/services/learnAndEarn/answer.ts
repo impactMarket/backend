@@ -288,6 +288,10 @@ export async function answer(user: { userId: number; address: string }, answers:
                 await savePayment(user.userId, lessonRegistry.levelId, amount, signature, t);
             }
 
+            await models.learnAndEarnUserData.increment(['lessons', 'levels'], {
+                where: { userId: user.userId },
+                transaction: t
+            });
             await t.commit();
             cleanLearnAndEarnCache(user.userId);
             return {
@@ -299,6 +303,7 @@ export async function answer(user: { userId: number; address: string }, answers:
                 levelCompleted: lessonRegistry.levelId
             };
         }
+        await models.learnAndEarnUserData.increment('lessons', { where: { userId: user.userId }, transaction: t });
         await t.commit();
         cleanLearnAndEarnCache(user.userId);
         return {
