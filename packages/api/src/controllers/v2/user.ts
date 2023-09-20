@@ -81,11 +81,13 @@ class UserController {
         const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .get(req.user.address, clientId)
-            .then(user =>
-                !req.timedout && standardResponse(res, 201, true, {
-                    ...user,
-                    age: user.year ? new Date().getUTCFullYear() - user.year : null
-                })
+            .then(
+                user =>
+                    !req.timedout &&
+                    standardResponse(res, 201, true, {
+                        ...user,
+                        age: user.year ? new Date().getUTCFullYear() - user.year : null
+                    })
             )
             .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };

@@ -177,7 +177,9 @@ export default (app: express.Application): void => {
     app.use((req, res) =>
         res.status(req.timedout ? 408 : 404).send({
             success: false,
-            error: req.timedout ? 'Request Timeout' : 'This route does not exist! Please, visit the swagger docs at /api-docs'
+            error: req.timedout
+                ? 'Request Timeout'
+                : 'This route does not exist! Please, visit the swagger docs at /api-docs'
         })
     );
 };
