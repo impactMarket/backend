@@ -10,7 +10,8 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         learnAndEarnUserLevel,
         learnAndEarnUserLesson,
         learnAndEarnPrismicLevel,
-        learnAndEarnPrismicLesson
+        learnAndEarnPrismicLesson,
+        appNotification
     } = sequelize.models as DbModels;
 
     learnAndEarnLevel.hasMany(learnAndEarnUserLevel, {
@@ -34,6 +35,12 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user'
+    });
+
+    learnAndEarnUserLevel.belongsTo(appNotification, {
+        foreignKey: 'userId',
+        targetKey: 'userId',
+        as: 'notifications'
     });
 
     learnAndEarnPrismicLevel.hasMany(learnAndEarnPrismicLesson, {

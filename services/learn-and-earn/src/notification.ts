@@ -43,27 +43,29 @@ export async function availableCourses() {
 }
 
 export async function incompleteCourses(): Promise<void> {
-    const { learnAndEarnUserLevel } = database.models;
+    const { learnAndEarnUserLevel, appNotification } = database.models;
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const usersToNotify = await learnAndEarnUserLevel.findAll({
-        attributes: [
-            [fn('DISTINCT', col('userId')), 'userId'],
-        ],
+    const usersToNotify = await learnAndEarnUserLevel. findAll({
+        attributes: ['userId'],
+        include: [{
+            attributes: [],
+            model: appNotification,
+            as: 'notifications',
+            required: false,
+            where: {
+                type: interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL,
+            },
+        }],
         where: {
             status: 'started',
             createdAt: {
                 [Op.lt]: oneWeekAgo,
             },
-            userId: {
-                [Op.notIn]: literal(`(
-                    SELECT DISTINCT "userId" FROM "app_notification"
-                    WHERE "type" = ${interfaces.app.appNotification.NotificationType.LEARN_AND_EARN_FINISH_LEVEL}
-                    AND "createdAt" > '${oneWeekAgo.toISOString()}'
-                )`),
-            },
         },
+        having: literal(`MAX(notifications."createdAt") IS NULL OR MAX(notifications."createdAt") <= CURRENT_TIMESTAMP - INTERVAL '7 days'`),
+        group: ['learnAndEarnUserLevel.userId'],
         raw: true,
     });
 
