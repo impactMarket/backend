@@ -43,6 +43,7 @@ import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeStoryUserReport } from './story/storyUserReport';
+import { initializeSubgraphCommunity } from './ubi/subgraphCommunity';
 import { initializeSubgraphMicroCreditBorrowers } from './microCredit/subgraphBorrowers';
 import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
@@ -89,6 +90,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
     initializeUbiCommunityCampaign(sequelize);
+    initializeSubgraphCommunity(sequelize);
 
     // global
     initializeGlobalDailyState(sequelize);
