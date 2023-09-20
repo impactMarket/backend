@@ -15,7 +15,13 @@ const { redisClient } = database;
 export function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
+    const clientIdHeader = req.headers['client-id'];
     const token = authHeader && authHeader.split(' ')[1];
+
+    if (clientIdHeader) {
+        req.clientId = parseInt(clientIdHeader as string, 10);
+    }
+
     if (token === null || token === undefined) {
         if ((req as any).authTokenIsOptional) {
             next();
@@ -36,6 +42,7 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
             return;
         }
 
+        // TODO: need to unify with header client-id
         if (_user.clientId) {
             // validate external token
             const credential = await database.models.appClientCredential.findOne({

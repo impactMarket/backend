@@ -4,6 +4,7 @@ import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applicat
 import { Create as MicroCreditCreate } from '../services/microcredit';
 import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
 import { Op, Transaction } from 'sequelize';
+import { cleanMicroCreditBorrowersCache } from '../utils/cache';
 import { config, contracts, database, services, subgraph, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
@@ -391,7 +392,7 @@ class ChainSubscribers {
                     this.provider.getTransaction(log.transactionHash)
                 ]);
                 if (user) {
-                    const [[borrower, created]] = await Promise.all([
+                    const [[borrower, created], loanManagerUser] = await Promise.all([
                         models.microCreditBorrowers.findOrCreate({
                             where: {
                                 userId: user.id
@@ -403,12 +404,21 @@ class ChainSubscribers {
                             },
                             transaction
                         }),
+                        models.appUser.findOne({
+                            attributes: ['id'],
+                            where: {
+                                address: getAddress(transactionsReceipt.from)
+                            }
+                        }),
                         this.microCreditService.updateApplication(
                             [userAddress],
                             [MicroCreditApplicationStatus.APPROVED],
                             transaction
                         )
                     ]);
+                    if (loanManagerUser) {
+                        cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                    }
                     if (!created) {
                         this._waitForSubgraphToIndex(log).then(() => {
                             utils.cache.cleanUserRolesCache(userAddress);

@@ -7,6 +7,8 @@ import { client as prismic } from '../../utils/prismic';
 import BigNumber from 'bignumber.js';
 
 import { BaseError } from '../../utils/baseError';
+import { cleanLearnAndEarnCache } from '../../utils/cache';
+import { getUserRoles } from '../../subgraph/queries/user';
 import { models, sequelize } from '../../database';
 import config from '../../config';
 
@@ -113,15 +115,28 @@ export async function answer(user: { userId: number; address: string }, answers:
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
 
-        const lessonRegistry = await models.learnAndEarnPrismicLesson.findOne({
-            attributes: ['lessonId', 'levelId'],
-            where: {
-                prismicId
-            }
-        });
+        const [lessonRegistry, verifiedUser, userRoles] = await Promise.all([
+            models.learnAndEarnPrismicLesson.findOne({
+                attributes: ['lessonId', 'levelId'],
+                where: {
+                    prismicId
+                }
+            }),
+            models.appUser.findOne({
+                attributes: ['id'],
+                where: {
+                    id: user.userId,
+                    phoneValidated: true
+                }
+            }),
+            getUserRoles(user.address)
+        ]);
 
         if (!lessonRegistry) {
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
+        }
+        if (!verifiedUser && !userRoles.beneficiary && !userRoles.manager) {
+            throw new BaseError('USER_NOT_VALIDATED', 'user phone number is not validated nor beneficiary/manager');
         }
 
         // check if already completed a lesson today
@@ -172,6 +187,8 @@ export async function answer(user: { userId: number; address: string }, answers:
             });
 
             // return wrong answers
+            await t.rollback();
+            cleanLearnAndEarnCache(user.userId);
             return {
                 success: false,
                 wrongAnswers,
@@ -271,7 +288,12 @@ export async function answer(user: { userId: number; address: string }, answers:
                 await savePayment(user.userId, lessonRegistry.levelId, amount, signature, t);
             }
 
+            await models.learnAndEarnUserData.increment(['lessons', 'levels'], {
+                where: { userId: user.userId },
+                transaction: t
+            });
             await t.commit();
+            cleanLearnAndEarnCache(user.userId);
             return {
                 success: true,
                 attempts,
@@ -281,7 +303,9 @@ export async function answer(user: { userId: number; address: string }, answers:
                 levelCompleted: lessonRegistry.levelId
             };
         }
+        await models.learnAndEarnUserData.increment('lessons', { where: { userId: user.userId }, transaction: t });
         await t.commit();
+        cleanLearnAndEarnCache(user.userId);
         return {
             success: true,
             attempts,

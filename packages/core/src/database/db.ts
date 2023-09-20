@@ -27,11 +27,13 @@ import { LearnAndEarnPrismicLessonModel } from './models/learnAndEarn/learnAndEa
 import { LearnAndEarnPrismicLevelModel } from './models/learnAndEarn/learnAndEarnPrismicLevel';
 import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
+import { LearnAndEarnUserDataModel } from './models/learnAndEarn/learnAndEarnUserData';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
 import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { MicroCreditApplicationModel } from './models/microCredit/applications';
+import { MicroCreditBorrowersHumaModel } from './models/microCredit/borrowersHuma';
 import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
 import { MicroCreditNoteModel } from './models/microCredit/note';
@@ -108,6 +110,7 @@ export type DbModels = {
     learnAndEarnUserLesson: ModelStatic<LearnAndEarnUserLessonModel>;
     learnAndEarnUserLevel: ModelStatic<LearnAndEarnUserLevelModel>;
     learnAndEarnPayment: ModelStatic<LearnAndEarnPaymentModel>;
+    learnAndEarnUserData: ModelStatic<LearnAndEarnUserDataModel>;
     //
     merchantRegistry: ModelStatic<MerchantRegistryModel>;
     merchantCommunity: ModelStatic<MerchantCommunityModel>;
@@ -115,6 +118,7 @@ export type DbModels = {
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
     microCreditApplications: ModelStatic<MicroCreditApplicationModel>;
     microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
+    microCreditBorrowersHuma: ModelStatic<MicroCreditBorrowersHumaModel>;
     microCreditNote: ModelStatic<MicroCreditNoteModel>;
     subgraphMicroCreditBorrowers: ModelStatic<SubgraphMicroCreditBorrowersModel>;
     //

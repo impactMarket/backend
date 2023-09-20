@@ -1,5 +1,6 @@
 import { BaseError } from '../../utils/baseError';
-import { models } from '../../database';
+import { cleanLearnAndEarnCache } from '../../utils/cache';
+import { models, sequelize } from '../../database';
 
 export async function startLesson(userId: number, prismicId: string) {
     try {
@@ -11,38 +12,57 @@ export async function startLesson(userId: number, prismicId: string) {
             }
         });
 
-        // create userLesson
-        const userLesson = await models.learnAndEarnUserLesson.findOrCreate({
-            where: {
-                lessonId: lesson!.lessonId,
-                levelId: lesson!.levelId,
-                userId
-            },
-            defaults: {
-                lessonId: lesson!.lessonId,
-                levelId: lesson!.levelId,
-                userId,
-                points: 0,
-                attempts: 0,
-                status
-            }
-        });
+        if (!lesson) {
+            throw new BaseError('START_LESSON_FAILED', 'failed to start a lesson');
+        }
 
-        const userLevel = await models.learnAndEarnUserLevel.findOrCreate({
-            where: {
-                levelId: lesson!.levelId,
-                userId
-            },
-            defaults: {
-                levelId: lesson!.levelId,
-                userId,
-                status
-            }
+        const { lessonId, levelId } = lesson;
+
+        const [[userLesson], [userLevel]] = await sequelize.transaction(async t => {
+            return await Promise.all([
+                models.learnAndEarnUserLesson.findOrCreate({
+                    where: {
+                        lessonId,
+                        levelId,
+                        userId
+                    },
+                    transaction: t,
+                    defaults: {
+                        lessonId,
+                        levelId,
+                        userId,
+                        points: 0,
+                        attempts: 0,
+                        status
+                    }
+                }),
+                models.learnAndEarnUserLevel.findOrCreate({
+                    where: {
+                        levelId,
+                        userId
+                    },
+                    transaction: t,
+                    defaults: {
+                        levelId,
+                        userId,
+                        status
+                    }
+                }),
+                // we don't do anything with the "find"
+                // but we need a way to not force the create (to avoid errors)
+                models.learnAndEarnUserData.findOrCreate({
+                    where: {
+                        userId
+                    },
+                    transaction: t
+                }),
+                cleanLearnAndEarnCache(userId)
+            ]);
         });
 
         return {
-            lesson: userLesson[0].toJSON(),
-            level: userLevel[0].toJSON()
+            lesson: userLesson.toJSON(),
+            level: userLevel.toJSON()
         };
     } catch (error) {
         throw new BaseError(error.name || 'START_LESSON_FAILED', error.message || 'failed to start a lesson');

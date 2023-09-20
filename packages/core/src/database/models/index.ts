@@ -27,12 +27,14 @@ import { initializeLearnAndEarnPrismicLesson } from './learnAndEarn/learnAndEarn
 import { initializeLearnAndEarnPrismicLevel } from './learnAndEarn/learnAndEarnPrismicLevel';
 import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
 import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
+import { initializeLearnAndEarnUserData } from './learnAndEarn/learnAndEarnUserData';
 import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUserLesson';
 import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
 import { initializeMerchantRegistry } from './merchant/merchantRegistry';
 import { initializeMicroCreditApplication } from './microCredit/applications';
 import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
+import { initializeMicroCreditBorrowersHuma } from './microCredit/borrowersHuma';
 import { initializeMicroCreditDocs } from './microCredit/docs';
 import { initializeMicroCreditNote } from './microCredit/note';
 import { initializeStoryComment } from './story/storyComment';
@@ -124,11 +126,13 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserLesson(sequelize);
     initializeLearnAndEarnUserLevel(sequelize);
     initializeLearnAndEarnPayment(sequelize);
+    initializeLearnAndEarnUserData(sequelize);
 
     // MicroCredit
     initializeMicroCreditDocs(sequelize);
     initializeMicroCreditApplication(sequelize);
     initializeMicroCreditBorrowers(sequelize);
+    initializeMicroCreditBorrowersHuma(sequelize);
     initializeMicroCreditNote(sequelize);
     initializeSubgraphMicroCreditBorrowers(sequelize);
 

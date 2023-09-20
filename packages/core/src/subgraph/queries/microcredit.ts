@@ -1,4 +1,5 @@
 import { axiosMicrocreditSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -151,8 +152,8 @@ export const getMicroCreditStatsLastDays = async (
                 }
             }`
         };
-
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -211,7 +212,7 @@ export const getMicroCreditStatsLastDays = async (
             interest
         };
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(stats), 'EX', intervalsInSeconds.twoMins);
+        redisClient.set(queryHash, JSON.stringify(stats), 'EX', intervalsInSeconds.twoMins);
 
         return stats;
     } catch (error) {
@@ -274,8 +275,8 @@ export const getBorrowerRepayments = async (query: {
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -307,7 +308,7 @@ export const getBorrowerRepayments = async (query: {
             timestamp: repayment.timestamp
         }))
     };
-    redisClient.set(graphqlQuery.query, JSON.stringify(repaymentsAndCount), 'EX', intervalsInSeconds.halfHour);
+    redisClient.set(queryHash, JSON.stringify(repaymentsAndCount), 'EX', intervalsInSeconds.halfHour);
 
     return repaymentsAndCount;
 };
@@ -334,8 +335,8 @@ export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promi
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -355,7 +356,7 @@ export const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promi
     >('', graphqlQuery);
 
     const borrowers = response.data?.data.borrowers.length;
-    redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(queryHash, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
 
     return borrowers;
 };
@@ -445,8 +446,8 @@ export const getBorrowers = async (
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -488,7 +489,7 @@ export const getBorrowers = async (
         },
         id: borrower.id
     }));
-    redisClient.set(graphqlQuery.query, JSON.stringify({ borrowers }), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(queryHash, JSON.stringify({ borrowers }), 'EX', intervalsInSeconds.twoMins);
 
     return { borrowers };
 };
@@ -506,8 +507,8 @@ export const getBorrowerLoansCount = async (borrower: string): Promise<number> =
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -527,7 +528,7 @@ export const getBorrowerLoansCount = async (borrower: string): Promise<number> =
     >('', graphqlQuery);
 
     const loans = response.data?.data.borrower?.loans.length ?? 0;
-    redisClient.set(graphqlQuery.query, JSON.stringify(loans), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(queryHash, JSON.stringify(loans), 'EX', intervalsInSeconds.twoMins);
 
     return loans;
 };
@@ -541,8 +542,8 @@ export const getLoanRepayments = async (userAddress: string, loanId: number): Pr
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -562,7 +563,7 @@ export const getLoanRepayments = async (userAddress: string, loanId: number): Pr
     >('', graphqlQuery);
 
     const loanRepayments = response.data?.data.loan.repayments;
-    redisClient.set(graphqlQuery.query, JSON.stringify(loanRepayments), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(queryHash, JSON.stringify(loanRepayments), 'EX', intervalsInSeconds.twoMins);
 
     return loanRepayments;
 };
@@ -583,8 +584,8 @@ export const getLoanManager = async (
             }
         }`
     };
-
-    const cacheResults = await redisClient.get(graphqlQuery.query);
+    const queryHash = hashRedisKey(graphqlQuery.query);
+    const cacheResults = await redisClient.get(queryHash);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -606,7 +607,136 @@ export const getLoanManager = async (
 
     const loanManager = response.data?.data.loanManager;
 
-    redisClient.set(graphqlQuery.query, JSON.stringify(loanManager), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(queryHash, JSON.stringify(loanManager), 'EX', intervalsInSeconds.twoMins);
 
     return loanManager;
+};
+
+export const getLoansRepaymentsSince = async (
+    loans: string[],
+    since: number
+): Promise<
+    {
+        loanReference: string;
+        debt: number;
+        amount: number;
+    }[]
+> => {
+    const graphqlQuery = {
+        operationName: 'repayments',
+        query: `query repayments {
+            repayments(
+                where: {
+                    timestamp_gt: ${since}
+                    loan_in: ${JSON.stringify(loans)}
+                }) {
+                amount
+                debt
+                loan {
+                    id
+                }
+            }
+        }`
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    repayments: {
+                        amount: string;
+                        debt: string;
+                        loan: {
+                            id: string;
+                        };
+                    }[];
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const repayments = response.data?.data.repayments.map(loan => ({
+        loanReference: loan.loan.id,
+        debt: parseFloat(loan.debt),
+        amount: parseFloat(loan.amount)
+    }));
+
+    redisClient.set(graphqlQuery.query, JSON.stringify(repayments), 'EX', intervalsInSeconds.twoMins);
+
+    return repayments;
+};
+
+export const getLoansSince = async (
+    since: number
+): Promise<
+    {
+        amount: number;
+        period: number;
+        claimedAt: number;
+        borrower: string;
+        loanId: number;
+    }[]
+> => {
+    const graphqlQuery = {
+        operationName: 'loans',
+        query: `query loans {
+            loans(
+                first: 1000
+                skip: 0
+                where: { claimed_gte: ${since} }
+            ) {
+                amount
+                period
+                claimed
+                borrower {
+                    id
+                    loansCount
+                }
+            }
+        }`
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    loans: {
+                        amount: string;
+                        period: number;
+                        claimed: number;
+                        borrower: {
+                            id: string;
+                            loansCount: number;
+                        };
+                    }[];
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const loans = response.data?.data.loans.map(loan => ({
+        borrower: loan.borrower.id,
+        loanId: loan.borrower.loansCount - 1,
+        amount: parseFloat(loan.amount),
+        period: loan.period,
+        claimedAt: loan.claimed
+    }));
+
+    redisClient.set(graphqlQuery.query, JSON.stringify(loans), 'EX', intervalsInSeconds.twoMins);
+
+    return loans;
 };

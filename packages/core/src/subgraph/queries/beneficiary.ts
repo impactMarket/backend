@@ -2,6 +2,7 @@ import { utils } from 'ethers';
 
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 import { axiosMicrocreditSubgraph, axiosSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -36,7 +37,8 @@ export const getAllBeneficiaries = async (community: string): Promise<Beneficiar
                     }
                 }`
             };
-            const cacheResults = await redisClient.get(graphqlQuery.query);
+            const queryHash = hashRedisKey(graphqlQuery.query);
+            const cacheResults = await redisClient.get(queryHash);
 
             if (cacheResults) {
                 return JSON.parse(cacheResults);
@@ -63,7 +65,7 @@ export const getAllBeneficiaries = async (community: string): Promise<Beneficiar
 
             const beneficiaryEntities = response.data?.data.beneficiaryEntities;
 
-            redisClient.set(graphqlQuery.query, JSON.stringify(beneficiaryEntities), 'EX', intervalsInSeconds.oneHour);
+            redisClient.set(queryHash, JSON.stringify(beneficiaryEntities), 'EX', intervalsInSeconds.oneHour);
 
             result.push(...beneficiaryEntities);
 
@@ -220,7 +222,8 @@ export const getBeneficiaryCommunity = async (beneficiaryAddress: string): Promi
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -243,7 +246,7 @@ export const getBeneficiaryCommunity = async (beneficiaryAddress: string): Promi
 
         const beneficiaryEntity = response.data?.data.beneficiaryEntity;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(beneficiaryEntity), 'EX', intervalsInSeconds.oneHour);
+        redisClient.set(queryHash, JSON.stringify(beneficiaryEntity), 'EX', intervalsInSeconds.oneHour);
 
         return utils.getAddress(beneficiaryEntity.community.id);
     } catch (error) {

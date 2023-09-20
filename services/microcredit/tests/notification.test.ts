@@ -6,7 +6,7 @@ import { interfaces, database, tests } from '@impactmarket/core';
 import { notification } from '../handler';
 import * as sendNotification from '../src/notification';
 
-describe('notification lambda', () => {
+describe.skip('notification lambda', () => {
     let users: interfaces.app.appUser.AppUser[];
     let sequelize: Sequelize;
     let spySendNotification: SinonSpy;

@@ -13,12 +13,12 @@ export type StartLessonRequestType = {
     lesson: string;
 };
 export type ListLevelsRequestType = {
-    status: string;
-    category: string;
-    level: string;
+    status?: 'available' | 'started' | 'completed';
+    category?: string;
     limit?: string;
     offset?: string;
     language?: string;
+    client?: number;
 };
 export type RegisterClaimRewardsRequestType = {
     transactionHash: string;
@@ -40,12 +40,12 @@ class LearnAndEarnValidator {
 
     listLevels = celebrate({
         query: {
-            status: Joi.string().optional().valid('available', 'started', 'completed'),
+            status: Joi.string().optional().valid('available', 'started', 'completed'), // TODO: add .default('available'),
             category: Joi.string().optional(),
-            level: Joi.string().optional(),
-            language: Joi.string().optional(),
             limit: Joi.number().optional(),
-            offset: Joi.number().optional()
+            offset: Joi.number().optional(),
+            language: Joi.string().optional(), // TODO: make required
+            client: Joi.number().optional().default(1)
         }
     });
 

@@ -1,5 +1,6 @@
 import { BaseError } from '../../utils/baseError';
-import { models, sequelize } from '../../database';
+import { cleanLearnAndEarnCache } from '../../utils/cache';
+import { models, redisClient, sequelize } from '../../database';
 import { client as prismic } from '../../utils/prismic';
 
 async function getPrismicLearnAndEarn() {
@@ -110,6 +111,8 @@ async function getPrismicLearnAndEarn() {
             }
         }
 
+        await redisClient.del('countAllLevelsAndLessons');
+
         await t.commit();
     } catch (error) {
         await t.rollback();
@@ -120,6 +123,7 @@ async function getPrismicLearnAndEarn() {
 export async function webhook() {
     try {
         await getPrismicLearnAndEarn();
+        cleanLearnAndEarnCache();
     } catch (error) {
         throw new BaseError(error.name ? error.name : 'GET_DOCUMENT_FAILED', error.message);
     }

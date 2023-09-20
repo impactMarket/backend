@@ -61,6 +61,7 @@ export default (route: Router): void => {
         '/borrowers/:query?',
         authenticateToken,
         verifySignature,
+        cache(cacheIntervals.tenMinutes, true),
         onlyAuthorizedRoles(['loanManager']),
         listBorrowersValidator,
         controller.listBorrowers
@@ -109,9 +110,9 @@ export default (route: Router): void => {
         '/borrower/:query?',
         authenticateToken,
         verifySignature,
+        cache(cacheIntervals.tenMinutes, true),
         onlyAuthorizedRoles(['loanManager', 'itself']),
         queryGetBorrowerValidator,
-        cache(cacheIntervals.twoMinutes),
         controller.getBorrower
     );
 
@@ -161,6 +162,7 @@ export default (route: Router): void => {
         '/applications/:query?',
         authenticateToken,
         verifySignature,
+        cache(cacheIntervals.tenMinutes, true),
         onlyAuthorizedRoles(['loanManager']),
         listApplicationsValidator,
         controller.listApplications
@@ -210,9 +212,9 @@ export default (route: Router): void => {
         '/repayment-history/:query?',
         authenticateToken,
         verifySignature,
+        cache(cacheIntervals.fiveMinutes, true),
         onlyAuthorizedRoles(['loanManager', 'itself']),
         repaymentsHistoryValidator,
-        cache(cacheIntervals.fiveMinutes),
         controller.getRepaymentsHistory
     );
 
@@ -283,5 +285,5 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/managers/:country', controller.getLoanManagersByCountry);
+    route.get('/managers/:country', cache(cacheIntervals.halfHour), controller.getLoanManagersByCountry);
 };

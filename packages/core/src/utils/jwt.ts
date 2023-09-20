@@ -2,12 +2,11 @@ import jwt from 'jsonwebtoken';
 
 import config from '../config';
 
-export function generateAccessToken(userAddress: string, userId: number, clientId?: string): string {
+export function generateAccessToken(userAddress: string, userId: number): string {
     return jwt.sign(
         {
             userId,
-            address: userAddress,
-            clientId
+            address: userAddress
         },
         config.jwtSecret
     );

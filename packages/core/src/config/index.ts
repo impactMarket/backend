@@ -121,6 +121,24 @@ export default {
     },
 
     /**
+     * database pool config
+     */
+    databasePool: {
+        max: validatedEnv.DATABASE_POOL_MAX_CONNECTIONS,
+        acquire: validatedEnv.DATABASE_POOL_ACQUIRE,
+        idle: validatedEnv.DATABASE_POOL_IDLE,
+        evict: validatedEnv.DATABASE_POOL_EVICT
+    },
+
+    /**
+     * Database config
+     */
+    database: {
+        replicas: validatedEnv.DATABASE_NUMBER_OF_REPLICAS,
+        main: validatedEnv.DATABASE_URL
+    },
+
+    /**
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
@@ -163,5 +181,23 @@ export default {
 
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
 
-    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT
+    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
+
+    /**
+     * Variables for chain
+     */
+    chain: {
+        isMainnet: validatedEnv.CHAIN_IS_MAINNET,
+        // celo or alfajores
+        jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
+        // polygon or mumbai
+        jsonRPCUrlPolygon: validatedEnv.CHAIN_JSON_RPC_URL_POLYGON
+    },
+
+    /**
+     * Variables for hot wallets
+     */
+    hotWallets: {
+        huma: validatedEnv.HUMA_PRIVATE_KEY
+    }
 };

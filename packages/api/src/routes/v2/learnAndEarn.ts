@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
 import LearnAndEarnValidator from '../../validators/learnAndEarn';
 
@@ -19,6 +21,24 @@ export default (app: Router): void => {
      *       - "learn-and-earn"
      *     summary: "List levels"
      *     parameters:
+     *       - in: header
+     *         name: client-id
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for pagination
      *       - in: query
      *         name: status
      *         schema:
@@ -33,18 +53,24 @@ export default (app: Router): void => {
      *         required: false
      *         description: Lesson category (Prismic ID)
      *       - in: query
-     *         name: level
+     *         name: language
      *         schema:
      *           type: string
      *         required: false
-     *         description: Lesson level (Prismic ID)
+     *         description: Levels language
      *     responses:
      *       "200":
      *         description: OK
      *     security:
      *     - BearerToken: []
      */
-    route.get('/levels', optionalAuthentication, learnAndEarnValidator.listLevels, learnAndEarnController.listLevels);
+    route.get(
+        '/levels',
+        optionalAuthentication,
+        cache(cacheIntervals.halfHour, true),
+        learnAndEarnValidator.listLevels,
+        learnAndEarnController.listLevels
+    );
 
     /**
      * @swagger
@@ -106,7 +132,12 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/levels/:id', optionalAuthentication, learnAndEarnController.listLessons);
+    route.get(
+        '/levels/:id',
+        optionalAuthentication,
+        cache(cacheIntervals.halfHour, true),
+        learnAndEarnController.listLessons
+    );
 
     /**
      * @swagger
@@ -173,11 +204,18 @@ export default (app: Router): void => {
      *     tags:
      *       - "learn-and-earn"
      *     summary: "Get user metrics"
+     *     parameters:
+     *       - in: header
+     *         name: client-id
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: optional client id
      *     responses:
      *       "200":
      *         description: OK
      *     security:
      *     - BearerToken: []
      */
-    route.get('/', authenticateToken, learnAndEarnController.total);
+    route.get('/', authenticateToken, cache(cacheIntervals.halfHour, true), learnAndEarnController.total);
 };

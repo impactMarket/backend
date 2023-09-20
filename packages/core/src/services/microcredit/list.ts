@@ -654,13 +654,17 @@ export default class MicroCreditList {
         } else {
             switch (country.toLowerCase()) {
                 case 'br':
-                    loanManagers = [12928, 106251];
+                    loanManagers = [106251, 12928];
                     break;
                 case 'ug':
-                    loanManagers = [30880, 106251];
+                    loanManagers = [106251, 30880, 99878, 101542, 52493, 47511, 32522, 27371, 107433, 56673];
                     break;
-                // case 'ng':
-                // case 've':
+                case 'gh':
+                    loanManagers = [106251, 108792];
+                    break;
+                case 've':
+                    loanManagers = [88662];
+                    break;
                 default:
                     loanManagers = [106251];
                     break;

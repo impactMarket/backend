@@ -1,4 +1,5 @@
 import { axiosSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -43,7 +44,8 @@ export const getUbiDailyEntity = async (
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -73,7 +75,7 @@ export const getUbiDailyEntity = async (
 
         const ubidailyEntities = response.data?.data.ubidailyEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(ubidailyEntities), 'EX', intervalsInSeconds.oneHour);
+        redisClient.set(queryHash, JSON.stringify(ubidailyEntities), 'EX', intervalsInSeconds.oneHour);
 
         return ubidailyEntities;
     } catch (error) {

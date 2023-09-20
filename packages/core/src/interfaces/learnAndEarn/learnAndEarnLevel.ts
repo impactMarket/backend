@@ -27,6 +27,8 @@ export interface LearnAndEarnLevel {
     languages?: string[];
     active: boolean;
     isLive?: boolean;
+    lessons: number;
+    clients: number[];
     totalReward: number;
     rewardLimit?: number;
     asset?: string;

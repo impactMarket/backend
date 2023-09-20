@@ -1,22 +1,23 @@
 import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
-import { services } from '@impactmarket/core';
 
 import { ListUserNotificationsRequestSchema } from '~validators/user';
 import { RequestWithUser } from '~middlewares/core';
 import { ValidatedRequest } from '~utils/queryValidator';
 import { standardResponse } from '~utils/api';
+import UserLogService from '~services/app/user/log';
+import UserService from '~services/app/user';
 
 class UserController {
-    private userService: services.app.UserServiceV2;
-    private userLogService: services.app.UserLogService;
+    private userService: UserService;
+    private userLogService: UserLogService;
 
     constructor() {
-        this.userService = new services.app.UserServiceV2();
-        this.userLogService = new services.app.UserLogService();
+        this.userService = new UserService();
+        this.userLogService = new UserLogService();
     }
 
-    public create = (req: Request, res: Response) => {
+    public create = (req: RequestWithUser, res: Response) => {
         const {
             address,
             phone,
@@ -33,9 +34,9 @@ class UserController {
             gender,
             bio,
             overwrite,
-            recover,
-            clientId
+            recover
         } = req.body;
+        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .create(
                 {
@@ -52,11 +53,11 @@ class UserController {
                     email,
                     gender,
                     bio,
-                    phone
+                    phone,
+                    clientId
                 },
                 overwrite,
-                recover,
-                clientId
+                recover
             )
             .then(user =>
                 standardResponse(res, 201, true, {
@@ -77,8 +78,9 @@ class UserController {
             });
             return;
         }
+        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
-            .get(req.user.address)
+            .get(req.user.address, clientId)
             .then(user =>
                 standardResponse(res, 201, true, {
                     ...user,

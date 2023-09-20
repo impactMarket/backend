@@ -1,4 +1,5 @@
 import { axiosCouncilSubgraph, axiosMicrocreditSubgraph, axiosSubgraph } from '../config';
+import { hashRedisKey } from './base';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
 
@@ -99,7 +100,6 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 }
             }`
         };
-
         const cachedRoles = await redisClient.get(`account-roles-${address.toLowerCase()}`);
 
         let responseDAO: DAOResponse | null = null;
@@ -243,7 +243,8 @@ export const getUserActivity = async (
                 }
             }`
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
+        const queryHash = hashRedisKey(graphqlQuery.query);
+        const cacheResults = await redisClient.get(queryHash);
 
         if (cacheResults) {
             return JSON.parse(cacheResults);
@@ -271,7 +272,7 @@ export const getUserActivity = async (
 
         const userActivityEntities = response.data?.data.userActivityEntities;
 
-        redisClient.set(graphqlQuery.query, JSON.stringify(userActivityEntities), 'EX', intervalsInSeconds.halfHour);
+        redisClient.set(queryHash, JSON.stringify(userActivityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return userActivityEntities;
     } catch (error) {
