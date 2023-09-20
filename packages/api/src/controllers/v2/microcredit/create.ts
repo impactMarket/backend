@@ -44,8 +44,8 @@ class MicroCreditController {
 
         this.microCreditService
             .getPresignedUrlMedia(mime)
-            .then(r => standardResponse(res, 201, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => !req.timedout && standardResponse(res, 201, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     postDocs = (req: RequestWithUser<any, any, PostDocsRequestType>, res: Response) => {
