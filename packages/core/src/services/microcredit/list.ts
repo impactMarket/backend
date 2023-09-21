@@ -121,7 +121,7 @@ export default class MicroCreditList {
             order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
         } else if (query.orderBy) {
             const [field, direction] = query.orderBy.split(':');
-            order = [[literal(`"user.loan.${field}"`), direction || 'ASC']];
+            order = [[literal(`"loan.${field}"`), direction || 'ASC']];
         }
 
         if (query.filter === 'ontrack') {
