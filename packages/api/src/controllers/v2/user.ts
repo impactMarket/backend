@@ -81,13 +81,15 @@ class UserController {
         const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .get(req.user.address, clientId)
-            .then(user =>
-                standardResponse(res, 201, true, {
-                    ...user,
-                    age: user.year ? new Date().getUTCFullYear() - user.year : null
-                })
+            .then(
+                user =>
+                    !req.timedout &&
+                    standardResponse(res, 201, true, {
+                        ...user,
+                        age: user.year ? new Date().getUTCFullYear() - user.year : null
+                    })
             )
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getUserFromAuthorizedAccount = (req: RequestWithUser, res: Response) => {
@@ -105,8 +107,8 @@ class UserController {
 
         this.userService
             .getUserFromAuthorizedAccount(getAddress(address), req.user.address)
-            .then(community => standardResponse(res, 200, true, community))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(community => !req.timedout && standardResponse(res, 200, true, community))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     public update = (req: RequestWithUser, res: Response) => {
@@ -218,8 +220,8 @@ class UserController {
 
         this.userService
             .getReport(req.user.address, req.query)
-            .then(r => standardResponse(res, 201, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => !req.timedout && standardResponse(res, 201, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getLogs = (req: RequestWithUser, res: Response) => {
@@ -252,8 +254,8 @@ class UserController {
 
         this.userLogService
             .get(req.user.address, type, entity)
-            .then(r => standardResponse(res, 201, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => !req.timedout && standardResponse(res, 201, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
@@ -281,8 +283,8 @@ class UserController {
 
         this.userService
             .getPresignedUrlMedia(mime)
-            .then(r => standardResponse(res, 201, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => !req.timedout && standardResponse(res, 201, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getNotifications = (
@@ -301,8 +303,8 @@ class UserController {
 
         this.userService
             .getNotifications(req.query, req.user.userId)
-            .then(r => standardResponse(res, 200, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
+            .then(r => !req.timedout && standardResponse(res, 200, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public readNotifications = (req: RequestWithUser, res: Response) => {
