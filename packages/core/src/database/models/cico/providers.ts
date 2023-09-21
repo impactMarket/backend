@@ -8,7 +8,7 @@ type ExchangeDetails = {
     website?: string;
     customImplementation?: string;
     iframeUrl?: string;
-}
+};
 
 type MerchantDetails = {
     category: number;
@@ -23,7 +23,7 @@ type MerchantDetails = {
         longitude: number;
     };
     payment: boolean;
-}
+};
 
 type IndividualDetails = {
     category: number;

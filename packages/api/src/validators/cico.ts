@@ -16,7 +16,7 @@ const queryListBorrowersSchema = defaultSchema.object<ListCICOProviderType>({
     country: Joi.string().optional(),
     lat: Joi.number().optional(),
     lng: Joi.number().optional(),
-    distance: Joi.number().optional(),
+    distance: Joi.number().optional()
 });
 
 interface ListCICOProviderRequestSchema extends ValidatedRequestSchema {
@@ -25,7 +25,4 @@ interface ListCICOProviderRequestSchema extends ValidatedRequestSchema {
 
 const listCICOProviderValidator = validator.query(queryListBorrowersSchema);
 
-export {
-    listCICOProviderValidator,
-    ListCICOProviderRequestSchema,
-};
+export { listCICOProviderValidator, ListCICOProviderRequestSchema };
