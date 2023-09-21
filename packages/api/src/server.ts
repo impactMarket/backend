@@ -63,6 +63,10 @@ export default (app: express.Application): void => {
                             'MicroCredit endpoints. In this section, all endpoints are protected by authentication and signature verification. Be sure to be properly authenticated!'
                     },
                     {
+                        name: 'learn-and-earn',
+                        description: 'Learn and Earn'
+                    },
+                    {
                         name: 'referrals',
                         description: 'impactMarket referral program!'
                     }
