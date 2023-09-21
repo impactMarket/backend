@@ -60,9 +60,9 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'manager'
     });
 
-    appUser.hasOne(subgraphMicroCreditBorrowers, {
+    microCreditBorrowers.hasOne(subgraphMicroCreditBorrowers, {
         foreignKey: 'userId',
-        sourceKey: 'id',
+        sourceKey: 'userId',
         as: 'loan'
     });
 }
