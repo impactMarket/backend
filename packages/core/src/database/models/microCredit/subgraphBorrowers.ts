@@ -24,6 +24,9 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
 
     // timestamps!
     public readonly updatedAt!: Date;
+
+    // read only calculated fields, not on database
+    public readonly maturity!: number;
 }
 
 export function initializeSubgraphMicroCreditBorrowers(sequelize: Sequelize): typeof SubgraphMicroCreditBorrowersModel {
