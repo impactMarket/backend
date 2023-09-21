@@ -63,6 +63,10 @@ export default (app: express.Application): void => {
                             'MicroCredit endpoints. In this section, all endpoints are protected by authentication and signature verification. Be sure to be properly authenticated!'
                     },
                     {
+                        name: 'learn-and-earn',
+                        description: 'Learn and Earn'
+                    },
+                    {
                         name: 'referrals',
                         description: 'impactMarket referral program!'
                     }
@@ -174,11 +178,12 @@ export default (app: express.Application): void => {
         next();
     });
 
-    // when a route does not exist
-    app.use((_, res) =>
-        res.status(404).send({
+    app.use((req, res) =>
+        res.status(req.timedout ? 408 : 404).send({
             success: false,
-            error: 'This route does not exist! Please, visit the swagger docs at /api-docs'
+            error: req.timedout
+                ? 'Request Timeout'
+                : 'This route does not exist! Please, visit the swagger docs at /api-docs'
         })
     );
 };

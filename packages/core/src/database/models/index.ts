@@ -4,6 +4,7 @@ import { communityAssociation } from './associations/community';
 import { initializeAirgrabProof } from './airgrab/airgrabProof';
 import { initializeAirgrabUser } from './airgrab/airgrabUser';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
+import { initializeAppCICOProvider } from './cico/providers';
 import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppExchangeRates } from './app/exchangeRates';
 import { initializeAppLog } from './app/appLog';
@@ -27,6 +28,7 @@ import { initializeLearnAndEarnPrismicLesson } from './learnAndEarn/learnAndEarn
 import { initializeLearnAndEarnPrismicLevel } from './learnAndEarn/learnAndEarnPrismicLevel';
 import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
 import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
+import { initializeLearnAndEarnUserData } from './learnAndEarn/learnAndEarnUserData';
 import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUserLesson';
 import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
@@ -75,6 +77,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppLog(sequelize);
     initializeAppUserValidationCode(sequelize);
     initializeAppReferralCode(sequelize);
+    initializeAppCICOProvider(sequelize);
 
     // ubi
     initializeCommunity(sequelize);
@@ -125,6 +128,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserLesson(sequelize);
     initializeLearnAndEarnUserLevel(sequelize);
     initializeLearnAndEarnPayment(sequelize);
+    initializeLearnAndEarnUserData(sequelize);
 
     // MicroCredit
     initializeMicroCreditDocs(sequelize);

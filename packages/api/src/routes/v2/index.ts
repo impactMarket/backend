@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import attestation from './attestation';
+import cico from './cico';
 import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
@@ -25,6 +26,7 @@ export default (): Router => {
     microcredit(app);
     protocol(app);
     referrals(app);
+    cico(app);
 
     return app;
 };

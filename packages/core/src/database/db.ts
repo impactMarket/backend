@@ -3,6 +3,7 @@ import { ModelStatic, Sequelize } from 'sequelize/types';
 import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
+import { AppCICOProviderModel } from './models/cico/providers';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppExchangeRates } from './models/app/exchangeRates';
 import { AppLogModel } from './models/app/appLog';
@@ -27,6 +28,7 @@ import { LearnAndEarnPrismicLessonModel } from './models/learnAndEarn/learnAndEa
 import { LearnAndEarnPrismicLevelModel } from './models/learnAndEarn/learnAndEarnPrismicLevel';
 import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
+import { LearnAndEarnUserDataModel } from './models/learnAndEarn/learnAndEarnUserData';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
@@ -69,6 +71,7 @@ export type DbModels = {
     appUserValidationCode: ModelStatic<AppUserValidationCodeModel>;
     ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
     appReferralCode: ModelStatic<AppReferralCodeModel>;
+    appCICOProvider: ModelStatic<AppCICOProviderModel>;
     //
     community: ModelStatic<Community>;
     ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;
@@ -109,6 +112,7 @@ export type DbModels = {
     learnAndEarnUserLesson: ModelStatic<LearnAndEarnUserLessonModel>;
     learnAndEarnUserLevel: ModelStatic<LearnAndEarnUserLevelModel>;
     learnAndEarnPayment: ModelStatic<LearnAndEarnPaymentModel>;
+    learnAndEarnUserData: ModelStatic<LearnAndEarnUserDataModel>;
     //
     merchantRegistry: ModelStatic<MerchantRegistryModel>;
     merchantCommunity: ModelStatic<MerchantCommunityModel>;

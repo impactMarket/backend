@@ -12,8 +12,8 @@ class CommunityController {
     list = (req: Request, res: Response) => {
         this.communityService
             .list(req.query)
-            .then(r => standardResponse(res, 200, true, r))
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => !req.timedout && standardResponse(res, 200, true, r))
+            .catch(e => !req.timedout && standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

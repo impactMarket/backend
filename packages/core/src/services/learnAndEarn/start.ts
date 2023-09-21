@@ -48,6 +48,14 @@ export async function startLesson(userId: number, prismicId: string) {
                         status
                     }
                 }),
+                // we don't do anything with the "find"
+                // but we need a way to not force the create (to avoid errors)
+                models.learnAndEarnUserData.findOrCreate({
+                    where: {
+                        userId
+                    },
+                    transaction: t
+                }),
                 cleanLearnAndEarnCache(userId)
             ]);
         });

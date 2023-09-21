@@ -27,6 +27,7 @@ export interface LearnAndEarnPrismicLevel {
     levelId: number;
     language: string;
     isLive: boolean;
+    availableAt: Date;
 }
 
 export interface LearnAndEarnPrismicLevelCreation {
@@ -34,4 +35,5 @@ export interface LearnAndEarnPrismicLevelCreation {
     levelId: number;
     language: string;
     isLive?: boolean;
+    availableAt?: Date;
 }

@@ -70,7 +70,7 @@ export type GetBorrowersQuery = {
     offset?: number;
     limit?: number;
     addedBy?: string;
-    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid';
+    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -101,6 +101,7 @@ export default class MicroCreditList {
             lastName: string | null;
             avatarMediaPath: string | null;
             loan: {
+                maturity: number;
                 amount: number;
                 period: number;
                 dailyInterest: number;
@@ -129,7 +130,7 @@ export default class MicroCreditList {
                     [Op.gte]: 100
                 }
             };
-        } else if (query.filter === 'need-help') {
+        } else if (query.filter === 'need-help' || query.filter === 'urgent') {
             where = {
                 performance: {
                     [Op.lt]: 100
@@ -138,6 +139,9 @@ export default class MicroCreditList {
         }
 
         const mapFilterToLoanStatus = (filter: GetBorrowersQuery['filter']) => {
+            const now = new Date();
+            // one month in the future
+            const limitDate = new Date(now.getTime() + 2592000000);
             switch (filter) {
                 case 'not-claimed':
                     return {
@@ -148,9 +152,21 @@ export default class MicroCreditList {
                         status: 2
                     };
                 case 'ontrack':
+                // separate need-help and urgent
                 case 'need-help':
                     return {
-                        status: 1
+                        [Op.and]: [
+                            { status: 1 },
+                            literal(`(claimed + period) > ${Math.trunc(limitDate.getTime() / 1000)}`)
+                        ]
+                    };
+                case 'urgent':
+                    return {
+                        [Op.and]: [
+                            { status: 1 },
+                            { lastDebt: { [Op.gt]: 0 } },
+                            literal(`(claimed + period) <= ${Math.trunc(limitDate.getTime() / 1000)}`)
+                        ]
                     };
                 default:
                     return {};
@@ -171,16 +187,26 @@ export default class MicroCreditList {
                     model: models.appUser,
                     attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
                     as: 'user',
-                    required: true,
-                    include: [
-                        {
-                            model: models.subgraphMicroCreditBorrowers,
-                            as: 'loan',
-                            where: {
-                                ...mapFilterToLoanStatus(query.filter)
-                            }
-                        }
-                    ]
+                    required: true
+                },
+                {
+                    model: models.subgraphMicroCreditBorrowers,
+                    attributes: [
+                        [literal('(claimed + period)'), 'maturity'],
+                        'lastRepayment',
+                        'lastRepaymentAmount',
+                        'lastDebt',
+                        'amount',
+                        'period',
+                        'claimed',
+                        'dailyInterest',
+                        'repaid',
+                        'status'
+                    ],
+                    as: 'loan',
+                    where: {
+                        ...mapFilterToLoanStatus(query.filter)
+                    }
                 }
             ]
         });
@@ -189,7 +215,7 @@ export default class MicroCreditList {
             count: rBorrowers.count,
             rows: rBorrowers.rows.map(r => ({
                 ...r.user!.toJSON(),
-                loan: r.user!.loan!,
+                loan: r.loan!,
                 performance: r.performance
             }))
         };
@@ -654,13 +680,17 @@ export default class MicroCreditList {
         } else {
             switch (country.toLowerCase()) {
                 case 'br':
-                    loanManagers = [12928, 106251];
+                    loanManagers = [106251, 12928];
                     break;
                 case 'ug':
-                    loanManagers = [30880, 106251, 99878, 101542, 52493, 47511, 32522, 27371, 107433, 56673];
+                    loanManagers = [106251, 30880, 99878, 101542, 52493, 47511, 32522, 27371, 107433, 56673];
                     break;
-                // case 'ng':
-                // case 've':
+                case 'gh':
+                    loanManagers = [106251, 108792];
+                    break;
+                case 've':
+                    loanManagers = [88662];
+                    break;
                 default:
                     loanManagers = [106251];
                     break;

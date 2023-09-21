@@ -1,6 +1,6 @@
 import { BaseError } from '../../utils/baseError';
 import { cleanLearnAndEarnCache } from '../../utils/cache';
-import { models, sequelize } from '../../database';
+import { models, redisClient, sequelize } from '../../database';
 import { client as prismic } from '../../utils/prismic';
 
 async function getPrismicLearnAndEarn() {
@@ -19,6 +19,8 @@ async function getPrismicLearnAndEarn() {
                 'pwa-lae-lesson.is_live'
             ]
         });
+
+        const previousLevels = await models.learnAndEarnPrismicLevel.findAll();
 
         // clean levels
         await models.learnAndEarnPrismicLevel.destroy({
@@ -62,12 +64,25 @@ async function getPrismicLearnAndEarn() {
                 );
 
                 const lang = prismicLevel.lang ? prismicLevel.lang.split('-')[0] : 'en';
+
+                // set the availableAt
+                const previous = previousLevels.find(level => level.prismicId === prismicLevel.id);
+                let availableAt: Date | undefined;
+
+                if (previous) {
+                    availableAt = !previous.isLive && prismicLevel.data.is_live ? new Date() : previous.availableAt;
+                } else {
+                    // first creation
+                    availableAt = prismicLevel.data.is_live ? new Date() : undefined;
+                }
+
                 await models.learnAndEarnPrismicLevel.create(
                     {
                         prismicId: prismicLevel.id,
                         levelId: prismicLevel.data.id,
                         language: lang,
-                        isLive: prismicLevel.data.is_live
+                        isLive: prismicLevel.data.is_live,
+                        availableAt
                     },
                     {
                         transaction: t
@@ -95,6 +110,8 @@ async function getPrismicLearnAndEarn() {
                 }
             }
         }
+
+        await redisClient.del('countAllLevelsAndLessons');
 
         await t.commit();
     } catch (error) {
