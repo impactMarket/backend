@@ -20,6 +20,8 @@ async function getPrismicLearnAndEarn() {
             ]
         });
 
+        const previousLevels = await models.learnAndEarnPrismicLevel.findAll();
+
         // clean levels
         await models.learnAndEarnPrismicLevel.destroy({
             truncate: true,
@@ -62,12 +64,25 @@ async function getPrismicLearnAndEarn() {
                 );
 
                 const lang = prismicLevel.lang ? prismicLevel.lang.split('-')[0] : 'en';
+
+                // set the availableAt
+                const previous = previousLevels.find(level => level.prismicId === prismicLevel.id);
+                let availableAt: Date | undefined;
+
+                if (previous) {
+                    availableAt = !previous.isLive && prismicLevel.data.is_live ? new Date() : previous.availableAt;
+                } else {
+                    // first creation
+                    availableAt = prismicLevel.data.is_live ? new Date() : undefined;
+                }
+
                 await models.learnAndEarnPrismicLevel.create(
                     {
                         prismicId: prismicLevel.id,
                         levelId: prismicLevel.data.id,
                         language: lang,
-                        isLive: prismicLevel.data.is_live
+                        isLive: prismicLevel.data.is_live,
+                        availableAt
                     },
                     {
                         transaction: t

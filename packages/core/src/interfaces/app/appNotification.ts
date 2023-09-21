@@ -51,7 +51,9 @@ export enum NotificationType {
     REMINDER_LOAN_INTEREST = 15,
     LOAN_UNPAID = 16,
     LOW_PERFORMANCE = 17,
-    HIGH_PERFORMANCE = 18
+    HIGH_PERFORMANCE = 18,
+    LEARN_AND_EARN_FINISH_LEVEL = 19,
+    LEARN_AND_EARN_NEW_LEVEL = 20
 }
 
 export type NotificationParams = {
@@ -62,7 +64,8 @@ export enum NotificationParamsPath {
     STORY = 'stories?id=',
     COMMUNITY = 'communities/',
     LOAN_APPLICATION = 'microcredit/form/',
-    LOAN_APPROVED = 'microcredit/'
+    LOAN_APPROVED = 'microcredit/',
+    LEARN_AND_EARN = 'learn-and-earn/'
 }
 
 export interface AppNotification {
