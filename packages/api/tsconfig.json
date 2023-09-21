@@ -25,13 +25,7 @@
             "~services/*": ["services/*"],
             "~utils/*": ["utils/*"],
             "~config/*": ["config/*"]
-        },
-        "plugins": [
-          {
-            "transform": "typia/lib/transform"
-          }
-        ],
-        "strictNullChecks": true
+        }
       },
     "include": ["src"],
     "exclude": ["node_modules"]
