@@ -12,5 +12,6 @@ export default (app: Router): void => {
 
     route.get('/numbers', cache(cacheIntervals.oneHour), globalController.numbers);
 
-    route.get('/demographics', cache(cacheIntervals.oneHour), globalController.globalDemographics);
+    // temporarly remove cache
+    route.get('/demographics', globalController.globalDemographics);
 };
