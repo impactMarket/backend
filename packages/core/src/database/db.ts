@@ -3,6 +3,7 @@ import { ModelStatic, Sequelize } from 'sequelize/types';
 import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
+import { AppCICOProviderModel } from './models/cico/providers';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppExchangeRates } from './models/app/exchangeRates';
 import { AppLogModel } from './models/app/appLog';
@@ -70,6 +71,7 @@ export type DbModels = {
     appUserValidationCode: ModelStatic<AppUserValidationCodeModel>;
     ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
     appReferralCode: ModelStatic<AppReferralCodeModel>;
+    appCICOProvider: ModelStatic<AppCICOProviderModel>;
     //
     community: ModelStatic<Community>;
     ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;
