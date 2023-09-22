@@ -176,6 +176,6 @@ export default {
      * Variables for restricted actions
      */
     admin: {
-        authorisedAddresses: validatedEnv.ADMIN_AUTHORISED_ADDRESSES
+        authorisedAddresses: validatedEnv.ADMIN_AUTHORISED_ADDRESSES.split(',').map(a => a.trim())
     }
 };

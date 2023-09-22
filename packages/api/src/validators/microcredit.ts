@@ -25,6 +25,7 @@ type ListBorrowersType = {
         | 'performance'
         | 'performance:asc'
         | 'performance:desc';
+    loanManagerAddress?: string;
 };
 
 type ListApplicationsType = {
@@ -56,7 +57,8 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
             'performance',
             'performance:asc',
             'performance:desc'
-        )
+        ),
+    loanManagerAddress: Joi.string().optional()
 });
 
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({

@@ -49,6 +49,12 @@ export default (route: Router): void => {
      *           enum: [amount, amount:asc, amount:desc, period, period:asc, period:desc, lastRepayment, lastRepayment:asc, lastRepayment:desc, lastDebt, lastDebt:asc, lastDebt:desc, performance, performance:asc, performance:desc]
      *         required: false
      *         description: order by
+     *       - in: query
+     *         name: loanManagerAddress
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: loan manager address used to query from an authorized account
      *     responses:
      *       "200":
      *         description: OK
@@ -60,8 +66,8 @@ export default (route: Router): void => {
     route.get(
         '/borrowers/:query?',
         authenticateToken,
-        verifySignature,
-        cache(cacheIntervals.tenMinutes, true),
+        // verifySignature,
+        // cache(cacheIntervals.tenMinutes, true),
         onlyAuthorizedRoles(['loanManager']),
         listBorrowersValidator,
         controller.listBorrowers

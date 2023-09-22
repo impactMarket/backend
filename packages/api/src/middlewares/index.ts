@@ -291,6 +291,11 @@ export const onlyAuthorizedRoles =
             }
         }
 
+        if (config.admin.authorisedAddresses.includes(req.user.address)) {
+            next();
+            return;
+        }
+
         res.status(401).json({
             success: false,
             error: {
