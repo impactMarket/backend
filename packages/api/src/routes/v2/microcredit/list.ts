@@ -285,7 +285,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/managers/:country', controller.getLoanManagersByCountry);
+    route.get('/managers/:country', cache(cacheIntervals.oneHour), controller.getLoanManagersByCountry);
 
     /**
      * @swagger
@@ -299,5 +299,5 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/', controller.getMicroCreditCountries);
+    route.get('/', cache(cacheIntervals.oneHour), controller.getMicroCreditCountries);
 };
