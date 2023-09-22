@@ -677,7 +677,7 @@ export default class MicroCreditList {
 
     public getMicroCreditCountries = async () => {
         const countries = await models.microCreditLoanManager.findAll({
-            attributes: [[fn('DISTINCT', col('country')) ,'country']]
+            attributes: [[fn('DISTINCT', col('country')), 'country']]
         });
 
         return countries.map(c => c.country);
