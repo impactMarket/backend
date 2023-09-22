@@ -280,10 +280,24 @@ export default (route: Router): void => {
      *         schema:
      *           type: string
      *         required: true
-     *         description: country tag (eg.  NG, KE, GH, etc.)
+     *         description: country tag (eg.  NG, VE, GH, etc.)
      *     responses:
      *       "200":
      *         description: OK
      */
-    route.get('/managers/:country', cache(cacheIntervals.halfHour), controller.getLoanManagersByCountry);
+    route.get('/managers/:country', controller.getLoanManagersByCountry);
+
+    /**
+     * @swagger
+     *
+     * /microcredit:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get countries where microcredit is available"
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/', controller.getMicroCreditCountries);
 };

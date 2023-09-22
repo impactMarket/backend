@@ -115,7 +115,14 @@ class MicroCreditController {
         const country = req.params.country as string;
 
         this.microCreditService
-            .getLoanManagersByCountry(country)
+            .getLoanManagersByCountry(country.toUpperCase())
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getMicroCreditCountries = (_req: RequestWithUser, res: Response) => {
+        this.microCreditService
+            .getMicroCreditCountries()
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
