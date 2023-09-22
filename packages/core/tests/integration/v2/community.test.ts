@@ -22,9 +22,6 @@ describe('community service v2', () => {
     let users: AppUser[];
     let returnProposalsSubgraph: SinonStub;
     let returnAmbassadorByAddressSubgraph: SinonStub;
-    let returnClaimedSubgraph: SinonStub;
-    let returnCommunityStateSubgraph: SinonStub;
-    let returnCommunityEntities: SinonStub;
     let returnUserRoleSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
@@ -40,21 +37,7 @@ describe('community service v2', () => {
         replace(database, 'query', sequelize.query);
 
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
-        returnCommunityEntities = stub(subgraph, 'communityEntities');
-        returnClaimedSubgraph = stub(subgraph, 'getClaimed');
         returnAmbassadorByAddressSubgraph = stub(subgraph, 'getAmbassadorByAddress');
-        returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
-        returnCommunityStateSubgraph.returns([
-            {
-                claims: 0,
-                claimed: '0',
-                beneficiaries: 0,
-                removedBeneficiaries: 0,
-                contributed: '0',
-                contributors: 0,
-                managers: 0
-            }
-        ]);
         returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
     });
 
@@ -64,8 +47,6 @@ describe('community service v2', () => {
 
     describe('list', () => {
         afterEach(async () => {
-            returnClaimedSubgraph.resetHistory();
-            returnCommunityEntities.resetHistory();
             returnUserRoleSubgraph.resetHistory();
         });
 
@@ -89,20 +70,6 @@ describe('community service v2', () => {
                             maxClaim: 450
                         },
                         hasAddress: true
-                    }
-                ]);
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
-
-                returnClaimedSubgraph.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        claimed: 0
                     }
                 ]);
 
@@ -136,20 +103,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
-
-                returnClaimedSubgraph.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        claimed: 0
-                    }
-                ]);
-
                 const result = await communityListService.list({
                     search: communities[0].name.slice(0, communities[0].name.length / 2)
                 });
@@ -177,20 +130,6 @@ describe('community service v2', () => {
                             maxClaim: 450
                         },
                         hasAddress: true
-                    }
-                ]);
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
-
-                returnClaimedSubgraph.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        claimed: 0
                     }
                 ]);
 
@@ -224,20 +163,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
-
-                returnClaimedSubgraph.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        claimed: 0
-                    }
-                ]);
-
                 const result = await communityListService.list({
                     search: communities[0].name.toUpperCase()
                 });
@@ -265,7 +190,19 @@ describe('community service v2', () => {
                             incrementInterval: 5 * 60,
                             maxClaim: 450
                         },
-                        hasAddress: true
+                        hasAddress: true,
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
+                        }
                     },
                     {
                         requestByAddress: users[1].address,
@@ -280,7 +217,19 @@ describe('community service v2', () => {
                             incrementInterval: 5 * 60,
                             maxClaim: 450
                         },
-                        hasAddress: true
+                        hasAddress: true,
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
+                        }
                     },
                     {
                         requestByAddress: users[2].address,
@@ -295,23 +244,21 @@ describe('community service v2', () => {
                             incrementInterval: 5 * 60,
                             maxClaim: 450
                         },
-                        hasAddress: true
+                        hasAddress: true,
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
+                        }
                     }
                 ]);
-
-                returnCommunityEntities.returns(
-                    communities.map(el => ({
-                        id: el.contractAddress,
-                        beneficiaries: 0
-                    }))
-                );
-
-                returnClaimedSubgraph.returns(
-                    communities.map(community => ({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    }))
-                );
 
                 const result = await communityListService.list({
                     search: 'oreo'
@@ -367,20 +314,6 @@ describe('community service v2', () => {
                         hasAddress: true
                     }
                 ]);
-
-                returnCommunityEntities.returns(
-                    communities.map(el => ({
-                        id: el.contractAddress,
-                        beneficiaries: 0
-                    }))
-                );
-
-                returnClaimedSubgraph.returns(
-                    communities.map(community => ({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    }))
-                );
 
                 const result = await communityListService.list({});
 
@@ -444,20 +377,6 @@ describe('community service v2', () => {
                         country: 'ES'
                     }
                 ]);
-
-                returnCommunityEntities.returns(
-                    communities.map(el => ({
-                        id: el.contractAddress,
-                        beneficiaries: 0
-                    }))
-                );
-
-                returnClaimedSubgraph.returns(
-                    communities.map(community => ({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    }))
-                );
 
                 const result = await communityListService.list({
                     country: 'PT'
@@ -553,20 +472,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnCommunityEntities.returns(
-                    communities.map(el => ({
-                        id: el.contractAddress,
-                        beneficiaries: 0
-                    }))
-                );
-
-                returnClaimedSubgraph.returns(
-                    communities.map(community => ({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    }))
-                );
-
                 const result = await communityListService.list({
                     country: 'PT;ES;FR'
                 });
@@ -607,20 +512,6 @@ describe('community service v2', () => {
                 }
             ]);
 
-            returnCommunityEntities.returns([
-                {
-                    id: communities[0].contractAddress,
-                    beneficiaries: 0
-                }
-            ]);
-
-            returnClaimedSubgraph.returns([
-                {
-                    id: communities[0].contractAddress,
-                    claimed: 0
-                }
-            ]);
-
             const result = await communityListService.list({
                 search: users[1].address
             });
@@ -655,25 +546,7 @@ describe('community service v2', () => {
                     hasAddress: true
                 });
             }
-            const communities = await CommunityFactory(createObject);
-            const claimed: SubgraphClaimed = [];
-            for (const community of communities) {
-                claimed.push({
-                    id: community.contractAddress!,
-                    claimed: 0
-                });
-            }
-
-            returnCommunityEntities.returns(
-                communities.map(el => ({
-                    id: el.contractAddress,
-                    beneficiaries: 1
-                }))
-            );
-
-            returnClaimedSubgraph.returns(claimed);
-
-            //
+            await CommunityFactory(createObject);
 
             const result: any[] = [];
 
@@ -710,6 +583,18 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 3,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     },
                     {
@@ -728,39 +613,21 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 4,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     }
                 ]);
-
-                const claimed: SubgraphClaimed = [];
-                for (const community of communities) {
-                    claimed.push({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    });
-                }
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[1].contractAddress,
-                        beneficiaries: 4
-                    },
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 3
-                    }
-                ]);
-                communities.forEach(el => {
-                    returnCommunityStateSubgraph.withArgs(el.contractAddress).returns({
-                        claims: 0,
-                        claimed: '0',
-                        beneficiaries: el.requestByAddress === users[0].address ? 3 : 4,
-                        removedBeneficiaries: 0,
-                        contributed: '0',
-                        contributors: 0,
-                        managers: 0
-                    });
-                });
 
                 const result = await communityListService.list({});
 
@@ -818,13 +685,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnClaimedSubgraph.returns(
-                    communities.map(community => ({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    }))
-                );
-
                 const result = await communityListService.list({
                     orderBy: 'nearest',
                     lat: '-23.4378873',
@@ -857,6 +717,18 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 4,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     },
                     {
@@ -875,6 +747,18 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 5,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     },
                     {
@@ -893,44 +777,21 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -15.8697203,
                             longitude: -47.9207824
+                        },
+                        state: {
+                            estimatedFunds: 1,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 4,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     }
                 ]);
-
-                const claimed: SubgraphClaimed = [];
-                for (const community of communities) {
-                    claimed.push({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    });
-                }
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[1].contractAddress,
-                        beneficiaries: 5
-                    },
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 4
-                    },
-                    {
-                        id: communities[2].contractAddress,
-                        beneficiaries: 4
-                    }
-                ]);
-
-                communities.forEach(el => {
-                    returnCommunityStateSubgraph.withArgs(el.contractAddress).returns({
-                        claims: 0,
-                        claimed: '0',
-                        beneficiaries: el.requestByAddress === users[1].address ? 5 : 4,
-                        removedBeneficiaries: 0,
-                        contributed: '0',
-                        contributors: 0,
-                        managers: 0
-                    });
-                });
 
                 const result = await communityListService.list({
                     orderBy: 'nearest:ASC;bigger:DESC',
@@ -939,22 +800,22 @@ describe('community service v2', () => {
                 });
 
                 expect(result.rows[0]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address
+                });
+                expect(result.rows[1]).to.include({
                     id: communities[1].id,
                     name: communities[1].name,
                     country: communities[1].country,
                     requestByAddress: users[1].address
                 });
-                expect(result.rows[1]).to.include({
+                expect(result.rows[2]).to.include({
                     id: communities[0].id,
                     name: communities[0].name,
                     country: communities[0].country,
                     requestByAddress: users[0].address
-                });
-                expect(result.rows[2]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address
                 });
             });
 
@@ -1024,21 +885,6 @@ describe('community service v2', () => {
                     });
                 }
 
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[2].contractAddress,
-                        beneficiaries: 3
-                    },
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 4
-                    },
-                    {
-                        id: communities[1].contractAddress,
-                        beneficiaries: 4
-                    }
-                ]);
-
                 const result = await communityListService.list({
                     orderBy: 'bigger:ASC;nearest:DESC',
                     lat: '-15.8697203',
@@ -1083,6 +929,18 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 100,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     },
                     {
@@ -1101,6 +959,18 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -23.4378873,
                             longitude: -46.4841214
+                        },
+                        state: {
+                            estimatedFunds: 0.01,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     },
                     {
@@ -1119,44 +989,21 @@ describe('community service v2', () => {
                         gps: {
                             latitude: -15.8697203,
                             longitude: -47.9207824
+                        },
+                        state: {
+                            estimatedFunds: 1.5,
+                            claims: 1,
+                            claimed: 1,
+                            beneficiaries: 1,
+                            removedBeneficiaries: 1,
+                            contributed: 1,
+                            contributors: 1,
+                            managers: 1,
+                            baseInterval: 1,
+                            state: 1
                         }
                     }
                 ]);
-
-                const claimed: SubgraphClaimed = [];
-                for (const community of communities) {
-                    claimed.push({
-                        id: community.contractAddress!,
-                        claimed: 0
-                    });
-                }
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[1].contractAddress,
-                        estimatedFunds: '0.01'
-                    },
-                    {
-                        id: communities[2].contractAddress,
-                        estimatedFunds: '1.50'
-                    },
-                    {
-                        id: communities[0].contractAddress,
-                        estimatedFunds: '100.00'
-                    }
-                ]);
-
-                communities.forEach(el => {
-                    returnCommunityStateSubgraph.withArgs(el.contractAddress).returns({
-                        claims: 0,
-                        claimed: '0',
-                        beneficiaries: el.requestByAddress === users[1].address ? 5 : 4,
-                        removedBeneficiaries: 0,
-                        contributed: '0',
-                        contributors: 0,
-                        managers: 0
-                    });
-                });
 
                 const result = await communityListService.list({
                     orderBy: 'out_of_funds'
@@ -1187,7 +1034,6 @@ describe('community service v2', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
-                returnClaimedSubgraph.resetHistory();
             });
 
             it('filter with specific fields', async () => {
@@ -1209,13 +1055,6 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214
                         }
-                    }
-                ]);
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
                     }
                 ]);
 
@@ -1258,13 +1097,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
-
                 const result = await communityListService.list({
                     fields: 'id;contractAddress;contract.maxClaim;proposal.*'
                 });
@@ -1302,13 +1134,6 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214
                         }
-                    }
-                ]);
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
                     }
                 ]);
 
@@ -1396,13 +1221,6 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214
                         }
-                    }
-                ]);
-
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
                     }
                 ]);
 
@@ -1510,13 +1328,6 @@ describe('community service v2', () => {
                 );
 
                 returnProposalsSubgraph.returns([data]);
-                returnClaimedSubgraph.returns([]);
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[1].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
 
                 const result = await communityListService.list({
                     status: 'pending'
@@ -1569,17 +1380,6 @@ describe('community service v2', () => {
                 ]);
 
                 returnProposalsSubgraph.returns([]);
-                returnClaimedSubgraph.returns([]);
-                returnCommunityEntities.returns([
-                    {
-                        id: communities[0].contractAddress,
-                        beneficiaries: 0
-                    },
-                    {
-                        id: communities[1].contractAddress,
-                        beneficiaries: 0
-                    }
-                ]);
 
                 const pending = await communityListService.list({
                     status: 'pending'
@@ -1593,7 +1393,6 @@ describe('community service v2', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
-                returnClaimedSubgraph.resetHistory();
             });
 
             it('list pending communities by ambassadors address', async () => {
@@ -1649,8 +1448,6 @@ describe('community service v2', () => {
                 ]);
 
                 returnProposalsSubgraph.returns([]);
-                returnClaimedSubgraph.returns([]);
-                returnCommunityEntities.returns([]);
 
                 const result = await communityListService.list({
                     status: 'pending',
@@ -1716,8 +1513,6 @@ describe('community service v2', () => {
                     }
                 ]);
 
-                returnClaimedSubgraph.returns([]);
-                returnCommunityEntities.returns([]);
                 returnAmbassadorByAddressSubgraph.returns({
                     communities: [communities[0].contractAddress]
                 });
@@ -1736,8 +1531,6 @@ describe('community service v2', () => {
     describe('find', () => {
         afterEach(async () => {
             await truncate(sequelize, 'community');
-            returnClaimedSubgraph.resetHistory();
-            returnCommunityEntities.resetHistory();
         });
 
         it('find by ID', async () => {
@@ -1828,8 +1621,6 @@ describe('community service v2', () => {
     describe('edit', () => {
         afterEach(async () => {
             await truncate(sequelize, 'community');
-            returnClaimedSubgraph.resetHistory();
-            returnCommunityEntities.resetHistory();
         });
 
         it('edit review', async () => {

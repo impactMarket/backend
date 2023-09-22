@@ -168,7 +168,7 @@ export class CommunityListService {
                     }
                     case 'out_of_funds': {
                         if (query.status !== 'pending') {
-                            orderOption.push([literal('"state"."estimatedFunds"'), orderType ? orderType : 'DESC']);
+                            orderOption.push([literal('"state"."estimatedFunds"'), orderType ? orderType : 'ASC']);
                         }
                         break;
                     }
@@ -186,6 +186,8 @@ export class CommunityListService {
                     }
                 }
             }
+        } else if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
+            orderOption.push([literal('"state"."beneficiaries"'), 'DESC']);
         }
 
         let include: Includeable[];
