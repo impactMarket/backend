@@ -20,7 +20,7 @@ import {
     getBeneficiariesByAddress
 } from '../../../subgraph/queries/beneficiary';
 import { countManagers, getCommunityManagers } from '../../../subgraph/queries/manager';
-import { getCommunityAmbassador, getCommunityState, getCommunityUBIParams } from '../../../subgraph/queries/community';
+import { getCommunityAmbassador, getCommunityUBIParams } from '../../../subgraph/queries/community';
 import { getSearchInput } from '../../../utils/util';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { models } from '../../../database';

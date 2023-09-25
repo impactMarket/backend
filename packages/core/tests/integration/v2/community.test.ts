@@ -262,7 +262,7 @@ describe('community service v2', () => {
             });
 
             it('list all communities', async () => {
-                const communities = await CommunityFactory([
+                await CommunityFactory([
                     {
                         requestByAddress: users[0].address,
                         name: 'oreoland', // no space on purpose
@@ -1256,7 +1256,7 @@ describe('community service v2', () => {
             });
 
             it('should return pending communities with no open proposals (failed to found proposals in subgraph)', async () => {
-                const communities = await CommunityFactory([
+                await CommunityFactory([
                     {
                         requestByAddress: users[0].address,
                         started: new Date(),
