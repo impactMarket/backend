@@ -21,7 +21,7 @@
         "eslint": "eslint --fix \"./**/*.ts\" --max-warnings=0"
     },
     "devDependencies": {
-        "@babel/cli": "7.22.5",
+        "@babel/cli": "7.23.0",
         "@babel/core": "7.22.5",
         "@babel/preset-env": "7.22.5",
         "@babel/preset-typescript": "7.22.5",
