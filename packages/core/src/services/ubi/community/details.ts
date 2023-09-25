@@ -1,4 +1,4 @@
-import { Op, WhereOptions, col, fn, literal } from 'sequelize';
+import { Op, WhereOptions, col, fn, literal, Includeable } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import csv from 'csvtojson';
@@ -28,51 +28,6 @@ const { writeFile } = fs.promises;
 
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
-
-    public async getBaseState(communityId: number) {
-        const community = await models.community.findOne({
-            attributes: ['contractAddress'],
-            where: {
-                id: communityId
-            }
-        });
-        if (!community || !community.contractAddress) {
-            return null;
-        }
-
-        const state = await getCommunityState(community.contractAddress);
-        return {
-            ...state,
-            communityId
-        };
-    }
-
-    public async getUbiState(communityId: number) {
-        const community = (await models.community.findOne({
-            attributes: ['contractAddress'],
-            include: [
-                {
-                    attributes: ['ubiRate', 'estimatedDuration'],
-                    model: models.ubiCommunityDailyMetrics,
-                    as: 'metrics',
-                    order: [['date', 'desc']],
-                    limit: 1
-                }
-            ],
-            where: {
-                id: communityId
-            }
-        })) as CommunityAttributes;
-        if (!community || !community.contractAddress) {
-            return null;
-        }
-
-        return {
-            ubiRate: community.metrics?.length ? community.metrics[0].ubiRate : 0,
-            estimatedDuration: community.metrics?.length ? community.metrics[0].estimatedDuration : 0,
-            communityId
-        };
-    }
 
     public async getContract(communityId: number) {
         const community = await models.community.findOne({
@@ -580,8 +535,28 @@ export class CommunityDetailsService {
         userAddress?: string,
         returnState?: string | string[]
     ): Promise<CommunityAttributes> {
+        const include: Includeable[] = [];
+
+        if (!!returnState && (returnState === 'base' || returnState.indexOf('base') !== -1)) {
+            include.push({
+                model: models.subgraphUBICommunity,
+                as: 'state'
+            });
+        }
+        
+        if (!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)) {
+            include.push({
+                attributes: ['ubiRate', 'estimatedDuration'],
+                model: models.ubiCommunityDailyMetrics,
+                as: 'metrics',
+                order: [['date', 'desc']],
+                limit: 1
+            });
+        }
+
         const community = await models.community.findOne({
-            where
+            where,
+            include,
         });
         if (community === null) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Not found community ' + where);
@@ -603,18 +578,16 @@ export class CommunityDetailsService {
             }
         }
 
-        const state = {
-            ...(!!returnState && (returnState === 'base' || returnState.indexOf('base') !== -1)
-                ? await this.getBaseState(community.id)
-                : null),
-            ...(!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)
-                ? await this.getUbiState(community.id)
-                : null)
-        } as any;
+        const result: CommunityAttributes = community.toJSON();
+        if (result.metrics && result.metrics[0]) {
+            result.state = {
+                ...result.state!,
+                ...result.metrics[0]
+            }
+        }
 
         return {
             ...community.toJSON(),
-            state,
             email: showEmail ? community.email : ''
         };
     }

@@ -28,12 +28,12 @@ export async function updateCommunities(): Promise<void> {
                     delete community.id;
 
                     if(model) {
-                        subgraphUBICommunity.update(community, {
+                        return subgraphUBICommunity.update(community, {
                             where: { id: model.id },
                             transaction: t,
-                        });
+                        }) as any;
                     }
-                    subgraphUBICommunity.create(community, { transaction: t });
+                    return subgraphUBICommunity.create(community, { transaction: t });
                 })
         }));
 
