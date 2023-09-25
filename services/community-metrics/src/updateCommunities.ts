@@ -27,8 +27,9 @@ export async function updateCommunities(): Promise<void> {
                     community['communityAddress'] = getAddress(community.id);
                     delete community.id;
 
-                    if(subgraphCommunityModel)
+                    if(subgraphCommunityModel) {
                         return subgraphCommunityModel.update(community, { transaction: t });
+                    }
                     return subgraphCommunity.create(community, { transaction: t });
                 })
         }));
