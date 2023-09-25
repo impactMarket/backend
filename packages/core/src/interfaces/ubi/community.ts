@@ -1,7 +1,7 @@
 import { AppProposal } from '../app/appProposal';
 import { ICommunityContractParams } from '../../types';
 import { StoryCommunity } from '../story/storyCommunity';
-import { SubgraphCommunity } from './subgraphCommunity';
+import { SubgraphUBICommunity } from './subgraphUBICommunity';
 import { UbiClaimLocation } from './ubiClaimLocation';
 import { UbiCommunityContract } from './ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from './ubiCommunityDailyMetrics';
@@ -146,7 +146,7 @@ export interface CommunityAttributes {
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     proposal?: AppProposal;
     contract?: UbiCommunityContract; // TODO: to be removed
-    state?: SubgraphCommunity;
+    state?: SubgraphUBICommunity;
     storyCommunity?: StoryCommunity[]; // TODO: to be removed
     suspect?: UbiCommunitySuspect[]; // TODO: to be removed
     // promoter?: UbiPromoter;

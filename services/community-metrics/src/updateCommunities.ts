@@ -3,11 +3,11 @@ import { getAddress } from '@ethersproject/address';
 
 export async function updateCommunities(): Promise<void> {
     utils.Logger.info('Updating communities...');
-    const { subgraphCommunity } = database.models;
+    const { subgraphUBICommunity } = database.models;
     const t = await database.sequelize.transaction();
 
     try {
-        const lastUpdate = await subgraphCommunity.findOne({
+        const lastUpdate = await subgraphUBICommunity.findOne({
             attributes: ['updatedAt'],
             order: [['updatedAt', 'DESC']]
         });
@@ -21,16 +21,19 @@ export async function updateCommunities(): Promise<void> {
         );
 
         await Promise.all(communities.map(community => {
-            return subgraphCommunity
+            return subgraphUBICommunity
                 .findOne({ where: { communityAddress: getAddress(community.id) } })
-                .then(subgraphCommunityModel => {
+                .then(model => {
                     community['communityAddress'] = getAddress(community.id);
                     delete community.id;
 
-                    if(subgraphCommunityModel) {
-                        return subgraphCommunityModel.update(community, { transaction: t });
+                    if(model) {
+                        subgraphUBICommunity.update(community, {
+                            where: { id: model.id },
+                            transaction: t,
+                        });
                     }
-                    return subgraphCommunity.create(community, { transaction: t });
+                    subgraphUBICommunity.create(community, { transaction: t });
                 })
         }));
 

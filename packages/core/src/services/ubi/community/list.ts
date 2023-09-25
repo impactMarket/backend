@@ -217,7 +217,7 @@ export class CommunityListService {
 
             include = [
                 {
-                    model: models.subgraphCommunity,
+                    model: models.subgraphUBICommunity,
                     as: 'state'
                 },
                 {
@@ -361,7 +361,7 @@ export class CommunityListService {
         if (fields.state) {
             extendedInclude.push({
                 attributes: fields.state.length > 0 ? fields.state : undefined,
-                model: models.subgraphCommunity,
+                model: models.subgraphUBICommunity,
                 as: 'state'
             });
         }

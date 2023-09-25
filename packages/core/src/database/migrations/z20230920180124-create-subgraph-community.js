@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('subgraph_community', {
+        return queryInterface.createTable('subgraph_ubi_community', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -59,6 +59,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('subgraph_community');
+        return queryInterface.dropTable('subgraph_ubi_community');
     },
 };

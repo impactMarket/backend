@@ -1,8 +1,8 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { SubgraphCommunity, SubgraphCommunityCreation } from '../../../interfaces/ubi/subgraphCommunity';
+import { SubgraphUBICommunity, SubgraphUBICommunityCreation } from '../../../interfaces/ubi/subgraphUBICommunity';
 
-export class SubgraphCommunityModel extends Model<SubgraphCommunity, SubgraphCommunityCreation> {
+export class SubgraphUBICommunityModel extends Model<SubgraphUBICommunity, SubgraphUBICommunityCreation> {
     public id!: number;
     public communityAddress!: string;
     public estimatedFunds!: number;
@@ -20,8 +20,8 @@ export class SubgraphCommunityModel extends Model<SubgraphCommunity, SubgraphCom
     public readonly updatedAt!: Date;
 }
 
-export function initializeSubgraphCommunity(sequelize: Sequelize): typeof SubgraphCommunityModel {
-    SubgraphCommunityModel.init(
+export function initializeSubgraphUBICommunity(sequelize: Sequelize): typeof SubgraphUBICommunityModel {
+    SubgraphUBICommunityModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -78,11 +78,11 @@ export function initializeSubgraphCommunity(sequelize: Sequelize): typeof Subgra
             }
         },
         {
-            tableName: 'subgraph_community',
-            modelName: 'subgraphCommunity',
+            tableName: 'subgraph_ubi_community',
+            modelName: 'subgraphUBICommunity',
             createdAt: false,
             sequelize
         }
     );
-    return SubgraphCommunityModel;
+    return SubgraphUBICommunityModel;
 }

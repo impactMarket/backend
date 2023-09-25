@@ -1,4 +1,4 @@
-export interface SubgraphCommunity {
+export interface SubgraphUBICommunity {
     id: number;
     communityAddress: string;
     estimatedFunds: number;
@@ -16,7 +16,7 @@ export interface SubgraphCommunity {
     updatedAt: Date;
 }
 
-export interface SubgraphCommunityCreation {
+export interface SubgraphUBICommunityCreation {
     communityAddress: string;
     estimatedFunds: number;
     claims: number;

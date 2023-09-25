@@ -15,7 +15,7 @@ export function communityAssociation(sequelize: Sequelize) {
         ubiCommunityDemographics,
         merchantCommunity,
         merchantRegistry,
-        subgraphCommunity
+        subgraphUBICommunity
     } = sequelize.models as DbModels;
 
     // used to query from the community with incude
@@ -69,7 +69,7 @@ export function communityAssociation(sequelize: Sequelize) {
         foreignKey: 'merchantId',
         as: 'merchantCommunity'
     });
-    community.hasOne(subgraphCommunity, {
+    community.hasOne(subgraphUBICommunity, {
         foreignKey: 'communityAddress',
         sourceKey: 'contractAddress',
         as: 'state'

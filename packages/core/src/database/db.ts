@@ -43,7 +43,7 @@ import { StoryContentModel } from './models/story/storyContent';
 import { StoryEngagementModel } from './models/story/storyEngagement';
 import { StoryUserEngagementModel } from './models/story/storyUserEngagement';
 import { StoryUserReportModel } from './models/story/storyUserReport';
-import { SubgraphCommunityModel } from './models/ubi/subgraphCommunity';
+import { SubgraphUBICommunityModel } from './models/ubi/subgraphUBICommunity';
 import { SubgraphMicroCreditBorrowersModel } from './models/microCredit/subgraphBorrowers';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
@@ -83,7 +83,7 @@ export type DbModels = {
     ubiCommunityLabels: ModelStatic<UbiCommunityLabelModel>;
     ubiCommunityCampaign: ModelStatic<UbiCommunityCampaignModel>;
     ubiClaimLocation: ModelStatic<ClaimLocationModel>;
-    subgraphCommunity: ModelStatic<SubgraphCommunityModel>;
+    subgraphUBICommunity: ModelStatic<SubgraphUBICommunityModel>;
     //
     globalDailyState: ModelStatic<GlobalDailyState>;
     globalDemographics: ModelStatic<GlobalDemographics>;
