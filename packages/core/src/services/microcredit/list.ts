@@ -1,6 +1,6 @@
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
-import { Op, Order, WhereOptions, literal } from 'sequelize';
+import { Op, Order, WhereOptions, col, fn, literal } from 'sequelize';
 import { config } from '../../..';
 import { getAddress } from '@ethersproject/address';
 import {
@@ -658,54 +658,28 @@ export default class MicroCreditList {
     };
 
     public getLoanManagersByCountry = async (country: string) => {
-        let loanManagers: number[] = [];
-
-        // TODO: this is hardcoded for now, but we should have a better way to do this
-        if (config.jsonRpcUrl.indexOf('alfajores') !== -1) {
-            switch (country.toLowerCase()) {
-                case 'br':
-                    loanManagers = [5857, 5855, 5898];
-                    break;
-                case 'ug':
-                    loanManagers = [5855, 5801, 5896];
-                    break;
-                case 'ng':
-                    loanManagers = [5853, 5700, 5893];
-                    break;
-                // case 've':
-                default:
-                    loanManagers = [5853, 5857, 5801, 5891];
-                    break;
-            }
-        } else {
-            switch (country.toLowerCase()) {
-                case 'br':
-                    loanManagers = [106251, 12928];
-                    break;
-                case 'ug':
-                    loanManagers = [106251, 30880, 99878, 101542, 52493, 47511, 32522, 27371, 107433, 56673];
-                    break;
-                case 'gh':
-                    loanManagers = [106251, 108792];
-                    break;
-                case 've':
-                    loanManagers = [88662];
-                    break;
-                default:
-                    loanManagers = [106251];
-                    break;
-            }
-        }
-
-        const users = await models.appUser.findAll({
-            attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
-            where: {
-                id: {
-                    [Op.in]: loanManagers
+        const loanManagers = await models.microCreditLoanManager.findAll({
+            attributes: [],
+            include: [
+                {
+                    model: models.appUser,
+                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    as: 'user'
                 }
+            ],
+            where: {
+                country
             }
         });
 
-        return users.map(u => u.toJSON());
+        return loanManagers.map(u => u.user!.toJSON());
+    };
+
+    public getMicroCreditCountries = async () => {
+        const countries = await models.microCreditLoanManager.findAll({
+            attributes: [[fn('DISTINCT', col('country')), 'country']]
+        });
+
+        return countries.map(c => c.country);
     };
 }

@@ -37,6 +37,7 @@ import { MicroCreditApplicationModel } from './models/microCredit/applications';
 import { MicroCreditBorrowersHumaModel } from './models/microCredit/borrowersHuma';
 import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
+import { MicroCreditLoanManagerModel } from './models/microCredit/loanManagers';
 import { MicroCreditNoteModel } from './models/microCredit/note';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
@@ -123,6 +124,7 @@ export type DbModels = {
     microCreditBorrowersHuma: ModelStatic<MicroCreditBorrowersHumaModel>;
     microCreditNote: ModelStatic<MicroCreditNoteModel>;
     subgraphMicroCreditBorrowers: ModelStatic<SubgraphMicroCreditBorrowersModel>;
+    microCreditLoanManager: ModelStatic<MicroCreditLoanManagerModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 };
