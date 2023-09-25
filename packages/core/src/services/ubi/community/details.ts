@@ -1,4 +1,4 @@
-import { Op, WhereOptions, col, fn, literal, Includeable } from 'sequelize';
+import { Includeable, Op, WhereOptions, col, fn, literal } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import csv from 'csvtojson';
@@ -543,7 +543,7 @@ export class CommunityDetailsService {
                 as: 'state'
             });
         }
-        
+
         if (!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)) {
             include.push({
                 attributes: ['ubiRate', 'estimatedDuration'],
@@ -556,7 +556,7 @@ export class CommunityDetailsService {
 
         const community = await models.community.findOne({
             where,
-            include,
+            include
         });
         if (community === null) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Not found community ' + where);
@@ -583,7 +583,7 @@ export class CommunityDetailsService {
             result.state = {
                 ...result.state!,
                 ...result.metrics[0]
-            }
+            };
         }
 
         return {

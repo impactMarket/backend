@@ -30,6 +30,19 @@ describe('community service v2', () => {
     const communityDetailsService = new CommunityDetailsService();
     const communityCreateService = new CommunityCreateService();
 
+    const defaultState = {
+        estimatedFunds: 1,
+        claims: 1,
+        claimed: 1,
+        beneficiaries: 1,
+        removedBeneficiaries: 1,
+        contributed: 1,
+        contributors: 1,
+        managers: 1,
+        baseInterval: 1,
+        state: 1
+    };
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
@@ -191,18 +204,7 @@ describe('community service v2', () => {
                             maxClaim: 450
                         },
                         hasAddress: true,
-                        state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
-                        }
+                        state: defaultState
                     },
                     {
                         requestByAddress: users[1].address,
@@ -218,18 +220,7 @@ describe('community service v2', () => {
                             maxClaim: 450
                         },
                         hasAddress: true,
-                        state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
-                        }
+                        state: defaultState
                     },
                     {
                         requestByAddress: users[2].address,
@@ -245,18 +236,7 @@ describe('community service v2', () => {
                             maxClaim: 450
                         },
                         hasAddress: true,
-                        state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
-                        }
+                        state: defaultState
                     }
                 ]);
 
@@ -585,16 +565,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 3,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            beneficiaries: 3
                         }
                     },
                     {
@@ -615,16 +587,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 4,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            beneficiaries: 4
                         }
                     }
                 ]);
@@ -719,16 +683,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 4,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            beneficiaries: 4
                         }
                     },
                     {
@@ -749,16 +705,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 5,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            beneficiaries: 5
                         }
                     },
                     {
@@ -779,16 +727,8 @@ describe('community service v2', () => {
                             longitude: -47.9207824
                         },
                         state: {
-                            estimatedFunds: 1,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 4,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            beneficiaries: 4
                         }
                     }
                 ]);
@@ -931,16 +871,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 100,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            estimatedFunds: 100
                         }
                     },
                     {
@@ -961,16 +893,8 @@ describe('community service v2', () => {
                             longitude: -46.4841214
                         },
                         state: {
-                            estimatedFunds: 0.01,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            estimatedFunds: 0.01
                         }
                     },
                     {
@@ -991,16 +915,8 @@ describe('community service v2', () => {
                             longitude: -47.9207824
                         },
                         state: {
-                            estimatedFunds: 1.5,
-                            claims: 1,
-                            claimed: 1,
-                            beneficiaries: 1,
-                            removedBeneficiaries: 1,
-                            contributed: 1,
-                            contributors: 1,
-                            managers: 1,
-                            baseInterval: 1,
-                            state: 1
+                            ...defaultState,
+                            estimatedFunds: 1.5
                         }
                     }
                 ]);
