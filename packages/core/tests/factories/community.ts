@@ -3,6 +3,8 @@ import { faker } from '@faker-js/faker';
 
 import { Community } from '../../src/database/models/ubi/community';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import { SubgraphUBICommunity, SubgraphUBICommunityCreation } from '../../src/interfaces/ubi/subgraphUBICommunity';
+import { SubgraphUBICommunityModel } from '../../src/database/models/ubi/subgraphUBICommunity';
 import { UbiCommunityContract, UbiCommunityContractCreation } from '../../src/interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunitySuspectModel } from '../../src/database/models/ubi/ubiCommunitySuspect';
@@ -26,6 +28,7 @@ interface ICreateProps {
     };
     proposalId?: number;
     ambassadorAddress?: string;
+    state?: Omit<SubgraphUBICommunityCreation, 'communityAddress'>;
 }
 /**
  * Generate an object which container attributes needed
@@ -91,9 +94,14 @@ const CommunityFactory = async (props: ICreateProps[]) => {
             ...(props[index].contract ? props[index].contract : communityData.contract),
             communityId: newCommunity.id
         });
+        const newState = await SubgraphUBICommunityModel.create({
+            communityAddress: communityData.contractAddress,
+            ...communityData.state
+        });
         result.push({
             ...(newCommunity.toJSON() as CommunityAttributes),
-            contract: newContract.toJSON() as UbiCommunityContract
+            contract: newContract.toJSON() as UbiCommunityContract,
+            state: newState.toJSON() as SubgraphUBICommunity
         });
         if (props[index].suspect !== undefined) {
             await UbiCommunitySuspectModel.create({
