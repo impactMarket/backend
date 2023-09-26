@@ -59,6 +59,19 @@ class MicroCreditController {
             });
             return;
         }
+
+        if (req.query.loanManagerAddress) {
+            if (!config.admin.authorisedAddresses.includes(req.user.address)) {
+                standardResponse(res, 400, false, '', {
+                    error: {
+                        name: 'USER_NOT_AUTHORIZED',
+                        message: 'User not authorized!'
+                    }
+                });
+                return;
+            }
+        }
+
         this.microCreditService
             .listApplications(req.user.userId, req.query)
             .then(r => standardResponse(res, 200, true, r))
