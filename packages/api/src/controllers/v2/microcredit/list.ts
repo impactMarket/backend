@@ -73,7 +73,7 @@ class MicroCreditController {
         }
 
         this.microCreditService
-            .listApplications(req.user.userId, req.query)
+            .listApplications(req.query.loanManagerAddress ?? req.user.userId, req.query)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

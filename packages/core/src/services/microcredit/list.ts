@@ -223,7 +223,7 @@ export default class MicroCreditList {
 
     // read application from models.microCreditApplications, including appUser to include profile
     public listApplications = async (
-        userId: number,
+        userIdOrAddress: number | string,
         query: {
             offset?: number;
             limit?: number;
@@ -248,6 +248,24 @@ export default class MicroCreditList {
             };
         }[];
     }> => {
+        let userId = 0;
+        if (typeof userIdOrAddress === 'string') {
+            const user = await models.appUser.findOne({
+                attributes: ['id'],
+                where: {
+                    address: userIdOrAddress
+                }
+            });
+
+            if (!user) {
+                throw new utils.BaseError('USER_NOT_FOUND', 'User not found');
+            }
+
+            userId = user.id;
+        } else {
+            userId = userIdOrAddress;
+        }
+
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
         const where: WhereOptions<MicroCreditApplication> = { selectedLoanManagerId: userId };
         if (query.status !== undefined) {
