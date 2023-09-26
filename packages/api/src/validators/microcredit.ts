@@ -25,6 +25,7 @@ type ListBorrowersType = {
         | 'performance'
         | 'performance:asc'
         | 'performance:desc';
+    loanManagerAddress?: string;
 };
 
 type ListApplicationsType = {
@@ -32,6 +33,7 @@ type ListApplicationsType = {
     limit?: number;
     status?: number;
     orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
+    loanManagerAddress?: string;
 };
 
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
@@ -56,14 +58,16 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
             'performance',
             'performance:asc',
             'performance:desc'
-        )
+        ),
+    loanManagerAddress: Joi.string().optional()
 });
 
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
     status: Joi.number().optional().min(0),
-    orderBy: Joi.string().optional().valid('appliedOn', 'appliedOn:asc', 'appliedOn:desc')
+    orderBy: Joi.string().optional().valid('appliedOn', 'appliedOn:asc', 'appliedOn:desc'),
+    loanManagerAddress: Joi.string().optional()
 });
 
 const queryRepaymentsHistorySchema = defaultSchema.object({

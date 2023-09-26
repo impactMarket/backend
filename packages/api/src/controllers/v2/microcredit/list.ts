@@ -6,10 +6,11 @@ import {
     ListApplicationsRequestSchema,
     ListBorrowersRequestSchema,
     RepaymentHistoryRequestSchema
-} from '../../../validators/microcredit';
-import { RequestWithUser } from '../../../middlewares/core';
-import { ValidatedRequest } from '../../../utils/queryValidator';
-import { standardResponse } from '../../../utils/api';
+} from '~validators/microcredit';
+import { RequestWithUser } from '~middlewares/core';
+import { ValidatedRequest } from '~utils/queryValidator';
+import { standardResponse } from '~utils/api';
+import config from '~config/index';
 
 class MicroCreditController {
     private microCreditService: services.MicroCredit.List;
@@ -28,8 +29,21 @@ class MicroCreditController {
             });
             return;
         }
+
+        if (req.query.loanManagerAddress) {
+            if (!config.admin.authorisedAddresses.includes(req.user.address)) {
+                standardResponse(res, 400, false, '', {
+                    error: {
+                        name: 'USER_NOT_AUTHORIZED',
+                        message: 'User not authorized!'
+                    }
+                });
+                return;
+            }
+        }
+
         this.microCreditService
-            .listBorrowers({ ...req.query, addedBy: req.user.address })
+            .listBorrowers({ ...req.query, addedBy: req.query.loanManagerAddress ?? req.user.address })
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -45,8 +59,21 @@ class MicroCreditController {
             });
             return;
         }
+
+        if (req.query.loanManagerAddress) {
+            if (!config.admin.authorisedAddresses.includes(req.user.address)) {
+                standardResponse(res, 400, false, '', {
+                    error: {
+                        name: 'USER_NOT_AUTHORIZED',
+                        message: 'User not authorized!'
+                    }
+                });
+                return;
+            }
+        }
+
         this.microCreditService
-            .listApplications(req.user.userId, req.query)
+            .listApplications(req.query.loanManagerAddress ?? req.user.userId, req.query)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -79,7 +79,7 @@ function validateEnv() {
         LEARN_AND_EARN_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SIGNATURE_EXPIRATION: num({ default: 15 }),
-        ADMIN_AUTHORISED_ADDRESSES: str({ default: '0x0' }),
+        ADMIN_AUTHORISED_ADDRESSES: str({ default: '' }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         // attestation service (ASv2)
         ATTESTATION_ISSUER_PRIVATE_KEY: str({
