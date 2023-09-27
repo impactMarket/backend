@@ -78,6 +78,12 @@ export default (route: Router): void => {
      *       - "communities"
      *     summary: Get community managers
      *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *       - in: query
      *         name: state
      *         schema:

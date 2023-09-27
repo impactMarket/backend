@@ -106,6 +106,13 @@ export default (route: Router): void => {
      *     tags:
      *       - "communities"
      *     summary: Edit pending community submission
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     requestBody:
      *       required: true
      *       content:
@@ -182,6 +189,13 @@ export default (route: Router): void => {
      *     tags:
      *       - "communities"
      *     summary: Edit community review
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     requestBody:
      *       required: true
      *       content:
@@ -209,6 +223,13 @@ export default (route: Router): void => {
      *     tags:
      *       - "communities"
      *     summary: Edit a valid community
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     requestBody:
      *      required: true
      *      content:

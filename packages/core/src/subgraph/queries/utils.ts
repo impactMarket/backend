@@ -26,7 +26,9 @@ export async function queryAndTransformResponse<T, Y>(
         return JSON.parse(cacheResults);
     }
     const response = await axiosSubgraph.post<SubgraphResponse<T>>('', graphqlQuery);
-    const transformedResponse = transform ? transform(response.data.data) : response.data.data;
+    const transformedResponse = transform
+        ? transform(response.data.data[graphqlQuery.operationName])
+        : response.data.data[graphqlQuery.operationName];
     redisClient.set(
         graphqlQuery.query,
         JSON.stringify(transformedResponse),
