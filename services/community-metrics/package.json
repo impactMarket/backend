@@ -12,7 +12,7 @@
         "node": "18.x"
     },
     "dependencies": {
-        "@huma-finance/sdk": "0.0.44-beta.145",
+        "@huma-finance/sdk": "0.0.44-beta.156",
         "@huma-finance/shared": "0.0.43-beta.112",
         "@impactmarket/core": "1.0.0"
     },
