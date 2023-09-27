@@ -111,9 +111,12 @@ export function adminAuthentication(req: RequestWithUser, res: Response, next: N
 }
 
 export const rateLimiter = rateLimit({
-    max: config.maxRequestPerUser,
+    limit: config.maxRequestPerUser,
     message: `You have exceeded the ${config.maxRequestPerUser} requests in 15 minutes limit!`,
     headers: true,
+    validate: {
+        trustProxy: false
+    },
     // standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     // legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     // windowMs: 900000, // 15 minutes in milliseconds
