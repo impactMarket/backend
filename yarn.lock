@@ -1848,10 +1848,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@bundlr-network/client@0.11.9":
-  version "0.11.9"
-  resolved "https://registry.yarnpkg.com/@bundlr-network/client/-/client-0.11.9.tgz#c6d170e1ff74661af78547ed8bd8d84e09824f4a"
-  integrity sha512-0lZAB0kx+GZsIGPT+nN2tMLseAzg98hS1HEupRoZcuE9OoMOa4+H+SOTNEbmxp7kuDKoMC3TXN9GOJBXFcPe7Q==
+"@bundlr-network/client@0.11.17":
+  version "0.11.17"
+  resolved "https://registry.yarnpkg.com/@bundlr-network/client/-/client-0.11.17.tgz#33822c0c56f328742ef3ec3107e371892b5b8282"
+  integrity sha512-DZHNvX+IeQASxCk4ldnlqpn/51KHDGiGXbhWPiMt2c1bLGdSnyOZoTv+MYnGv6Px0ZYqYcotur1Vyu3Fc3aSMw==
   dependencies:
     "@ethersproject/bignumber" "^5.7.0"
     "@ethersproject/contracts" "^5.7.0"
@@ -1865,8 +1865,8 @@
     "@supercharge/promise-pool" "^2.1.0"
     algosdk "^1.13.1"
     aptos "^1.8.5"
-    arbundles "^0.9.7"
-    arweave "=1.11.8"
+    arbundles "^0.9.9"
+    arweave "=1.11.9"
     async-retry "^1.3.3"
     axios "^0.25.0"
     base64url "^3.0.1"
@@ -3657,19 +3657,18 @@
     "@hapi/hoek" "^9.0.0"
     "@hapi/topo" "^5.0.0"
 
-"@huma-finance/sdk@0.0.44-beta.145":
-  version "0.0.44-beta.145"
-  resolved "https://registry.yarnpkg.com/@huma-finance/sdk/-/sdk-0.0.44-beta.145.tgz#9135be5ca0288cc302f5e8028328ac0398585540"
-  integrity sha512-qRlKwcsVotuNtRYabuNrhiKRUR0zVusJnWNMkGvakJTrzY/VLzt1Z20wN4J23eAATiGIzGgu6ntk2fcg36gb6w==
+"@huma-finance/sdk@0.0.44-beta.156":
+  version "0.0.44-beta.156"
+  resolved "https://registry.yarnpkg.com/@huma-finance/sdk/-/sdk-0.0.44-beta.156.tgz#7720cc820c38d068f864acf4528ba00014a1ac8b"
+  integrity sha512-ILN85pE+xChHsXZIze1gNz9RL5C8RovpSPh9fi+vRFuwq9qpB7Wsd23x5Zrjy7v8HpEfAMHKQ5ba1GjWDae+/g==
   dependencies:
-    "@bundlr-network/client" "0.11.9"
+    "@bundlr-network/client" "0.11.17"
     "@ethersproject/address" "^5.7.0"
     "@ethersproject/bignumber" "^5.6.0"
     "@ethersproject/constants" "^5.7.0"
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.6.0"
     "@huma-finance/shared" "^0.0.43"
-    arweave "^1.13.5"
     axios "^1.4.0"
     bignumber.js "^9.1.1"
     ethers "^5.7.2"
@@ -9546,10 +9545,10 @@ aptos@^1.8.5:
     form-data "4.0.0"
     tweetnacl "1.0.3"
 
-arbundles@^0.9.7:
-  version "0.9.10"
-  resolved "https://registry.yarnpkg.com/arbundles/-/arbundles-0.9.10.tgz#8aae906a8db09d8a9355328994fd059101c5f589"
-  integrity sha512-Ta9c1KRARXYJ5M/rYdNRBXdSQjgfOlcv1QRS16EsHdR6Wr4IOH3V05+ObmjOmonQETaJdB+p+t7RUMMs+hNpIQ==
+arbundles@^0.9.9:
+  version "0.9.11"
+  resolved "https://registry.yarnpkg.com/arbundles/-/arbundles-0.9.11.tgz#4dbccecc20876b38f01ba4b80abe8ee761c3e1e9"
+  integrity sha512-y42MaiPWzW7MVHd+b/xWvv2Uj0nthAk3SIxRO5r5uw7427KRNYjld293sNyhzK52CHkdaiQIPDdfinmjrxNRYQ==
   dependencies:
     "@ethersproject/bytes" "^5.7.0"
     "@ethersproject/hash" "^5.7.0"
@@ -9835,7 +9834,19 @@ arweave@=1.11.8:
     bignumber.js "^9.0.2"
     util "^0.12.4"
 
-arweave@^1.10.13, arweave@^1.13.5:
+arweave@=1.11.9:
+  version "1.11.9"
+  resolved "https://registry.yarnpkg.com/arweave/-/arweave-1.11.9.tgz#4d1fc17052e4e6d6eeb8fd18063b43eca52f2a56"
+  integrity sha512-i+oQQkQgjASG/+iS/BVq0JDhpW0jLGMtiqPwfHe0x46YCnuA23prN82EW4KigxZAphF9jNzDexQjGLAKbhw4Zw==
+  dependencies:
+    arconnect "^0.4.2"
+    asn1.js "^5.4.1"
+    axios "^0.27.2"
+    base64-js "^1.5.1"
+    bignumber.js "^9.0.2"
+    util "^0.12.4"
+
+arweave@^1.10.13:
   version "1.14.4"
   resolved "https://registry.yarnpkg.com/arweave/-/arweave-1.14.4.tgz#5ba22136aa0e7fd9495258a3931fb770c9d6bf21"
   integrity sha512-tmqU9fug8XAmFETYwgUhLaD3WKav5DaM4p1vgJpEj/Px2ORPPMikwnSySlFymmL2qgRh2ZBcZsg11+RXPPGLsA==
@@ -10575,7 +10586,6 @@ blessed@^0.1.81:
 
 "blind-threshold-bls@https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a":
   version "0.1.0"
-  uid e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208
   resolved "https://github.com/celo-org/blind-threshold-bls-wasm#e1e2f8a1ab5154c2f0b1c55cb0d61fbb1d907208"
 
 blob-to-it@^1.0.1:
