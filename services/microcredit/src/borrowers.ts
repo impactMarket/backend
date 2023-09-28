@@ -30,7 +30,7 @@ export async function updateBorrowers(): Promise<void> {
                 const borrower = borrowers.borrowers.find(el => el.id === user.address.toLowerCase());
                 const values = {
                     lastRepayment: borrower!.loan.lastRepayment,
-                    lastRepaymentAmount: parseFloat(borrower!.loan.lastRepaymentAmount),
+                    lastRepaymentAmount: borrower!.loan.lastRepaymentAmount ? parseFloat(borrower!.loan.lastRepaymentAmount) : 0,
                     lastDebt: parseFloat(borrower!.loan.lastDebt),
                     amount: parseFloat(borrower!.loan.amount),
                     period: borrower!.loan.period,
