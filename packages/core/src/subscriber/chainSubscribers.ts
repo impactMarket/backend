@@ -61,11 +61,13 @@ class ChainSubscribers {
     }
 
     recover() {
-        this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
         this._runRecoveryTxs(this.provider, this.providerFallback)
-            .then(() => services.app.ImMetadataService.removeRecoverBlock())
+            .then(() => {
+                services.app.ImMetadataService.removeRecoverBlock();
+                this._setupListener(this.provider);
+            })
             .catch(error => Logger.error('Failed to recover past events!', error));
     }
 
@@ -75,10 +77,10 @@ class ChainSubscribers {
     ) {
         Logger.info('Recovering past events...');
         let startFromBlock: number;
-        const lastBlockCached = await database.redisClient.get('lastBlock');
-        if (!lastBlockCached) {
-            startFromBlock = await services.app.ImMetadataService.getRecoverBlock();
-        } else {
+        startFromBlock = await services.app.ImMetadataService.getRecoverBlock();
+        if (!startFromBlock) {
+            const lastBlockCached = await database.redisClient.get('lastBlock');
+            if (!lastBlockCached) return;
             startFromBlock = parseInt(lastBlockCached, 10);
         }
 
