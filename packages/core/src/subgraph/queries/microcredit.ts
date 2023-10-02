@@ -674,7 +674,8 @@ export const getLoansRepaymentsSince = async (
 };
 
 export const getLoansSince = async (
-    since: number
+    since: number,
+    addedBy: string[]
 ): Promise<
     {
         amount: number;
@@ -690,7 +691,7 @@ export const getLoansSince = async (
             loans(
                 first: 1000
                 skip: 0
-                where: { claimed_gte: ${since} }
+                where: { claimed_gte: ${since}, addedBy_in: ${JSON.stringify(addedBy)} }
             ) {
                 amount
                 period
