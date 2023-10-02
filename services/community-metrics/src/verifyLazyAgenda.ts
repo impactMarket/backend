@@ -33,14 +33,34 @@ const donationMinerABI = [
             },
             {
                 internalType: 'address',
+                name: '_from',
+                type: 'address'
+            },
+            {
+                internalType: 'address',
                 name: '_delegateAddress',
                 type: 'address'
             }
         ],
-        name: 'donate',
+        name: 'donateFrom',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function'
+    }
+];
+
+const erc20ABI = [
+    {
+        type: 'function',
+        stateMutability: 'view',
+        payable: false,
+        outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
+        name: 'allowance',
+        inputs: [
+            { type: 'address', name: 'accountOwner', internalType: 'address' },
+            { type: 'address', name: 'spender', internalType: 'address' }
+        ],
+        constant: true
     }
 ];
 
@@ -51,7 +71,9 @@ export async function verifyLazyAgenda(): Promise<void> {
     // frequency can be any number of seconds
     // include user address from app_user table
     const lazyAgendaItems = await appLazyAgenda.findAll({
-        where: sequelize.literal(`(${new Date().getTime() / 1000} - frequency) <= "lastExecutedAt"`),
+        where: sequelize.literal(
+            `(${Math.trunc(new Date().getTime() / 1000)} - frequency) >= TRUNC(EXTRACT(EPOCH FROM "lastExecutedAt"))`
+        ),
         include: [{ attributes: ['address', 'email', 'firstName'], model: models.appUser, as: 'user' }]
     });
 
@@ -71,41 +93,52 @@ export async function verifyLazyAgenda(): Promise<void> {
                     lazyAgendaTxExecutor
                 ) as DonationMinerContract;
                 try {
-                    const tx = await donationMinerContract.donate(
+                    const txPopulate = await donationMinerContract.populateTransaction.donateFrom(
                         config.cUSDContractAddress,
                         ethers.utils.parseEther((details as { amount: number }).amount.toString()),
+                        user!.address,
                         user!.address
                     );
+                    const gasLimit = await lazyAgendaTxExecutor.estimateGas(txPopulate);
+                    const gasPrice = await provider.getGasPrice();
+                    const tx = await lazyAgendaTxExecutor.sendTransaction({ ...txPopulate, gasLimit, gasPrice });
 
                     await tx.wait();
+
+                    // update the lastExecutedAt field
+                    lazyAgendaItem.update({ lastExecutedAt: new Date() });
 
                     // TODO: if allowance is getting low, notify user to increase it
                 } catch (e) {
                     // email the user that the donation failed
                     // build the email structure and send
-                    const dynamicTemplateData = {
-                        subject: 'Recurring donation',
-                        message: 'There was an error with your recurring donation!'
-                    };
-                    const personalizations = [
-                        {
-                            to: [{ email: user!.email }],
-                            dynamicTemplateData
-                        }
-                    ];
-                    const sendgridData: MailDataRequired = {
-                        from: {
-                            name: 'impactMarket',
-                            email: 'no-reply@impactmarket.com'
-                        },
-                        personalizations,
-                        templateId: 'd-2ed3ec93a94246478fcfd6650bb60375'
-                    };
-                    sendEmail(sendgridData);
+                    //  allowance(owner, spender)
+                    const cusdContract = new ethers.Contract(config.cUSDContractAddress, erc20ABI, provider);
+                    const isBelowAllowance = ethers.utils
+                        .parseEther((details as { amount: number }).amount.toString())
+                        .gt(await cusdContract.allowance(user!.address, config.contractAddresses.donationMiner));
+                    if (isBelowAllowance) {
+                        const dynamicTemplateData = {
+                            subject: 'Recurring donation',
+                            message: 'There was an error with your recurring donation!'
+                        };
+                        const personalizations = [
+                            {
+                                to: [{ email: user!.email }],
+                                dynamicTemplateData
+                            }
+                        ];
+                        const sendgridData: MailDataRequired = {
+                            from: {
+                                name: 'impactMarket',
+                                email: 'no-reply@impactmarket.com'
+                            },
+                            personalizations,
+                            templateId: 'd-2ed3ec93a94246478fcfd6650bb60375'
+                        };
+                        sendEmail(sendgridData);
+                    }
                 }
-
-                // update the lastExecutedAt field
-                lazyAgendaItem.update({ lastExecutedAt: new Date() });
                 break;
             default:
                 break;
