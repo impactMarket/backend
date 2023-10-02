@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { database, interfaces, subgraph, utils } from '@impactmarket/core';
 import { registerReceivables, registerReceivablesRepayments } from './huma';
 
@@ -50,7 +51,9 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
             }
         ],
         where: {
-            fundsSource: [LoanManagerFundsSource.HUMA]
+            fundsSource: {
+                [Op.contains]: [LoanManagerFundsSource.HUMA]
+            }
         }
     });
     const loans = await microcredit.getLoansSince(
