@@ -4,7 +4,6 @@ import express from 'express';
 
 import { checkLearnAndEarnBalances } from './loaders/checkLearnAndEarnBalances';
 import { checkWalletBalances } from './loaders/checkWalletBalances';
-import { startSubscribers } from './loaders/subscriber';
 import serverLoader from './server';
 
 export async function startServer() {
@@ -31,7 +30,6 @@ export async function startServer() {
 
     // prevent subscribers and validations to run on dev mode
     if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
-        startSubscribers();
         checkWalletBalances()
             .then(() => utils.Logger.info('🕵️ checkWalletBalances finished'))
             .catch(err => utils.Logger.error('checkWalletBalances' + err));

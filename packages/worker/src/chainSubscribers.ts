@@ -1,15 +1,8 @@
 import { BigNumber } from 'bignumber.js';
-import { Logger } from '../utils/logger';
-import { MicroCreditApplicationStatus } from '../interfaces/microCredit/applications';
-import { Create as MicroCreditCreate } from '../services/microcredit';
-import { NotificationParamsPath, NotificationType } from '../interfaces/app/appNotification';
+import { utils, interfaces, services, subgraph, database, contracts, config } from '@impactmarket/core';
 import { Op, Transaction } from 'sequelize';
-import { cleanMicroCreditBorrowersCache } from '../utils/cache';
-import { config, contracts, database, services, subgraph, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
-import { models, sequelize } from '../database';
-import { sendNotification } from '../utils/pushNotification';
 
 const { hasSubgraphSyncedToBlock } = subgraph.queries.beneficiary;
 
@@ -22,7 +15,7 @@ class ChainSubscribers {
     ifaceMicrocredit: ethers.utils.Interface;
     filterTopics: string[][];
     communities: Map<string, number>;
-    microCreditService: MicroCreditCreate;
+    microCreditService: services.MicroCredit.Create;
     assetsAddress: { address: string; asset: string }[];
 
     constructor(
@@ -37,7 +30,7 @@ class ChainSubscribers {
         this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
         this.ifaceMicrocredit = new ethers.utils.Interface(contracts.MicrocreditABI);
         this.communities = communities;
-        this.microCreditService = new MicroCreditCreate();
+        this.microCreditService = new services.MicroCredit.Create();
         this.filterTopics = [
             [
                 ethers.utils.id(
@@ -61,19 +54,21 @@ class ChainSubscribers {
     }
 
     recover() {
-        this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
         this._runRecoveryTxs(this.provider, this.providerFallback)
-            .then(() => services.app.ImMetadataService.removeRecoverBlock())
-            .catch(error => Logger.error('Failed to recover past events!', error));
+            .then(() => {
+                services.app.ImMetadataService.removeRecoverBlock();
+                this._setupListener(this.provider);
+            })
+            .catch(error => utils.Logger.error('Failed to recover past events!', error));
     }
 
     async _runRecoveryTxs(
         provider: ethers.providers.JsonRpcProvider,
         fallbackProvider: ethers.providers.JsonRpcProvider
     ) {
-        Logger.info('Recovering past events...');
+        utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
         const lastBlockCached = await database.redisClient.get('lastBlock');
         if (!lastBlockCached) {
@@ -86,11 +81,11 @@ class ChainSubscribers {
 
         try {
             rawLogs = await this._getLogs(startFromBlock, provider);
-            Logger.info('Got logs from main provider!');
+            utils.Logger.info('Got logs from main provider!');
         } catch (error) {
-            Logger.error('Failed to get logs from main provider!', error);
+            utils.Logger.error('Failed to get logs from main provider!', error);
             rawLogs = await this._getLogs(startFromBlock, fallbackProvider);
-            Logger.info('Got logs from fallback provider!');
+            utils.Logger.info('Got logs from fallback provider!');
         }
 
         const logs = rawLogs.sort((a, b) => {
@@ -118,7 +113,7 @@ class ChainSubscribers {
         } catch (error) {
             // TODO: add error handling
         }
-        Logger.info('Past events recovered successfully!');
+        utils.Logger.info('Past events recovered successfully!');
     }
 
     async _getLogs(startFromBlock: number, provider: ethers.providers.JsonRpcProvider) {
@@ -130,7 +125,7 @@ class ChainSubscribers {
     }
 
     _setupListener(provider: ethers.providers.JsonRpcProvider) {
-        Logger.info('Starting subscribers...');
+        utils.Logger.info('Starting subscribers...');
         const filter = {
             topics: this.filterTopics
         };
@@ -141,7 +136,7 @@ class ChainSubscribers {
         // to reduce commits to the database, we will save the last block
         // and only process all logs once we get a new block
         provider.on(filter, async (log: ethers.providers.Log) => {
-            Logger.info('Receiving new event');
+            utils.Logger.info('Receiving new event');
             // get last saved block and current block
             const lastBlock = parseInt((await database.redisClient.get('lastBlock')) ?? '0', 10);
             const currentBlock = log.blockNumber;
@@ -150,9 +145,9 @@ class ChainSubscribers {
                 // process all last block logs
                 const lastBlockLogs = savedLogs.get(lastBlock) ?? [log];
                 try {
-                    Logger.info(`Processing logs (${lastBlock}) (${lastBlockLogs.length} txs)...`);
+                    utils.Logger.info(`Processing logs (${lastBlock}) (${lastBlockLogs.length} txs)...`);
                     const before = Date.now();
-                    await sequelize.transaction(async transaction => {
+                    await database.sequelize.transaction(async transaction => {
                         const transactions: Promise<void>[] = [];
                         for (let x = 0; x < lastBlockLogs.length; x++) {
                             transactions.push(this._filterAndProcessEvent(lastBlockLogs[x], transaction));
@@ -171,9 +166,9 @@ class ChainSubscribers {
                             database.redisClient.incr('blockCount');
                         }
                     });
-                    Logger.info(`Logs processed! Elapsed: ${Date.now() - before}ms`);
+                    utils.Logger.info(`Logs processed! Elapsed: ${Date.now() - before}ms`);
                 } catch (error) {
-                    Logger.error('Failed to process logs!', error);
+                    utils.Logger.error('Failed to process logs!', error);
                 }
             } else {
                 // save current log
@@ -229,9 +224,9 @@ class ChainSubscribers {
 
         // send push notification
         if (user)
-            sendNotification(
+            utils.pushNotification.sendNotification(
                 [user],
-                NotificationType.TRANSACTION_RECEIVED,
+                interfaces.app.appNotification.NotificationType.TRANSACTION_RECEIVED,
                 true,
                 true,
                 { path: log.transactionHash },
@@ -248,7 +243,7 @@ class ChainSubscribers {
             const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
 
             if (parsedLog.name === 'CommunityRemoved') {
-                Logger.info('Remove Community event');
+                utils.Logger.info('Remove Community event');
 
                 const communityAddress = parsedLog.args[0];
                 const community = await database.models.community.findOne({
@@ -257,7 +252,7 @@ class ChainSubscribers {
                 });
 
                 if (!community || !community.id) {
-                    Logger.error(`Community with address ${communityAddress} wasn't found at "CommunityRemoved"`);
+                    utils.Logger.error(`Community with address ${communityAddress} wasn't found at "CommunityRemoved"`);
                 } else {
                     await database.models.community.update(
                         {
@@ -272,7 +267,7 @@ class ChainSubscribers {
                     this.communities.delete(communityAddress);
                 }
             } else if (parsedLog.name === 'CommunityAdded') {
-                Logger.info('Add Community event');
+                utils.Logger.info('Add Community event');
 
                 const communityAddress = parsedLog.args[0];
                 const managerAddress = parsedLog.args[1];
@@ -291,23 +286,23 @@ class ChainSubscribers {
                     }
                 );
                 if (affectedCount === 0) {
-                    Logger.error(`Community with address ${communityAddress} wasn't updated at "CommunityAdded"`);
+                    utils.Logger.error(`Community with address ${communityAddress} wasn't updated at "CommunityAdded"`);
                 } else {
                     this.communities.set(communityAddress, affectedRows[0].id);
-                    const user = await models.appUser.findOne({
+                    const user = await database.models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
                             address: getAddress(managerAddress[0])
                         }
                     });
                     if (user) {
-                        await sendNotification(
+                        await utils.pushNotification.sendNotification(
                             [user.toJSON()],
-                            NotificationType.COMMUNITY_CREATED,
+                            interfaces.app.appNotification.NotificationType.COMMUNITY_CREATED,
                             true,
                             true,
                             {
-                                path: `${NotificationParamsPath.COMMUNITY}${affectedRows[0].id}`
+                                path: `${interfaces.app.appNotification.NotificationParamsPath.COMMUNITY}${affectedRows[0].id}`
                             },
                             transaction
                         );
@@ -315,7 +310,7 @@ class ChainSubscribers {
                 }
             }
         } catch (error) {
-            Logger.error('Failed to process Community Admin Events:', error);
+            utils.Logger.error('Failed to process Community Admin Events:', error);
         }
     }
 
@@ -324,7 +319,7 @@ class ChainSubscribers {
             const parsedLog = this.ifaceCommunity.parseLog(log);
 
             if (parsedLog.name === 'BeneficiaryAdded') {
-                Logger.info('Add Beneficiary event');
+                utils.Logger.info('Add Beneficiary event');
 
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
@@ -337,26 +332,26 @@ class ChainSubscribers {
                     });
                 }
 
-                const user = await models.appUser.findOne({
+                const user = await database.models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
                         address: getAddress(userAddress)
                     }
                 });
                 if (user && community) {
-                    await sendNotification(
+                    await utils.pushNotification.sendNotification(
                         [user.toJSON()],
-                        NotificationType.BENEFICIARY_ADDED,
+                        interfaces.app.appNotification.NotificationType.BENEFICIARY_ADDED,
                         true,
                         true,
                         {
-                            path: `${NotificationParamsPath.COMMUNITY}${community}`
+                            path: `${interfaces.app.appNotification.NotificationParamsPath.COMMUNITY}${community}`
                         },
                         transaction
                     );
                 }
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
-                Logger.info('Remove Beneficiary event');
+                utils.Logger.info('Remove Beneficiary event');
 
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
@@ -370,7 +365,7 @@ class ChainSubscribers {
                 }
             }
         } catch (error) {
-            Logger.error('Failed to process Community Events:', error);
+            utils.Logger.error('Failed to process Community Events:', error);
         }
     }
 
@@ -380,10 +375,10 @@ class ChainSubscribers {
             const userAddress = parsedLog.args[0];
 
             if (parsedLog.name === 'LoanAdded') {
-                Logger.info('Add Loan event');
+                utils.Logger.info('Add Loan event');
 
                 const [user, transactionsReceipt] = await Promise.all([
-                    models.appUser.findOne({
+                    database.models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
                             address: getAddress(userAddress)
@@ -393,7 +388,7 @@ class ChainSubscribers {
                 ]);
                 if (user) {
                     const [[borrower, created], loanManagerUser] = await Promise.all([
-                        models.microCreditBorrowers.findOrCreate({
+                        database.models.microCreditBorrowers.findOrCreate({
                             where: {
                                 userId: user.id
                             },
@@ -404,7 +399,7 @@ class ChainSubscribers {
                             },
                             transaction
                         }),
-                        models.appUser.findOne({
+                        database.models.appUser.findOne({
                             attributes: ['id'],
                             where: {
                                 address: getAddress(transactionsReceipt.from)
@@ -412,12 +407,12 @@ class ChainSubscribers {
                         }),
                         this.microCreditService.updateApplication(
                             [userAddress],
-                            [MicroCreditApplicationStatus.APPROVED],
+                            [interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED],
                             transaction
                         )
                     ]);
                     if (loanManagerUser) {
-                        cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                        utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
                     }
                     if (!created) {
                         this._waitForSubgraphToIndex(log).then(() => {
@@ -433,16 +428,16 @@ class ChainSubscribers {
                     }
                 }
             } else if (parsedLog.name === 'ManagerChanged') {
-                Logger.info('ManagerChanged event');
+                utils.Logger.info('ManagerChanged event');
 
-                const user = await models.appUser.findOne({
+                const user = await database.models.appUser.findOne({
                     attributes: ['id'],
                     where: {
                         address: getAddress(userAddress)
                     }
                 });
                 if (user) {
-                    await models.microCreditBorrowers.update(
+                    await database.models.microCreditBorrowers.update(
                         {
                             manager: parsedLog.args[1]
                         },
@@ -456,7 +451,7 @@ class ChainSubscribers {
                 }
             }
         } catch (error) {
-            Logger.error('Failed to process Microcredit Events:', error);
+            utils.Logger.error('Failed to process Microcredit Events:', error);
         }
     }
 }
