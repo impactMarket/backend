@@ -8,6 +8,7 @@ export class MicroCreditLoanManagerModel extends Model<MicroCreditLoanManager, M
     public id!: number;
     public userId!: number;
     public country!: string;
+    public fundsSource!: number[];
 
     public readonly user?: AppUserModel;
 }
@@ -32,6 +33,11 @@ export function initializeMicroCreditLoanManager(sequelize: Sequelize): typeof M
             },
             country: {
                 type: DataTypes.STRING,
+                allowNull: false
+            },
+            fundsSource: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                defaultValue: [0],
                 allowNull: false
             }
         },

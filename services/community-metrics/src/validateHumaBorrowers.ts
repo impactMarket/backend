@@ -1,6 +1,7 @@
-import { database, subgraph, utils } from '@impactmarket/core';
+import { database, interfaces, subgraph, utils } from '@impactmarket/core';
 import { registerReceivables, registerReceivablesRepayments } from './huma';
 
+const { LoanManagerFundsSource } = interfaces.microcredit.microCreditLoanManager;
 const { models } = database;
 const { microcredit } = subgraph.queries;
 
@@ -10,7 +11,7 @@ type HumaFundingData = {
     finalizedAt: number;
     lastSyncAt: number;
     lastRepaymentSyncAt: number;
-}
+};
 
 export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     utils.Logger.info('Verifying borrowers claiming HUMA funds...');
@@ -31,7 +32,7 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     }
 
     const humaFundingData: HumaFundingData = JSON.parse(humaFunding.value);
-    
+
     if (humaFundingData.finalizedAt !== 0) {
         utils.Logger.info('HUMA funding already finalized, skipping...');
         return;
@@ -39,12 +40,31 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
 
 
     // get all loans since the last check and filter until it get close to funding limit but does not overflow it
-    const loans = await microcredit.getLoansSince(humaFundingData.lastSyncAt);
+    const loanManagers = await models.microCreditLoanManager.findAll({
+        attributes: [],
+        include: [
+            {
+                model: models.appUser,
+                as: 'user',
+                attributes: ['address']
+            }
+        ],
+        where: {
+            fundsSource: [LoanManagerFundsSource.HUMA]
+        }
+    });
+    const loans = await microcredit.getLoansSince(
+        humaFundingData.lastSyncAt,
+        loanManagers.map(loanManager => loanManager.user!.address.toLowerCase())
+    );
     let accumulatedAmount = 0;
     let loanIndex = 0;
 
     for (; loanIndex < loans.length; loanIndex++) {
-        if (accumulatedAmount + loans[loanIndex].amount + humaFundingData.amountUsed > humaFundingData.amountDeposited) {
+        if (
+            accumulatedAmount + loans[loanIndex].amount + humaFundingData.amountUsed >
+            humaFundingData.amountDeposited
+        ) {
             break;
         }
         accumulatedAmount += loans[loanIndex].amount;
@@ -58,7 +78,10 @@ export async function validateBorrowersClaimHumaFunds(): Promise<void> {
     humaFundingData.lastSyncAt = newLastSyncAt;
     humaFundingData.amountUsed += accumulatedAmount;
     // if all funds are used, set as finalized
-    if (accumulatedAmount + humaFundingData.amountUsed === humaFundingData.amountDeposited || loanIndex < loans.length) {
+    if (
+        accumulatedAmount + humaFundingData.amountUsed === humaFundingData.amountDeposited ||
+        loanIndex < loans.length
+    ) {
         humaFundingData.finalizedAt = Math.trunc(new Date().getTime() / 1000);
     }
 
@@ -86,12 +109,12 @@ export async function validateBorrowersRepayingHumaFunds(): Promise<void> {
     }
 
     const humaFundingData: HumaFundingData = JSON.parse(humaFunding.value);
-    
+
     if (humaFundingData.finalizedAt !== 0) {
         utils.Logger.info('HUMA funding already finalized, skipping...');
         return;
     }
-    
+
     // get loans with HUMA referenceId
     const loansReferenceIds = await models.microCreditBorrowersHuma.findAll({
         attributes: ['humaRWRReferenceId']
