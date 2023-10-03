@@ -181,7 +181,10 @@ export class CommunityListService {
                     default: {
                         if (query.status !== 'pending') {
                             const defaultOrder = 'DESC NULLS LAST';
-                            const order = orderType && orderType.toLowerCase() === 'desc' ? defaultOrder : orderType || defaultOrder;
+                            const order =
+                                orderType && orderType.toLowerCase() === 'desc'
+                                    ? defaultOrder
+                                    : orderType || defaultOrder;
                             orderOption.push([literal('"state"."beneficiaries"'), order]);
                         }
                         break;
