@@ -180,14 +180,19 @@ export class CommunityListService {
                         break;
                     default: {
                         if (query.status !== 'pending') {
-                            orderOption.push([literal('"state"."beneficiaries"'), orderType ? orderType : 'DESC']);
+                            const defaultOrder = 'DESC NULLS LAST';
+                            const order =
+                                orderType && orderType.toLowerCase() === 'desc'
+                                    ? defaultOrder
+                                    : orderType || defaultOrder;
+                            orderOption.push([literal('"state"."beneficiaries"'), order]);
                         }
                         break;
                     }
                 }
             }
         } else if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
-            orderOption.push([literal('"state"."beneficiaries"'), 'DESC']);
+            orderOption.push([literal('"state"."beneficiaries"'), 'DESC NULLS LAST']);
         }
 
         let include: Includeable[];
