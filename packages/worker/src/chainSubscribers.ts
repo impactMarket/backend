@@ -197,14 +197,23 @@ class ChainSubscribers {
     }
 
     async _filterAndProcessEvent(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
+        const before = Date.now();
         if (log.address === config.communityAdminAddress) {
+            utils.Logger.info('Receiving event from CommunityAdmin');
             await this._processCommunityAdminEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (this.communities.get(log.address)) {
+            utils.Logger.info('Receiving event from Community');
             await this._processCommunityEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (log.address === config.microcreditContractAddress) {
+            utils.Logger.info('Receiving event from Microcredit');
             await this._processMicrocreditEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (this.assetsAddress.find(el => el.address === log.address)) {
+            utils.Logger.info('Receiving event from Transfer (cUSD)');
             await this._processTransfer(log);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         }
     }
 
