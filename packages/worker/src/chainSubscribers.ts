@@ -1,6 +1,6 @@
 import { BigNumber } from 'bignumber.js';
-import { utils, interfaces, services, subgraph, database, contracts, config } from '@impactmarket/core';
 import { Op, Transaction } from 'sequelize';
+import { config, contracts, database, interfaces, services, subgraph, utils } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
@@ -411,12 +411,13 @@ class ChainSubscribers {
                             transaction
                         )
                     ]);
-                    if (loanManagerUser) {
-                        utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
-                    }
                     if (!created) {
                         this._waitForSubgraphToIndex(log).then(() => {
                             utils.cache.cleanUserRolesCache(userAddress);
+                            if (loanManagerUser) {
+                                utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                                utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                            }
                         });
                         await borrower.update(
                             {
