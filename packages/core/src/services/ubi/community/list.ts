@@ -230,6 +230,7 @@ export class CommunityListService {
                     model: models.ubiCommunityDailyMetrics,
                     as: 'metrics',
                     duplicating: false,
+                    required: false,
                     where: {
                         date: {
                             [Op.eq]: literal(
