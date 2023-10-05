@@ -232,7 +232,9 @@ export class CommunityListService {
                     duplicating: false,
                     where: {
                         date: {
-                            [Op.eq]: literal(`(select date from ubi_community_daily_metrics order by date desc limit 1)`)
+                            [Op.eq]: literal(
+                                `(select date from ubi_community_daily_metrics order by date desc limit 1)`
+                            )
                         }
                     }
                 }
