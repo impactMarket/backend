@@ -1,6 +1,6 @@
 import { BigNumber } from 'bignumber.js';
-import { utils, interfaces, services, subgraph, database, contracts, config } from '@impactmarket/core';
 import { Op, Transaction } from 'sequelize';
+import { config, contracts, database, interfaces, services, subgraph, utils } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
@@ -197,14 +197,23 @@ class ChainSubscribers {
     }
 
     async _filterAndProcessEvent(log: ethers.providers.Log, transaction: Transaction): Promise<void> {
+        const before = Date.now();
         if (log.address === config.communityAdminAddress) {
+            utils.Logger.info('Receiving event from CommunityAdmin');
             await this._processCommunityAdminEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (this.communities.get(log.address)) {
+            utils.Logger.info('Receiving event from Community');
             await this._processCommunityEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (log.address === config.microcreditContractAddress) {
+            utils.Logger.info('Receiving event from Microcredit');
             await this._processMicrocreditEvents(log, transaction);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         } else if (this.assetsAddress.find(el => el.address === log.address)) {
+            utils.Logger.info('Receiving event from Transfer (cUSD)');
             await this._processTransfer(log);
+            utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         }
     }
 
@@ -411,12 +420,13 @@ class ChainSubscribers {
                             transaction
                         )
                     ]);
-                    if (loanManagerUser) {
-                        utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
-                    }
                     if (!created) {
                         this._waitForSubgraphToIndex(log).then(() => {
                             utils.cache.cleanUserRolesCache(userAddress);
+                            if (loanManagerUser) {
+                                utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                                utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                            }
                         });
                         await borrower.update(
                             {
