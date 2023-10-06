@@ -61,12 +61,23 @@ async function communitiesMetrics(): Promise<void> {
             const dailyState = await subgraph.queries.community.getCommunityDailyState(
                 `dayId_gte: ${aMonthAgoId}, community: "${community.contractAddress!.toLowerCase()}"`
             );
-            const allBeneficiaries = await subgraph.queries.beneficiary.getAllBeneficiaries(community.contractAddress!);
+            const allBeneficiaries = await database.models.subgraphUBIBeneficiary.findAll({
+                attributes: ['userAddress'],
+                where: {
+                    communityAddress: community.contractAddress!,
+                    claims: {
+                        [Op.gt]: 1
+                    },
+                    lastClaimAt: {
+                        [Op.gte]: aMonthAgo.getTime() / 1000
+                    }
+                }
+            })
 
             if (allBeneficiaries.length)
                 communitiesMap.set(
                     community.contractAddress!,
-                    allBeneficiaries.map(beneficiary => beneficiary.address)
+                    allBeneficiaries.map(beneficiary => beneficiary.userAddress)
                 );
 
             return {

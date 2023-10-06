@@ -2,7 +2,6 @@ import { Sequelize } from 'sequelize';
 import { SinonSpy, SinonStub, assert, spy, stub } from 'sinon';
 import { expect } from 'chai';
 
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { models } from '../../src/database';
@@ -85,7 +84,6 @@ describe('claim location service', () => {
                 country: 'AR'
             }
         ]);
-        returnGetBeneficiaryByAddressSubgraph = stub(beneficiarySubgraph, 'getBeneficiariesByAddress');
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });
 

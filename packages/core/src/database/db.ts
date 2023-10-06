@@ -46,6 +46,7 @@ import { StoryEngagementModel } from './models/story/storyEngagement';
 import { StoryUserEngagementModel } from './models/story/storyUserEngagement';
 import { StoryUserReportModel } from './models/story/storyUserReport';
 import { SubgraphMicroCreditBorrowersModel } from './models/microCredit/subgraphBorrowers';
+import { SubgraphUBIBeneficiaryModel } from './models/ubi/subgraphUBIBeneficiary';
 import { SubgraphUBICommunityModel } from './models/ubi/subgraphUBICommunity';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
@@ -74,6 +75,7 @@ export type DbModels = {
     ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
     appReferralCode: ModelStatic<AppReferralCodeModel>;
     appCICOProvider: ModelStatic<AppCICOProviderModel>;
+    subgraphUBIBeneficiary: ModelStatic<SubgraphUBIBeneficiaryModel>;
     //
     community: ModelStatic<Community>;
     ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;

@@ -27,12 +27,15 @@ functions:
   calcuateCommunitiesMetrics:
     handler: handler.calculate
     events:
-      # Invoke Lambda function every day at midnight
       - schedule: cron(0 0 * * ? *)
       - schedule: cron(30 2 * * ? *)
       - schedule: cron(30 4 * * ? *)
       - schedule: cron(30 6 * * ? *)
-      - schedule: cron(30 8 * * ? *)
+
+  updateUBIState:
+    handler: handler.ubiState
+    events:
+      - schedule: rate(2 hours)
 
 plugins:
   - serverless-webpack
