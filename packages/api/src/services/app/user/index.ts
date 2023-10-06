@@ -463,17 +463,19 @@ export default class UserService {
                 const community = communities[index];
                 const beneficiaries = await models.subgraphUBIBeneficiary.findAll({
                     attributes: [],
-                    include: [{
-                        attributes: ['walletPNT'],
-                        model: models.appUser,
-                        as: 'user',
-                        where: {
-                            walletPNT: {
-                                [Op.not]: null
-                            }
-                        },
-                        required: true,
-                    }],
+                    include: [
+                        {
+                            attributes: ['walletPNT'],
+                            model: models.appUser,
+                            as: 'user',
+                            where: {
+                                walletPNT: {
+                                    [Op.not]: null
+                                }
+                            },
+                            required: true
+                        }
+                    ],
                     where: {
                         communityAddress: community.contractAddress!,
                         claims: {
@@ -483,19 +485,14 @@ export default class UserService {
                             [Op.gte]: aMonthAgo.getTime() / 1000
                         }
                     }
-                })
+                });
                 beneficiaries.forEach(beneficiary => {
                     userTokens.push(beneficiary.user!.walletPNT!);
                 });
             }
-            
+
             utils.pushNotification
-                .sendFirebasePushNotification(
-                    userTokens,
-                    title,
-                    body,
-                    data
-                )
+                .sendFirebasePushNotification(userTokens, title, body, data)
                 .catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
             throw new utils.BaseError('INVALID_OPTION', 'invalid option');

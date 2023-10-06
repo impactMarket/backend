@@ -1,7 +1,7 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { SubgraphUBIBeneficiary, SubgraphUBIBeneficiaryCreation } from '../../../interfaces/ubi/subgraphUBIBeneficiary';
 import { AppUserModel } from '../app/appUser';
+import { SubgraphUBIBeneficiary, SubgraphUBIBeneficiaryCreation } from '../../../interfaces/ubi/subgraphUBIBeneficiary';
 
 export class SubgraphUBIBeneficiaryModel extends Model<SubgraphUBIBeneficiary, SubgraphUBIBeneficiaryCreation> {
     public id!: number;
@@ -37,22 +37,22 @@ export function initializeSubgraphUBIBeneficiary(sequelize: Sequelize): typeof S
                 allowNull: false
             },
             claims: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             lastClaimAt: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             preLastClaimAt: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             since: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             claimed: {
-                type: DataTypes.FLOAT,
+                type: DataTypes.FLOAT
             },
             state: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             updatedAt: {
                 type: DataTypes.DATE,

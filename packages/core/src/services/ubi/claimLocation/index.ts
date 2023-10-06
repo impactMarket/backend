@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import { ethers } from 'ethers';
 import { multiPolygon, point, polygon } from '@turf/helpers';
 import distance from '@turf/distance';
 import pointsWithinPolygon from '@turf/points-within-polygon';
@@ -65,7 +64,7 @@ export default class ClaimLocationService {
                 where: {
                     userAddress: address
                 }
-            })
+            });
 
             if (!beneficiary) {
                 throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');

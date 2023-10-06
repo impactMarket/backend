@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { SinonSpy, SinonStub, assert, spy, stub } from 'sinon';
+import { SinonSpy, SinonStub, assert, spy } from 'sinon';
 import { expect } from 'chai';
 
 import { AppUser } from '../../src/interfaces/app/appUser';

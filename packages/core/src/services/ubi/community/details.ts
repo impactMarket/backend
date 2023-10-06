@@ -389,7 +389,7 @@ export class CommunityDetailsService {
             if (input.address) {
                 beneficiaryFilter = {
                     userAddress: input.address
-                }
+                };
             } else if (input.name) {
                 appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
             }
@@ -399,7 +399,7 @@ export class CommunityDetailsService {
             beneficiaryFilter = {
                 ...beneficiaryFilter,
                 state: filter.state || 0
-            }
+            };
         }
 
         if (lastActivity_lt) {
@@ -408,7 +408,7 @@ export class CommunityDetailsService {
                 lastActivity: {
                     [Op.lt]: lastActivity_lt
                 }
-            }
+            };
         }
 
         const { rows, count } = await models.subgraphUBIBeneficiary.findAndCountAll({
@@ -416,12 +416,14 @@ export class CommunityDetailsService {
                 communityAddress: community.contractAddress,
                 ...beneficiaryFilter
             },
-            include: [{
-                model: models.appUser,
-                as: 'user',
-                required: !!appUserFilter,
-                where: appUserFilter || {},
-            }],
+            include: [
+                {
+                    model: models.appUser,
+                    as: 'user',
+                    required: !!appUserFilter,
+                    where: appUserFilter || {}
+                }
+            ],
             order: [[orderKey || 'since', orderDirection || 'desc']],
             limit,
             offset
