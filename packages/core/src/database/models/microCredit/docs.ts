@@ -6,6 +6,7 @@ import { MicroCreditDocs, MicroCreditDocsCreationAttributes } from '../../../int
 export class MicroCreditDocsModel extends Model<MicroCreditDocs, MicroCreditDocsCreationAttributes> {
     public id!: number;
     public userId!: number;
+    public applicationId!: number;
     public category!: number;
     public filepath!: string;
 
@@ -15,7 +16,7 @@ export class MicroCreditDocsModel extends Model<MicroCreditDocs, MicroCreditDocs
 }
 
 export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCreditDocsModel {
-    const { appUser } = sequelize.models as DbModels;
+    const { appUser, microCreditApplications } = sequelize.models as DbModels;
     MicroCreditDocsModel.init(
         {
             id: {
@@ -27,6 +28,15 @@ export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCre
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
+                    key: 'id'
+                },
+                onDelete: 'CASCADE',
+                allowNull: false
+            },
+            applicationId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: microCreditApplications,
                     key: 'id'
                 },
                 onDelete: 'CASCADE',
@@ -52,7 +62,14 @@ export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCre
         {
             tableName: 'microcredit_docs',
             modelName: 'microCreditDocs',
-            sequelize
+            sequelize,
+            // ensure that applicationId + category is unique
+            indexes: [
+                {
+                    unique: true,
+                    fields: ['applicationId', 'category']
+                }
+            ]
         }
     );
     return MicroCreditDocsModel;

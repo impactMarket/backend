@@ -39,6 +39,7 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
+                ethers.utils.id('LoanClaimed(address,uint256)'),
                 ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
                 ethers.utils.id('ManagerChanged(address,address)'),
                 ethers.utils.id('Transfer(address,address,uint256)')
@@ -437,6 +438,22 @@ class ChainSubscribers {
                         );
                     }
                 }
+            } else if (parsedLog.name === 'LoanClaimed') {
+                utils.Logger.info('Claim Loan event');
+                const parsedLog = this.ifaceMicrocredit.parseLog(log);
+                const userAddress = parsedLog.args[0];
+
+                await database.models.microCreditApplications.update(
+                    {
+                        claimedOn: new Date()
+                    },
+                    {
+                        where: {
+                            userId: userAddress
+                        },
+                        transaction
+                    }
+                );
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
 

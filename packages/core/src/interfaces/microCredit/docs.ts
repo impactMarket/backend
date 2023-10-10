@@ -1,6 +1,7 @@
 export interface MicroCreditDocs {
     id: number;
     userId: number;
+    applicationId: number;
     category: number;
     filepath: string;
 
@@ -11,6 +12,7 @@ export interface MicroCreditDocs {
 
 export interface MicroCreditDocsCreationAttributes {
     userId: number;
+    applicationId: number;
     category: number;
     filepath: string;
 }

@@ -122,12 +122,15 @@ interface GetBorrowerRequestSchema extends ValidatedRequestSchema {
 // I wish this comes true https://github.com/hapijs/joi/issues/2864#issuecomment-1322736004
 
 // This should match Joi validations
-type PostDocsRequestType = [
-    {
-        filepath: string;
-        category: number;
-    }
-];
+type PostDocsRequestType = {
+    applicationId: number;
+    docs: [
+        {
+            filepath: string;
+            category: number;
+        }
+    ];
+};
 type PutApplicationsRequestType = [
     {
         applicationId: number;
@@ -142,13 +145,17 @@ const preSignerUrlFromAWSValidator = validator.query(queryPreSignerUrlFromAWSSch
 const queryGetBorrowerValidator = validator.query(queryGetBorrowerSchema);
 const postDocsValidator = celebrate({
     body: defaultSchema
-        .array<PostDocsRequestType>()
-        .items(
-            Joi.object({
-                filepath: Joi.string().required(),
-                category: Joi.number().required()
-            }).required()
-        )
+        .object<PostDocsRequestType>({
+            applicationId: Joi.number().required(),
+            docs: Joi.array()
+                .items(
+                    Joi.object({
+                        filepath: Joi.string().required(),
+                        category: Joi.number().required()
+                    })
+                )
+                .required()
+        })
         .required()
 });
 const putApplicationsValidator = celebrate({

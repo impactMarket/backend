@@ -134,8 +134,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserData(sequelize);
 
     // MicroCredit
-    initializeMicroCreditDocs(sequelize);
     initializeMicroCreditApplication(sequelize);
+    initializeMicroCreditDocs(sequelize);
     initializeMicroCreditBorrowers(sequelize);
     initializeMicroCreditBorrowersHuma(sequelize);
     initializeMicroCreditNote(sequelize);
