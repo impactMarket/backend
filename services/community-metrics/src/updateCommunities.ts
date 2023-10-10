@@ -17,7 +17,7 @@ export async function updateCommunities(): Promise<void> {
         const communities = await subgraph.queries.community.communityEntities(
             `first: 1000,
             ${entityLastUpdated ? `where: { lastActivity_gt: ${entityLastUpdated} }` : ''}`,
-            `id, estimatedFunds, beneficiaries, claims, claimed, beneficiaries, removedBeneficiaries, contributed, contributors, managers, baseInterval, state`
+            `id, estimatedFunds, beneficiaries, claims, claimed, beneficiaries, removedBeneficiaries, contributed, contributors, managers, baseInterval, state, claimAmount, originalClaimAmount, maxClaim`
         );
 
         await Promise.all(communities.map(community => {

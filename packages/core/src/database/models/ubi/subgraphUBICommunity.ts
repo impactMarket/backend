@@ -15,6 +15,9 @@ export class SubgraphUBICommunityModel extends Model<SubgraphUBICommunity, Subgr
     public managers!: number;
     public baseInterval!: number;
     public state!: number;
+    public claimAmount!: number;
+    public originalClaimAmount!: number;
+    public maxClaim!: number;
 
     // timestamps!
     public readonly updatedAt!: Date;
@@ -70,6 +73,18 @@ export function initializeSubgraphUBICommunity(sequelize: Sequelize): typeof Sub
             },
             state: {
                 type: DataTypes.INTEGER,
+                allowNull: true
+            },
+            claimAmount: {
+                type: DataTypes.FLOAT,
+                allowNull: true
+            },
+            originalClaimAmount: {
+                type: DataTypes.FLOAT,
+                allowNull: true
+            },
+            maxClaim: {
+                type: DataTypes.FLOAT,
                 allowNull: true
             },
             updatedAt: {

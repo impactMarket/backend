@@ -11,6 +11,9 @@ export interface SubgraphUBICommunity {
     managers: number;
     baseInterval: number;
     state: number;
+    claimAmount: number;
+    originalClaimAmount: number;
+    maxClaim: number;
 
     // timestamps
     updatedAt: Date;
@@ -28,4 +31,7 @@ export interface SubgraphUBICommunityCreation {
     managers: number;
     baseInterval: number;
     state: number;
+    claimAmount: number;
+    originalClaimAmount: number;
+    maxClaim: number;
 }

@@ -52,6 +52,18 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
+            claimAmount: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
+            },
+            originalClaimAmount: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
+            },
+            maxClaim: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
+            },
             updatedAt: {
               type: Sequelize.DATE,
               allowNull: false

@@ -378,16 +378,6 @@ export class CommunityListService {
             });
         }
 
-        if (fields.metrics) {
-            extendedInclude.push({
-                attributes: fields.metrics.length > 0 ? fields.metrics : undefined,
-                model: models.ubiCommunityDailyMetrics,
-                as: 'metrics',
-                order: [['date', 'desc']],
-                limit: 1
-            });
-        }
-
         return extendedInclude;
     }
 }
