@@ -32,7 +32,7 @@ describe('microCredit', () => {
 
     describe('docs', () => {
         it('create and list', async () => {
-            await microCreditCreate.postDocs(users[0].id, [
+            await microCreditCreate.postDocs(users[0].id, 1, [
                 {
                     filepath: 'test',
                     category: 1

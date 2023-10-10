@@ -2,6 +2,10 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
+        
         // update microcredit_applications setting signedOn to each user, based on when the user uploaded a doc to microcredit_docs with category 1
         await queryInterface.sequelize.query(`
             UPDATE microcredit_applications
