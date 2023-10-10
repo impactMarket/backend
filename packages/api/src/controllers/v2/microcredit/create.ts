@@ -60,7 +60,7 @@ class MicroCreditController {
         }
 
         this.microCreditService
-            .postDocs(req.user.userId, req.body)
+            .postDocs(req.user.userId, req.body.applicationId, req.body.docs)
             .then(r => standardResponse(res, 201, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

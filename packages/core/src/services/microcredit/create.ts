@@ -30,6 +30,7 @@ export default class MicroCreditCreate {
     // register docs to microCreditDocs table
     public async postDocs(
         userId: number,
+        applicationId: number,
         docs: [
             {
                 filepath: string;
@@ -47,32 +48,48 @@ export default class MicroCreditCreate {
         }
         const microCreditDocs = docs.map(doc => ({
             ...doc,
+            applicationId,
             userId
         }));
 
         for (const doc of microCreditDocs) {
             const { filepath, category } = doc;
 
-            if (category === 1 && user.email) {
-                const path = Buffer.from(
-                    JSON.stringify({
-                        bucket: config.aws.bucket.microCredit,
-                        key: filepath
-                    })
-                ).toString('base64');
-                // send email to user
-                sendEmail({
-                    to: user.email,
-                    from: 'no-reply@impactmarket.com',
-                    subject: `${
-                        config.jsonRpcUrl.indexOf('alfajores') === -1 ? '' : '[TESTNET] '
-                    }Your loan contract signed`,
-                    text: `You can access your contract at ${config.imageHandlerUrl}/${path}`
-                });
+            if (category === 1) {
+                models.microCreditApplications.update(
+                    {
+                        signedOn: new Date()
+                    },
+                    {
+                        where: {
+                            id: applicationId
+                        }
+                    }
+                );
+                if (user.email) {
+                    const path = Buffer.from(
+                        JSON.stringify({
+                            bucket: config.aws.bucket.microCredit,
+                            key: filepath
+                        })
+                    ).toString('base64');
+                    // send email to user
+                    sendEmail({
+                        to: user.email,
+                        from: 'no-reply@impactmarket.com',
+                        subject: `${
+                            config.jsonRpcUrl.indexOf('alfajores') === -1 ? '' : '[TESTNET] '
+                        }Your loan contract signed`,
+                        text: `You can access your contract at ${config.imageHandlerUrl}/${path}`
+                    });
+                }
             }
         }
 
-        await models.microCreditDocs.bulkCreate(microCreditDocs);
+        await models.microCreditDocs.bulkCreate(microCreditDocs, {
+            fields: ['userId', 'applicationId', 'category', 'filepath'],
+            updateOnDuplicate: ['applicationId', 'category']
+        });
 
         return microCreditDocs;
     }

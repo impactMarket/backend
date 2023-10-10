@@ -240,11 +240,11 @@ export default class MicroCreditList {
             avatarMediaPath: string | null;
             // from models.microCreditApplications
             application: {
-                amount: number;
-                period: number;
                 appliedOn: Date;
+                decisionOn?: Date;
+                signedOn?: Date;
+                claimedOn?: Date;
                 status: number;
-                decisionOn: Date;
             };
         }[];
     }> => {
@@ -276,7 +276,7 @@ export default class MicroCreditList {
             };
         }
         const applications = await models.microCreditApplications.findAndCountAll({
-            attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'createdAt'],
+            attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'signedOn', 'claimedOn', 'createdAt'],
             where,
             include: [
                 {
