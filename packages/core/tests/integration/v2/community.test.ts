@@ -40,7 +40,10 @@ describe('community service v2', () => {
         contributors: 1,
         managers: 1,
         baseInterval: 1,
-        state: 1
+        state: 1,
+        claimAmount: 1,
+        originalClaimAmount: 1,
+        maxClaim: 10
     };
 
     before(async () => {
