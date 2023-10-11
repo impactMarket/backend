@@ -2,9 +2,7 @@ import { ethers } from 'ethers';
 import schedule from 'node-schedule';
 
 import { ChainSubscribers } from './chainSubscribers';
-import { Community } from '../database/models/ubi/community';
-import { config, utils } from '../../';
-import { models } from '../database';
+import { config, utils, database, interfaces } from '@impactmarket/core';
 
 let subscribers: ChainSubscribers;
 let usingFallbackUrl = false;
@@ -16,13 +14,13 @@ const waitingForResponseAfterTxRegWarn = false;
 
 let provider: ethers.providers.JsonRpcProvider;
 let providerFallback: ethers.providers.JsonRpcProvider;
-let availableCommunities: Community[];
+let availableCommunities: interfaces.ubi.community.CommunityAttributes[];
 
 export const start = async (): Promise<void> => {
     provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     providerFallback = new ethers.providers.JsonRpcProvider(config.jsonRpcUrlFallback);
 
-    availableCommunities = await models.community.findAll({
+    availableCommunities = await database.models.community.findAll({
         attributes: ['id', 'contractAddress'],
         where: { status: 'valid', visibility: 'public' }
     });
@@ -137,3 +135,5 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
         new Map(availableCommunities.map(c => [c.contractAddress!, c.id]))
     );
 }
+
+start();

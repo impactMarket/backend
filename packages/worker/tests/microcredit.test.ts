@@ -1,11 +1,8 @@
-import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
-import { NotificationType } from '../../../src/interfaces/app/appNotification';
+import { ChainSubscribers } from '../src/chainSubscribers';
 import { Sequelize } from 'sequelize';
 import { SinonStub, assert, restore, stub } from 'sinon';
-import { config, database, tests } from '../../../';
+import { config, database, tests, utils, interfaces } from '@impactmarket/core';
 import { ethers } from 'ethers';
-import { client as prismic } from '../../../src/utils/prismic';
-import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import MicrocreditJSON from './Microcredit.json';
 import admin from 'firebase-admin';
 import ganache from 'ganache';
@@ -24,7 +21,7 @@ describe.skip('Microcredit', () => {
     });
 
     before(async () => {
-        sequelize = sequelizeSetup();
+        sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
         provider = new ethers.providers.Web3Provider(ganacheProvider as any);
         accounts = await provider.listAccounts();
@@ -43,7 +40,7 @@ describe.skip('Microcredit', () => {
             set: async () => null
         });
 
-        stub(prismic, 'getAllByType').returns(
+        stub(utils.prismic.client, 'getAllByType').returns(
             Promise.resolve([
                 {
                     data: {
@@ -78,8 +75,8 @@ describe.skip('Microcredit', () => {
             subscribers.stop();
         }
         provider.removeAllListeners();
-        await truncate(sequelize, 'appUser');
-        await truncate(sequelize);
+        await tests.config.setup.truncate(sequelize, 'appUser');
+        await tests.config.setup.truncate(sequelize);
         restore();
     });
 
@@ -111,7 +108,7 @@ describe.skip('Microcredit', () => {
         assert.calledWith(notificationUpdated.getCall(0), [
             {
                 userId: user.id,
-                type: NotificationType.LOAN_APPLICATION_APPROVED,
+                type: interfaces.app.appNotification.NotificationType.LOAN_APPLICATION_APPROVED,
                 isWallet: true,
                 isWebApp: true,
                 params: undefined

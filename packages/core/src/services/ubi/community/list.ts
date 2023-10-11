@@ -229,8 +229,15 @@ export class CommunityListService {
                     attributes: ['ubiRate', 'estimatedDuration'],
                     model: models.ubiCommunityDailyMetrics,
                     as: 'metrics',
-                    order: [['date', 'desc']],
-                    limit: 1
+                    duplicating: false,
+                    required: false,
+                    where: {
+                        date: {
+                            [Op.eq]: literal(
+                                `(select date from ubi_community_daily_metrics order by date desc limit 1)`
+                            )
+                        }
+                    }
                 }
             ];
         }

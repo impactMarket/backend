@@ -1,9 +1,9 @@
 import { SinonStub, assert, match, restore, stub } from 'sinon';
-import { config, contracts, database, services, tests } from '../../../';
+import { config, contracts, database, services, tests } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import ganache from 'ganache';
 
-import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
+import { ChainSubscribers } from '../src/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
 import cUSDContractJSON from './cUSD.json';
 
