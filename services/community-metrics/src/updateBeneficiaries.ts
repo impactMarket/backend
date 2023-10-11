@@ -63,17 +63,20 @@ async function updateBeneficiariesState(searchParam: number | string,  t: Transa
         await Promise.all(beneficiaries.map(beneficiary => {
             return subgraphUBIBeneficiary
                 .findOne({ where: { userAddress: getAddress(beneficiary.address) } })
-                .then(model => {
+                .then(async (model) => {
                     beneficiary['communityAddress'] = getAddress(beneficiary.community.id);
                     beneficiary['userAddress'] = getAddress(beneficiary.address);
     
                     if(model) {
-                        return subgraphUBIBeneficiary.update(beneficiary as any, {
+                        await subgraphUBIBeneficiary.update(beneficiary as any, {
                             where: { id: model.id },
                             transaction: t,
                         }) as any;
                     }
-                    return subgraphUBIBeneficiary.create(beneficiary as any, { transaction: t });
+                    await subgraphUBIBeneficiary.create(beneficiary as any, { transaction: t });
+
+                    utils.cache.cleanBeneficiaryCache(beneficiary.community.id);
+                    utils.cache.cleanUserRolesCache(beneficiary.address);
                 })
         }));
     }

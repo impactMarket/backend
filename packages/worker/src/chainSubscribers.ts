@@ -335,12 +335,22 @@ class ChainSubscribers {
                 const userAddress = parsedLog.args[1];
 
                 if (community) {
+                    // add subgraph beneficiary
+                    await database.models.subgraphUBIBeneficiary.create({
+                        userAddress: getAddress(userAddress),
+                        communityAddress: getAddress(communityAddress),
+                        since: new Date().getTime() / 1000 | 0,
+                        claimed: 0,
+                        state: 0
+                    });
+
                     this._waitForSubgraphToIndex(log).then(() => {
                         utils.cache.cleanBeneficiaryCache(community);
                         utils.cache.cleanUserRolesCache(userAddress);
                     });
                 }
 
+                // send notification
                 const user = await database.models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
@@ -367,6 +377,16 @@ class ChainSubscribers {
                 const userAddress = parsedLog.args[1];
 
                 if (community) {
+                    // update subgraph beneficiary
+                    await database.models.subgraphUBIBeneficiary.update({
+                        state: 1
+                    }, {
+                        where: {
+                            userAddress: getAddress(userAddress),
+                            communityAddress: getAddress(communityAddress),
+                        }
+                    });
+
                     this._waitForSubgraphToIndex(log).then(() => {
                         utils.cache.cleanBeneficiaryCache(community);
                         utils.cache.cleanUserRolesCache(userAddress);
