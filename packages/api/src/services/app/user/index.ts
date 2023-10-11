@@ -477,13 +477,7 @@ export default class UserService {
                         }
                     ],
                     where: {
-                        communityAddress: community.contractAddress!,
-                        claims: {
-                            [Op.gt]: 1
-                        },
-                        lastClaimAt: {
-                            [Op.gte]: aMonthAgo.getTime() / 1000
-                        }
+                        communityAddress: community.contractAddress!
                     }
                 });
                 beneficiaries.forEach(beneficiary => {

@@ -64,13 +64,7 @@ async function communitiesMetrics(): Promise<void> {
             const allBeneficiaries = await database.models.subgraphUBIBeneficiary.findAll({
                 attributes: ['userAddress'],
                 where: {
-                    communityAddress: community.contractAddress!,
-                    claims: {
-                        [Op.gt]: 1
-                    },
-                    lastClaimAt: {
-                        [Op.gte]: aMonthAgo.getTime() / 1000
-                    }
+                    communityAddress: community.contractAddress!
                 }
             })
 
