@@ -43,12 +43,9 @@ async function updateBeneficiariesState(searchParam: number | string,  t: Transa
                 : `where: { community:"${searchParam.toLowerCase()}" }`}`,
             `
                 address
-                claims
                 community {
                     id
                 }
-                lastClaimAt
-                preLastClaimAt
                 since
                 claimed
                 state

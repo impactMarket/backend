@@ -7,10 +7,7 @@ export class SubgraphUBIBeneficiaryModel extends Model<SubgraphUBIBeneficiary, S
     public id!: number;
     public userAddress!: string;
     public communityAddress!: string;
-    public claims!: number | null;
     public claimed!: number | null;
-    public lastClaimAt!: number | null;
-    public preLastClaimAt!: number | null;
     public since!: number | null;
     public state!: number | null;
 
@@ -35,15 +32,6 @@ export function initializeSubgraphUBIBeneficiary(sequelize: Sequelize): typeof S
             communityAddress: {
                 type: DataTypes.STRING,
                 allowNull: false
-            },
-            claims: {
-                type: DataTypes.INTEGER
-            },
-            lastClaimAt: {
-                type: DataTypes.INTEGER
-            },
-            preLastClaimAt: {
-                type: DataTypes.INTEGER
             },
             since: {
                 type: DataTypes.INTEGER

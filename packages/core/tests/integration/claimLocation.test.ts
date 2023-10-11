@@ -97,10 +97,7 @@ describe('claim location service', () => {
         it('should add claim location', async () => {
             await models.subgraphUBIBeneficiary.create({
                 userAddress: users[0].address,
-                claims: 0,
                 communityAddress: communities[0].contractAddress!,
-                lastClaimAt: 0,
-                preLastClaimAt: 0,
                 since: 0,
                 claimed: 0,
                 state: 0
@@ -145,10 +142,7 @@ describe('claim location service', () => {
             spyClaimLocationAdd.resetHistory();
             await models.subgraphUBIBeneficiary.create({
                 userAddress: users[3].address,
-                claims: 0,
                 communityAddress: communities[3].contractAddress!,
-                lastClaimAt: 0,
-                preLastClaimAt: 0,
                 since: 0,
                 claimed: 0,
                 state: 0

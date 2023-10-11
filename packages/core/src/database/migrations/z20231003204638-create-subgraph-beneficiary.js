@@ -16,15 +16,6 @@ module.exports = {
               type: Sequelize.STRING,
               allowNull: false
             },
-            claims: {
-              type: Sequelize.INTEGER,
-            },
-            lastClaimAt: {
-              type: Sequelize.INTEGER,
-            },
-            preLastClaimAt: {
-              type: Sequelize.INTEGER,
-            },
             since: {
               type: Sequelize.INTEGER,
             },

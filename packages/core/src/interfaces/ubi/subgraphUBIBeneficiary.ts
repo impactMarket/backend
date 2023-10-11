@@ -2,10 +2,7 @@ export interface SubgraphUBIBeneficiary {
     id: number;
     userAddress: string;
     communityAddress: string;
-    claims: number;
     claimed: number;
-    lastClaimAt: number;
-    preLastClaimAt: number;
     since: number;
     state: number;
 
@@ -16,10 +13,7 @@ export interface SubgraphUBIBeneficiary {
 export interface SubgraphUBIBeneficiaryCreation {
     userAddress: string;
     communityAddress: string;
-    claims: number;
     claimed: number;
-    lastClaimAt: number;
-    preLastClaimAt: number;
     since: number;
     state: number;
 }
