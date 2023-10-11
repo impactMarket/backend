@@ -148,7 +148,7 @@ export default (route: Router): void => {
      *         schema:
      *           type: integer
      *         required: false
-     *         description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
+     *         description: "Status can be 0: draft, 1: pending, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
      *       - in: query
      *         name: orderBy
      *         schema:
