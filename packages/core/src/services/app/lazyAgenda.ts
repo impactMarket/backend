@@ -13,4 +13,10 @@ export default class LazyAgendaService {
         const lazyAgenda = await models.appLazyAgenda.create(item);
         return lazyAgenda.toJSON();
     }
+
+    public async delete(userId: number, id: number): Promise<void> {
+        await models.appLazyAgenda.destroy({
+            where: { id, userId }
+        });
+    }
 }
