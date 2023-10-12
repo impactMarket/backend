@@ -11,7 +11,8 @@ enum LazyAgendaType {
 }
 
 interface DonationMinerContract extends ethers.Contract {
-    donate(
+    donateFrom(
+        from: string,
         token: string,
         amount: ethers.BigNumber,
         delegateAddress: string
@@ -22,6 +23,11 @@ const donationMinerABI = [
     {
         inputs: [
             {
+                internalType: 'address',
+                name: '_from',
+                type: 'address'
+            },
+            {
                 internalType: 'contract IERC20Upgradeable',
                 name: '_token',
                 type: 'address'
@@ -30,11 +36,6 @@ const donationMinerABI = [
                 internalType: 'uint256',
                 name: '_amount',
                 type: 'uint256'
-            },
-            {
-                internalType: 'address',
-                name: '_from',
-                type: 'address'
             },
             {
                 internalType: 'address',
@@ -94,9 +95,9 @@ export async function verifyLazyAgenda(): Promise<void> {
                 ) as DonationMinerContract;
                 try {
                     const txPopulate = await donationMinerContract.populateTransaction.donateFrom(
+                        user!.address,
                         config.cUSDContractAddress,
                         ethers.utils.parseEther((details as { amount: number }).amount.toString()),
-                        user!.address,
                         user!.address
                     );
                     const gasLimit = await lazyAgendaTxExecutor.estimateGas(txPopulate);

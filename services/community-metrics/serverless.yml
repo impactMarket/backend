@@ -33,6 +33,7 @@ functions:
       - schedule: cron(30 4 * * ? *)
       - schedule: cron(30 6 * * ? *)
       - schedule: cron(30 8 * * ? *)
+      - schedule: cron(30 10 * * ? *)
 
 plugins:
   - serverless-webpack
