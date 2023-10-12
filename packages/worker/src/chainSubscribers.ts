@@ -40,7 +40,9 @@ class ChainSubscribers {
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
                 ethers.utils.id('LoanClaimed(address,uint256)'),
+                // below to be removed once smart contracts are upgraded
                 ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id('LoanAdded(address,address,uint256,uint256,uint256,uint256,uint256)'),
                 ethers.utils.id('ManagerChanged(address,address)'),
                 ethers.utils.id('Transfer(address,address,uint256)')
             ]
