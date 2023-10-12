@@ -199,5 +199,12 @@ export default {
      */
     hotWallets: {
         huma: validatedEnv.HUMA_PRIVATE_KEY
+    },
+
+    /*
+     * Hot wallets
+     */
+    wallets: {
+        recurringDonationPrivateKey: validatedEnv.RECURRING_DONATION_PRIVATE_KEY
     }
 };

@@ -6,6 +6,7 @@ import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
 import global from './global';
+import lazyAgenda from './lazyAgenda';
 import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
 import protocol from './protocol';
@@ -27,6 +28,7 @@ export default (): Router => {
     protocol(app);
     referrals(app);
     cico(app);
+    lazyAgenda(app);
 
     return app;
 };

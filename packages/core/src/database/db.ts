@@ -6,6 +6,7 @@ import { AppAnonymousReportModel } from './models/app/anonymousReport';
 import { AppCICOProviderModel } from './models/cico/providers';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppExchangeRates } from './models/app/exchangeRates';
+import { AppLazyAgendaModel } from './models/app/appLazyAgenda';
 import { AppLogModel } from './models/app/appLog';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
@@ -74,6 +75,7 @@ export type DbModels = {
     ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
     appReferralCode: ModelStatic<AppReferralCodeModel>;
     appCICOProvider: ModelStatic<AppCICOProviderModel>;
+    appLazyAgenda: ModelStatic<AppLazyAgendaModel>;
     //
     community: ModelStatic<Community>;
     ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;
