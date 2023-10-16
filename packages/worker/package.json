@@ -17,7 +17,7 @@
         "@types/mocha": "10.0.2",
         "@types/node-schedule": "2.1.1",
         "mocha": "10.2.0",
-        "nodemon": "2.0.15"
+        "nodemon": "3.0.1"
     },
     "dependencies": {
         "@impactmarket/core": "1.0.0",
