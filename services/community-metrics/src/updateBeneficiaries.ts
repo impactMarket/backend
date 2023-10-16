@@ -1,6 +1,6 @@
 import { database, utils, subgraph, config } from '@impactmarket/core';
 import { getAddress } from '@ethersproject/address';
-import { Transaction } from 'sequelize';
+import { Transaction, fn, col } from 'sequelize';
 
 export async function updateBeneficiaries(): Promise<void> {
     utils.Logger.info('Updating beneficiaries...');
@@ -30,7 +30,7 @@ export async function updateBeneficiaries(): Promise<void> {
 }
 
 async function updateBeneficiariesState(searchParam: number | string,  t: Transaction) {
-    const { subgraphUBIBeneficiary } = database.models;
+    const { subgraphUBIBeneficiary, community } = database.models;
     const batchSize = config.cronJobBatchSize;
     let offset = 0;
 
@@ -59,6 +59,7 @@ async function updateBeneficiariesState(searchParam: number | string,  t: Transa
         }
 
         offset += batchSize;
+        const communityAddress: string[] = [] 
 
         await Promise.all(beneficiaries.map(beneficiary => {
             return subgraphUBIBeneficiary
@@ -75,10 +76,24 @@ async function updateBeneficiariesState(searchParam: number | string,  t: Transa
                     }
                     await subgraphUBIBeneficiary.create(beneficiary as any, { transaction: t });
 
-                    utils.cache.cleanBeneficiaryCache(beneficiary.community.id);
+                    communityAddress.push(beneficiary['communityAddress'])
                     utils.cache.cleanUserRolesCache(beneficiary.address);
                 })
         }));
+
+        // clean community cache
+        const communities = await community.findAll({
+            attributes: [
+                [fn('DISTINCT', col('id')) ,'id'],
+            ],
+            where: {
+                // remove duplicated address
+                contractAddress: communityAddress.filter((item, index) => communityAddress.indexOf(item) === index)
+            }
+        });
+        communities.forEach(community => {
+            utils.cache.cleanBeneficiaryCache(community.id);
+        });
     }
 }
 
