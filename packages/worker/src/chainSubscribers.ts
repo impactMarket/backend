@@ -57,8 +57,7 @@ class ChainSubscribers {
     }
 
     recover() {
-        // we start the listener alongside with the recover system
-        // so we know we don't lose events.
+        // wait for the recover to finish before starting the listener
         this._runRecoveryTxs(this.provider, this.providerFallback)
             .then(() => {
                 services.app.ImMetadataService.removeRecoverBlock();
@@ -81,103 +80,140 @@ class ChainSubscribers {
         }
 
         let rawLogs: ethers.providers.Log[] = [];
+        let isLastBlock = false;
 
-        try {
-            rawLogs = await this._getLogs(startFromBlock, provider);
-            utils.Logger.info('Got logs from main provider!');
-        } catch (error) {
-            utils.Logger.error('Failed to get logs from main provider!', error);
-            rawLogs = await this._getLogs(startFromBlock, fallbackProvider);
-            utils.Logger.info('Got logs from fallback provider!');
-        }
-
-        const logs = rawLogs.sort((a, b) => {
-            if (a.blockNumber > b.blockNumber) {
-                return 1;
+        // get logs in batches of up to a 100 blocks, defined in `_getLogs`
+        do {
+            try {
+                const r = await this._getLogs(startFromBlock, provider);
+                rawLogs = r.logs;
+                startFromBlock = r.lastBlock;
+                isLastBlock = r.isLastBlock;
+                utils.Logger.info('Got logs from main provider!');
+            } catch (error) {
+                utils.Logger.error('Failed to get logs from main provider!', error);
+                const r = await this._getLogs(startFromBlock, fallbackProvider);
+                rawLogs = r.logs;
+                startFromBlock = r.lastBlock;
+                isLastBlock = r.isLastBlock;
+                utils.Logger.info('Got logs from fallback provider!');
             }
-            if (a.blockNumber < b.blockNumber) {
-                return -1;
-            }
-            // a must be equal to b
-            return 0;
-        });
 
-        try {
-            await database.sequelize.transaction(async t => {
-                const transactions: Promise<void>[] = [];
-                for (let x = 0; x < logs.length; x++) {
-                    // verify if cusd or community and do things
-                    transactions.push(this._filterAndProcessEvent(logs[x], t));
+            const logs = rawLogs.sort((a, b) => {
+                if (a.blockNumber > b.blockNumber) {
+                    return 1;
                 }
-                await Promise.all(transactions);
-                database.redisClient.set('lastBlock', logs[logs.length - 1].blockNumber);
-                services.app.ImMetadataService.setLastBlock(logs[logs.length - 1].blockNumber);
+                if (a.blockNumber < b.blockNumber) {
+                    return -1;
+                }
+                // a must be equal to b
+                return 0;
             });
-        } catch (error) {
-            // TODO: add error handling
-        }
+
+            try {
+                await database.sequelize.transaction(async t => {
+                    const transactions: Promise<void>[] = [];
+                    for (let x = 0; x < logs.length; x++) {
+                        transactions.push(this._filterAndProcessEvent(logs[x], t));
+                    }
+                    await Promise.all(transactions);
+                    database.redisClient.set('lastBlock', logs[logs.length - 1].blockNumber);
+                    services.app.ImMetadataService.setLastBlock(logs[logs.length - 1].blockNumber);
+                });
+            } catch (error) {
+                // TODO: add error handling
+            }
+        } while (!isLastBlock);
         utils.Logger.info('Past events recovered successfully!');
     }
 
+    /**
+     * Get logs from a provider up to 100 blocks
+     * @param startFromBlock Block number to start from
+     * @param provider JSON RPC provider
+     * @returns Object with logs, lastBlock and isLastBlock
+     */
     async _getLogs(startFromBlock: number, provider: ethers.providers.JsonRpcProvider) {
-        return provider.getLogs({
+        const lastBlock = await provider.getBlockNumber();
+        const toBlock = lastBlock - startFromBlock > 100 ? startFromBlock + 100 : lastBlock;
+        const logs = await provider.getLogs({
             fromBlock: startFromBlock,
-            toBlock: 'latest',
+            toBlock,
             topics: this.filterTopics
         });
+        return {
+            logs,
+            lastBlock,
+            isLastBlock: lastBlock === toBlock
+        };
     }
 
-    _setupListener(provider: ethers.providers.JsonRpcProvider) {
+    async _setupListener(provider: ethers.providers.JsonRpcProvider) {
         utils.Logger.info('Starting subscribers...');
-        const filter = {
-            topics: this.filterTopics
-        };
-
-        database.redisClient.set('blockCount', 0);
+        const filter = { topics: this.filterTopics };
         const savedLogs = new Map<number, ethers.providers.Log[]>();
 
         // to reduce commits to the database, we will save the last block
         // and only process all logs once we get a new block
-        provider.on(filter, async (log: ethers.providers.Log) => {
-            utils.Logger.info('Receiving new event');
-            // get last saved block and current block
-            const lastBlock = parseInt((await database.redisClient.get('lastBlock')) ?? '0', 10);
-            const currentBlock = log.blockNumber;
-            if (currentBlock - lastBlock > 0) {
-                database.redisClient.set('lastBlock', currentBlock);
+        const currentBlock = await provider.getBlockNumber();
+        let memoryBlock = currentBlock;
+        let lastBlockWithActivity = 0;
+        let lastBlockShortStorage = parseInt((await database.redisClient.get('lastBlock')) ?? '0', 10);
+        let lastBlockLongStorage = await services.app.ImMetadataService.getLastBlock();
+
+        // listen to events and register them in memory
+        provider.on(filter, (log: ethers.providers.Log) => {
+            memoryBlock = log.blockNumber;
+            const hasValidEvent = this._preFilterAndProcessEvent(log);
+            if (!hasValidEvent) {
+                return;
+            }
+
+            // save current log
+            const currentLogs = savedLogs.get(log.blockNumber) ?? [];
+            currentLogs.push(log);
+            savedLogs.set(log.blockNumber, currentLogs);
+
+            if (lastBlockWithActivity === 0 || lastBlockWithActivity < log.blockNumber) {
+                lastBlockWithActivity = log.blockNumber;
+            }
+        });
+
+        // process events from previous block when a new block is created
+        provider.on('block', async (blockNumber: number) => {
+            if (
+                blockNumber > lastBlockWithActivity &&
+                memoryBlock >= lastBlockWithActivity &&
+                lastBlockWithActivity !== 0
+            ) {
                 // process all last block logs
-                const lastBlockLogs = savedLogs.get(lastBlock) ?? [log];
+                const lastBlockLogs = savedLogs.get(lastBlockWithActivity) ?? [];
                 try {
-                    utils.Logger.info(`Processing logs (${lastBlock}) (${lastBlockLogs.length} txs)...`);
+                    utils.Logger.info(`Processing logs (${lastBlockWithActivity}) (${lastBlockLogs.length} txs)...`);
                     const before = Date.now();
+
                     await database.sequelize.transaction(async transaction => {
                         const transactions: Promise<void>[] = [];
                         for (let x = 0; x < lastBlockLogs.length; x++) {
                             transactions.push(this._filterAndProcessEvent(lastBlockLogs[x], transaction));
                         }
                         await Promise.all(transactions);
-                        // clean saved logs
-                        savedLogs.delete(lastBlock);
-                        // update block count
-                        database.redisClient.set('lastBlock', log.blockNumber);
-                        const blockCount = await database.redisClient.get('blockCount');
-
-                        if (!!blockCount && blockCount > '16560') {
-                            services.app.ImMetadataService.setLastBlock(log.blockNumber);
-                            database.redisClient.set('blockCount', 0);
-                        } else {
-                            database.redisClient.incr('blockCount');
-                        }
                     });
+                    // clean saved logs from processed block
+                    savedLogs.delete(lastBlockWithActivity);
+                    // update block count, every 23 hours to database and every 1 hour to cache
+                    if (blockNumber - (lastBlockLongStorage || 0) > 16560) {
+                        services.app.ImMetadataService.setLastBlock(blockNumber);
+                        lastBlockLongStorage = blockNumber;
+                    } else if (blockNumber - lastBlockShortStorage > 720) {
+                        database.redisClient.set('lastBlock', blockNumber);
+                        lastBlockShortStorage = blockNumber;
+                    }
                     utils.Logger.info(`Logs processed! Elapsed: ${Date.now() - before}ms`);
                 } catch (error) {
                     utils.Logger.error('Failed to process logs!', error);
                 }
-            } else {
-                // save current log
-                const currentLogs = savedLogs.get(currentBlock) ?? [];
-                currentLogs.push(log);
-                savedLogs.set(currentBlock, currentLogs);
+                lastBlockWithActivity = blockNumber;
             }
         });
     }
@@ -188,7 +224,6 @@ class ChainSubscribers {
         return new Promise(resolve => {
             async function check() {
                 const isSynced = await hasSubgraphSyncedToBlock(log.blockNumber);
-                console.log({ isSynced });
                 if (isSynced) {
                     resolve({});
                 } else {
@@ -218,6 +253,18 @@ class ChainSubscribers {
             await this._processTransfer(log);
             utils.Logger.info(`Event processed! Elapsed: ${Date.now() - before}ms`);
         }
+    }
+
+    _preFilterAndProcessEvent(log: ethers.providers.Log): boolean {
+        if (
+            log.address === config.communityAdminAddress ||
+            this.communities.get(log.address) ||
+            log.address === config.microcreditContractAddress ||
+            this.assetsAddress.find(el => el.address === log.address)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     async _processTransfer(log: ethers.providers.Log): Promise<void> {
