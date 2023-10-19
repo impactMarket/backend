@@ -13,6 +13,7 @@ import { verifyLazyAgenda } from './src/verifyLazyAgenda';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
 global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
+global.fetch = require('node-fetch').default;
 
 export const calculate = async (event, context) => {
     const today = new Date();

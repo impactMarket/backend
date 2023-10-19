@@ -66,7 +66,7 @@ const erc20ABI = [
 ];
 
 export async function verifyLazyAgenda(): Promise<void> {
-    utils.Logger.info('Verifying user accounts to delete...');
+    utils.Logger.info('Verifying lazy agenda...');
 
     // get all lazy agenda items that are due to be executed (lastExecutedAt + frequency < now)
     // frequency can be any number of seconds
@@ -111,6 +111,7 @@ export async function verifyLazyAgenda(): Promise<void> {
 
                     // TODO: if allowance is getting low, notify user to increase it
                 } catch (e) {
+                    utils.Logger.error('Error: ', e)
                     // email the user that the donation failed
                     // build the email structure and send
                     //  allowance(owner, spender)
@@ -145,4 +146,5 @@ export async function verifyLazyAgenda(): Promise<void> {
                 break;
         }
     }
+    utils.Logger.info('Verified lazy agenda!');
 }
