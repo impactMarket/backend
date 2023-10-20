@@ -45,7 +45,7 @@ export async function listLevels(
     }
 
     include.push({
-        attributes: ['id', 'totalReward', 'lessons'],
+        attributes: ['id', 'totalReward', 'lessons', 'asset'],
         model: learnAndEarnLevel,
         where: {
             [Op.and]: [
@@ -102,6 +102,7 @@ export async function listLevels(
             prismicId,
             totalReward: level!.totalReward,
             totalLessons: level!.lessons,
+            asset: level!.asset,
             status: level!.userLevel?.status || 'available'
         }))
     };
@@ -208,10 +209,11 @@ export async function listLessons(levelId: number | string, userId?: number, lan
                 completionDate
             };
         });
-        const rewardAvailable = await getRewardAvailable(levelId);
+        const { available: rewardAvailable, asset } = await getRewardAvailable(levelId);
 
         return {
             totalPoints,
+            asset,
             rewardAvailable,
             completedToday: completedToday > 0,
             lessons: mappedLessons
@@ -221,16 +223,20 @@ export async function listLessons(levelId: number | string, userId?: number, lan
     }
 }
 
-const getRewardAvailable = async (levelId: number): Promise<boolean> => {
+const getRewardAvailable = async (levelId: number): Promise<{ available: boolean; asset: string }> => {
     const level = await models.learnAndEarnLevel.findOne({
-        attributes: ['rewardLimit', 'totalReward'],
+        attributes: ['rewardLimit', 'totalReward', 'asset'],
         where: {
             id: levelId
         }
     });
 
-    if (!level?.rewardLimit) {
-        return true;
+    if (!level) {
+        return { available: false, asset: '' };
+    }
+
+    if (!level.rewardLimit) {
+        return { available: true, asset: level.asset };
     }
 
     const payments = await models.learnAndEarnPayment.sum('amount', {
@@ -240,8 +246,8 @@ const getRewardAvailable = async (levelId: number): Promise<boolean> => {
     });
 
     if (!payments) {
-        return true;
+        return { available: true, asset: level.asset };
     }
 
-    return level.rewardLimit > payments + level.totalReward;
+    return { available: level.rewardLimit > payments + level.totalReward, asset: level.asset };
 };

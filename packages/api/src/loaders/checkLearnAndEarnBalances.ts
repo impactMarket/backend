@@ -56,8 +56,10 @@ export async function checkLearnAndEarnBalances() {
     const learnAndEarn = new Contract(config.contractAddresses.learnAndEarn, LearnAndEarnAbi, provider);
 
     const levels = await models.learnAndEarnLevel.findAll({
-        where: { isLive: true, active: true },
-        include: [{ model: models.appUser, as: 'adminUser', required: false }]
+        include: [
+            { model: models.appUser, as: 'adminUser', required: false },
+            { model: models.learnAndEarnPrismicLevel, as: 'level', required: true, where: { isLive: true } }
+        ]
     });
 
     for (let i = 0; i < levels.length; i++) {

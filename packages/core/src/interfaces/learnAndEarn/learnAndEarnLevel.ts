@@ -6,32 +6,46 @@
  *        type: object
  *        required:
  *          - id
- *          - prismicId
- *          - active
+ *          - lessons
+ *          - clients
+ *          - totalReward
+ *          - asset
+ *          - adminUserId
+ *          - status
  *        properties:
  *          id:
  *            type: integer
- *          prismicId:
+ *          lessons:
+ *            type: integer
+ *          clients:
+ *            type: array
+ *          totalReward:
+ *            type: integer
+ *          rewardLimit:
+ *            type: integer
+ *          asset:
  *            type: string
- *          categoryId:
- *            type: number
- *          languages:
+ *          adminUserId:
+ *            type: integer
+ *          status:
  *            type: string
- *          active:
- *            type: boolean
+ *          rules:
+ *            type: object
+ *            properties:
+ *              countries:
+ *                type: array
+ *              roles:
+ *                type: array
+ *          limitUsers:
+ *            type: integer
  */
 export interface LearnAndEarnLevel {
     id: number;
-    prismicId: string;
-    categoryId: number;
-    languages?: string[];
-    active: boolean;
-    isLive?: boolean;
     lessons: number;
     clients: number[];
     totalReward: number;
     rewardLimit?: number;
-    asset?: string;
+    asset: string;
     adminUserId: number;
     status: ['pending', 'aproved', 'declined', 'published'];
     rules?: {
