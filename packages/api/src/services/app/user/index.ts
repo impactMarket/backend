@@ -1,6 +1,5 @@
 import { Attributes, Op, WhereOptions } from 'sequelize';
 import { database, interfaces, services, subgraph, utils } from '@impactmarket/core';
-import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 
 import { lookup } from '../../../services/attestation';
@@ -9,7 +8,6 @@ import config from '../../../config/index';
 
 const { models } = database;
 const { getUserRoles } = subgraph.queries.user;
-const { getAllBeneficiaries } = subgraph.queries.beneficiary;
 const { ProfileContentStorage } = services.storage;
 const { recalculate } = services.learnAndEarn;
 
@@ -454,35 +452,41 @@ export default class UserService {
                     }
                 }
             });
-            const beneficiaryAddress: string[] = [];
+            const userTokens: string[] = [];
+
+            const aMonthAgo = new Date();
+            aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+            aMonthAgo.setUTCHours(0, 0, 0, 0);
 
             // get beneficiaries
             for (let index = 0; index < communities.length; index++) {
                 const community = communities[index];
-                const beneficiaries = await getAllBeneficiaries(community.contractAddress!);
+                const beneficiaries = await models.subgraphUBIBeneficiary.findAll({
+                    attributes: [],
+                    include: [
+                        {
+                            attributes: ['walletPNT'],
+                            model: models.appUser,
+                            as: 'user',
+                            where: {
+                                walletPNT: {
+                                    [Op.not]: null
+                                }
+                            },
+                            required: true
+                        }
+                    ],
+                    where: {
+                        communityAddress: community.contractAddress!
+                    }
+                });
                 beneficiaries.forEach(beneficiary => {
-                    beneficiaryAddress.push(ethers.utils.getAddress(beneficiary.address));
+                    userTokens.push(beneficiary.user!.walletPNT!);
                 });
             }
-            // get users
-            const users = await models.appUser.findAll({
-                attributes: ['walletPNT'],
-                where: {
-                    address: {
-                        [Op.in]: beneficiaryAddress
-                    },
-                    walletPNT: {
-                        [Op.not]: null
-                    }
-                }
-            });
+
             utils.pushNotification
-                .sendFirebasePushNotification(
-                    users.map(el => el.walletPNT!),
-                    title,
-                    body,
-                    data
-                )
+                .sendFirebasePushNotification(userTokens, title, body, data)
                 .catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
             throw new utils.BaseError('INVALID_OPTION', 'invalid option');

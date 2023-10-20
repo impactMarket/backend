@@ -1,11 +1,9 @@
 import { Op } from 'sequelize';
-import { ethers } from 'ethers';
 import { multiPolygon, point, polygon } from '@turf/helpers';
 import distance from '@turf/distance';
 import pointsWithinPolygon from '@turf/points-within-polygon';
 
 import { BaseError } from '../../../utils/baseError';
-import { getBeneficiariesByAddress } from '../../../subgraph/queries/beneficiary';
 import { models } from '../../../database';
 import config from '../../../config';
 import countriesGeoJSON from '../../../utils/geoCountries.json';
@@ -61,16 +59,21 @@ export default class ClaimLocationService {
                 }
             }
 
-            const beneficiary = await getBeneficiariesByAddress([address]);
+            const beneficiary = await models.subgraphUBIBeneficiary.findOne({
+                attributes: ['communityAddress'],
+                where: {
+                    userAddress: address
+                }
+            });
 
-            if (!beneficiary || !beneficiary.length) {
+            if (!beneficiary) {
                 throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
             }
 
             const beneficiaryCommunity = await models.community.findOne({
                 attributes: ['id'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
+                    contractAddress: beneficiary.communityAddress
                 }
             });
 
