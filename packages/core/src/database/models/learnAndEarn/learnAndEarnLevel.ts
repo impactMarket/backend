@@ -7,11 +7,6 @@ import { LearnAndEarnUserLevelModel } from './learnAndEarnUserLevel';
 
 export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEarnLevelCreation> {
     public id!: number;
-    public prismicId!: string; // TODO: remove
-    public categoryId!: number; // TODO: remove
-    public languages?: string[]; // TODO: remove
-    public active!: boolean; // TODO: remove
-    public isLive!: boolean; // TODO: remove
     public lessons!: number;
     public clients!: number[];
     public totalReward!: number;
@@ -30,7 +25,7 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
 }
 
 export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnAndEarnLevelModel {
-    const { appUser, learnAndEarnCategory } = sequelize.models as DbModels;
+    const { appUser } = sequelize.models as DbModels;
     LearnAndEarnLevelModel.init(
         {
             id: {
@@ -38,27 +33,6 @@ export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnA
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true
-            },
-            prismicId: {
-                type: DataTypes.STRING(32),
-                allowNull: true
-            },
-            categoryId: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: learnAndEarnCategory,
-                    key: 'id'
-                },
-                onDelete: 'CASCADE',
-                allowNull: true
-            },
-            languages: {
-                type: DataTypes.ARRAY(DataTypes.STRING(3)),
-                allowNull: true
-            },
-            active: {
-                type: DataTypes.BOOLEAN,
-                allowNull: true
             },
             totalReward: {
                 type: DataTypes.FLOAT,
@@ -69,15 +43,14 @@ export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnA
                 type: DataTypes.FLOAT,
                 allowNull: true
             },
-            isLive: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            },
             lessons: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0
+            },
+            asset: {
+                type: DataTypes.STRING(44),
+                allowNull: true
             },
             clients: {
                 type: DataTypes.ARRAY(DataTypes.INTEGER),

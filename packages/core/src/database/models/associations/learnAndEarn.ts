@@ -4,7 +4,6 @@ import { Op, Sequelize } from 'sequelize';
 export function learnAndEarnAssociation(sequelize: Sequelize) {
     const {
         appUser,
-        learnAndEarnCategory,
         learnAndEarnLesson,
         learnAndEarnLevel,
         learnAndEarnUserLevel,
@@ -77,11 +76,6 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
     learnAndEarnLevel.hasMany(learnAndEarnLesson, {
         foreignKey: 'levelId',
         as: 'lesson'
-    });
-
-    learnAndEarnLevel.belongsTo(learnAndEarnCategory, {
-        foreignKey: 'categoryId',
-        as: 'category'
     });
 
     learnAndEarnLevel.belongsTo(appUser, {
