@@ -7,6 +7,7 @@ import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppCICOProvider } from './cico/providers';
 import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppExchangeRates } from './app/exchangeRates';
+import { initializeAppLazyAgenda } from './app/appLazyAgenda';
 import { initializeAppLog } from './app/appLog';
 import { initializeAppNotification } from './app/appNotification';
 import { initializeAppProposal } from './app/appProposal';
@@ -81,6 +82,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppUserValidationCode(sequelize);
     initializeAppReferralCode(sequelize);
     initializeAppCICOProvider(sequelize);
+    initializeAppLazyAgenda(sequelize);
 
     // ubi
     initializeCommunity(sequelize);
@@ -136,8 +138,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserData(sequelize);
 
     // MicroCredit
-    initializeMicroCreditDocs(sequelize);
     initializeMicroCreditApplication(sequelize);
+    initializeMicroCreditDocs(sequelize);
     initializeMicroCreditBorrowers(sequelize);
     initializeMicroCreditBorrowersHuma(sequelize);
     initializeMicroCreditNote(sequelize);

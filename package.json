@@ -26,6 +26,7 @@
     },
     "scripts": {
         "dev": "lerna exec --scope @impactmarket/api yarn dev",
+        "dev:worker": "lerna exec --scope @impactmarket/worker yarn dev",
         "start": "node --require './packages/api/appsignal.cjs' packages/api/dist/app.js",
         "worker": "node packages/worker/dist/index.js",
         "build": "lerna exec --scope @impactmarket/api --scope @impactmarket/core --scope @impactmarket/worker yarn build",

@@ -57,19 +57,26 @@ export default (route: Router): void => {
      *       - "microcredit"
      *     summary: "Add microcredit related docs to a user"
      *     requestBody:
+     *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             type: array
-     *             items:
-     *               type: object
-     *               properties:
-     *                 filepath:
-     *                   type: string
-     *                   example: some/path/to/file.pdf
-     *                 category:
-     *                   type: number
-     *                   example: 1
+     *             type: object
+     *             properties:
+     *               applicationId:
+     *                 type: number
+     *                 required: true
+     *               docs:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     filepath:
+     *                       type: string
+     *                       example: some/path/to/file.pdf
+     *                     category:
+     *                       type: number
+     *                       example: 1
      *     responses:
      *       "200":
      *         description: "Success"
@@ -90,8 +97,9 @@ export default (route: Router): void => {
      *     tags:
      *       - "microcredit"
      *     summary: "Update microcredit applications"
-     *     description: "Status can be 0: pending, 1: submitted, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
+     *     description: "Status can be 0: draft, 1: pending, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
      *     requestBody:
+     *       required: true
      *       content:
      *         application/json:
      *           schema:

@@ -5,6 +5,7 @@ export function userAssociation(sequelize: Sequelize) {
     const {
         appUser,
         appLog,
+        appLazyAgenda,
         microCreditApplications,
         microCreditBorrowers,
         appReferralCode,
@@ -75,6 +76,12 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     microCreditLoanManager.belongsTo(appUser, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user'
+    });
+
+    appLazyAgenda.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user'

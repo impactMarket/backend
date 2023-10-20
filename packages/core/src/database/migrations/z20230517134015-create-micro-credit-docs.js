@@ -13,6 +13,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false
             },
+            applicationId: {
+                type: Sequelize.INTEGER,
+                allowNull: false
+            },
             category: {
                 allowNull: false,
                 type: Sequelize.INTEGER

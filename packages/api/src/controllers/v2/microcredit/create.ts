@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { services } from '@impactmarket/core';
+import { services, utils } from '@impactmarket/core';
 
 import {
     PostDocsRequestType,
@@ -60,7 +60,7 @@ class MicroCreditController {
         }
 
         this.microCreditService
-            .postDocs(req.user.userId, req.body)
+            .postDocs(req.user.userId, req.body.applicationId, req.body.docs)
             .then(r => standardResponse(res, 201, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -81,7 +81,15 @@ class MicroCreditController {
                 req.body.map(a => a.applicationId),
                 req.body.map(a => a.status)
             )
-            .then(r => standardResponse(res, 201, true, r))
+            .then(r => {
+                // we will do the cleaning cache here since this only needs to clean cache
+                // for applications, but if accepted it also needs to clean cache for borrowers list
+                // and the chain subscriber will do that
+                if (req.user?.userId) {
+                    utils.cache.cleanMicroCreditApplicationsCache(req.user?.userId);
+                }
+                standardResponse(res, 201, true, r);
+            })
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 

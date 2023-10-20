@@ -8,6 +8,8 @@ export interface MicroCreditApplication {
     period: number;
     status: number;
     decisionOn: Date;
+    signedOn: Date;
+    claimedOn: Date;
 
     // timestamps
     createdAt: Date;

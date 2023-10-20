@@ -46,6 +46,14 @@ module.exports = {
                 allowNull: true,
                 type: Sequelize.DATE
             },
+            signedOn: {
+                allowNull: true,
+                type: Sequelize.DATE
+            },
+            claimedOn: {
+                allowNull: true,
+                type: Sequelize.DATE
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

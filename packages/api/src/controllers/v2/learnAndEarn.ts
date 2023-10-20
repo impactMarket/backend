@@ -3,12 +3,11 @@ import {
     ListLevelsRequestType,
     RegisterClaimRewardsRequestType,
     StartLessonRequestType
-} from '../../validators/learnAndEarn';
+} from '~validators/learnAndEarn';
 import { Request, Response } from 'express';
+import { RequestWithUser } from '~middlewares/core';
 import { config, services } from '@impactmarket/core';
-
-import { RequestWithUser } from '../../middlewares/core';
-import { standardResponse } from '../../utils/api';
+import { standardResponse } from '~utils/api';
 
 class LearnAndEarnController {
     total = (req: RequestWithUser, res: Response) => {

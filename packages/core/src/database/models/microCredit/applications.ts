@@ -3,6 +3,8 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
 import { MicroCreditApplication, MicroCreditApplicationCreation } from '../../../interfaces/microCredit/applications';
+import { MicroCreditDocsModel } from './docs';
+import { SubgraphMicroCreditBorrowersModel } from './subgraphBorrowers';
 
 export class MicroCreditApplicationModel extends Model<MicroCreditApplication, MicroCreditApplicationCreation> {
     public id!: number;
@@ -14,12 +16,16 @@ export class MicroCreditApplicationModel extends Model<MicroCreditApplication, M
     public period!: number;
     public status!: number;
     public decisionOn!: Date;
+    public signedOn!: Date;
+    public claimedOn!: Date;
 
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
     public readonly user?: AppUserModel;
+    public readonly docs?: MicroCreditDocsModel[];
+    public readonly borrower?: SubgraphMicroCreditBorrowersModel;
 }
 
 export function initializeMicroCreditApplication(sequelize: Sequelize): typeof MicroCreditApplicationModel {
@@ -65,6 +71,14 @@ export function initializeMicroCreditApplication(sequelize: Sequelize): typeof M
                 type: DataTypes.INTEGER
             },
             decisionOn: {
+                allowNull: true,
+                type: DataTypes.DATE
+            },
+            signedOn: {
+                allowNull: true,
+                type: DataTypes.DATE
+            },
+            claimedOn: {
                 allowNull: true,
                 type: DataTypes.DATE
             },
