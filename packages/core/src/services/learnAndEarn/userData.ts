@@ -4,7 +4,7 @@ import { BaseError } from '../../utils/baseError';
 import { models, redisClient } from '../../database';
 
 async function countAllLevelsAndLessons(clientId: number, language: string) {
-    const cacheResults = await redisClient.get('countAllLevelsAndLessons');
+    const cacheResults = await redisClient.get(`countAllLevelsAndLessons/${clientId}`);
 
     if (cacheResults) {
         return JSON.parse(cacheResults);
@@ -41,7 +41,7 @@ async function countAllLevelsAndLessons(clientId: number, language: string) {
     };
 
     // this is deleted when there's an update
-    await redisClient.set('countAllLevelsAndLessons', JSON.stringify(result), 'EX', 60 * 60 * 6);
+    await redisClient.set(`countAllLevelsAndLessons/${clientId}`, JSON.stringify(result), 'EX', 60 * 60 * 6);
 
     return result;
 }
