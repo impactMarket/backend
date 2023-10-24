@@ -12,10 +12,12 @@
         "node": "18.x"
     },
     "dependencies": {
-        "@huma-finance/sdk": "0.0.44-beta.156",
-        "@huma-finance/shared": "0.0.43-beta.112",
+        "@huma-finance/sdk": "0.0.46",
+        "@huma-finance/shared": "0.0.46",
         "@impactmarket/core": "1.0.0",
-        "ethers": "5.7.2"
+        "cross-fetch": "4.0.0",
+        "ethers": "5.7.2",
+        "node-fetch": "2.7.0"
     },
     "devDependencies": {
         "serverless": "3.35.2",
@@ -24,8 +26,5 @@
         "ts-loader": "9.4.1",
         "webpack": "5.88.2",
         "webpack-node-externals": "3.0.0"
-    },
-    "resolutions": {
-        "@huma-finance/shared": "0.0.43-beta.112"
     }
 }

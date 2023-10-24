@@ -55,7 +55,7 @@ function validateEnv() {
             devDefault: onlyOnTestEnv('xyz')
         }),
         IMPACT_MARKET_CONTRACT_BLOCK: num({ devDefault: 0 }),
-        ATTESTATION_PROXY_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        ATTESTATION_PROXY_ADDRESS: str({ default: '0x0000000000000000000000000000000000000000' }),
         // aws config
         AWS_ACCESS_KEY_ID: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_SECRET_ACCESS_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -77,12 +77,12 @@ function validateEnv() {
         SLACK_TOKEN: str({ default: 'xyz' }),
         SLACK_LAMBDA_CHANNEL: str({ default: 'xyz' }),
         SENDGRID_API_KEY: str({ default: 'xyz' }),
-        FIREBASE_FILE_BASE64: str({ devDefault: 'xyz' }),
+        FIREBASE_FILE_BASE64: str({ default: 'a0' }),
         HAS_REDIS_TLS: bool({ default: true }),
         MAX_REQUEST_PER_USER: num({ default: 900 }),
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
-        COMMUNITY_ADMIN_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        COMMUNITY_ADMIN_ADDRESS: str({ default: '0x0000000000000000000000000000000000000000' }),
         MICROCREDIT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         CLAIM_LOCATION_TIMEFRAME: num({ default: 150 }),
         CLAIM_INACTIVITY_THRESHOLD: num({ default: 4 }),
@@ -102,7 +102,6 @@ function validateEnv() {
         COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         MICROCREDIT_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         INTERVAL_BETWEEN_LESSONS: num({ default: 7 }),
         DAYS_TO_LIMIT_USERS: num({ default: 30 }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
@@ -122,8 +121,10 @@ function validateEnv() {
         // hot wallet variables
         HUMA_PRIVATE_KEY: str({ default: '0785969a6f070bce78c7259252413d3e5099e990c042b27c561d6af59c8e506e' }),
         // wallets
+        // default keys are randomly generated on string generators
+        LEARN_AND_EARN_PRIVATE_KEY: str({ default: '3591c95d47c357aaec3dd1803cc0f2236e439366d69b19664a8e6b7a747ea0a2' }),
         RECURRING_DONATION_PRIVATE_KEY: str({
-            default: 'xg8rprh6vzjja31xx2b6db5wwo2i5gmcc37c239wyp6jhyiefapev5738nvj77c4'
+            default: '53c4687d6048f9e875049c36fdb466bd1a360e5e9a36965a1f5ff1d32ea45642'
         })
     });
 }
