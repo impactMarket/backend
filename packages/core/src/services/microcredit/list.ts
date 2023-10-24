@@ -118,10 +118,17 @@ export default class MicroCreditList {
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
-            order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
+            order = [
+                // Adding a combination of columns to ensure unique and stable ordering. This prevents duplicates and missing records during pagination.
+                [literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC'],
+                [literal('"microCreditBorrowers"."userId"'), 'ASC'] 
+            ];
         } else if (query.orderBy) {
             const [field, direction] = query.orderBy.split(':');
-            order = [[literal(`"loan.${field}"`), direction || 'ASC']];
+            order = [
+                [literal(`"loan.${field}"`), direction || 'ASC'],
+                [literal('"microCreditBorrowers"."userId"'), 'ASC']
+            ];
         }
 
         if (query.filter === 'ontrack') {
