@@ -119,7 +119,11 @@ export default class MicroCreditList {
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
             order = [
-                // Adding a combination of columns to ensure unique and stable ordering. This prevents duplicates and missing records during pagination.
+                // Adding a combination of columns to ensure unique and stable ordering.
+                // When sorting using columns like `lastRepayment` or `performance`, many records will have the same value (0 or NULL).
+                // If multiple records share the same value in the sorting column, PostgreSQL may have difficulty determining how to paginate the results consistently
+                // and some records may appear multiple times, and others might not be listed.
+                // To address this, the `userId` column is concatenate to the ordering received in the request, creating a unique composite for sorting.
                 [literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC'],
                 [literal('"microCreditBorrowers"."userId"'), 'ASC']
             ];
