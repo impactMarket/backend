@@ -122,7 +122,9 @@ function validateEnv() {
         HUMA_PRIVATE_KEY: str({ default: '0785969a6f070bce78c7259252413d3e5099e990c042b27c561d6af59c8e506e' }),
         // wallets
         // default keys are randomly generated on string generators
-        LEARN_AND_EARN_PRIVATE_KEY: str({ default: '3591c95d47c357aaec3dd1803cc0f2236e439366d69b19664a8e6b7a747ea0a2' }),
+        LEARN_AND_EARN_PRIVATE_KEY: str({
+            default: '3591c95d47c357aaec3dd1803cc0f2236e439366d69b19664a8e6b7a747ea0a2'
+        }),
         RECURRING_DONATION_PRIVATE_KEY: str({
             default: '53c4687d6048f9e875049c36fdb466bd1a360e5e9a36965a1f5ff1d32ea45642'
         })
