@@ -136,7 +136,10 @@ export async function answer(user: { userId: number; address: string }, answers:
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
         }
         if (!verifiedUser && !userRoles.beneficiary && !userRoles.manager) {
-            throw new BaseError('USER_NOT_VALIDATED', 'user phone number or email is not validated nor beneficiary/manager');
+            throw new BaseError(
+                'USER_NOT_VALIDATED',
+                'user phone number or email is not validated nor beneficiary/manager'
+            );
         }
 
         // check if already completed a lesson today
