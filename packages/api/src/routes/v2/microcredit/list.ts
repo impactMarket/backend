@@ -116,7 +116,7 @@ export default (route: Router): void => {
         '/borrower/:query?',
         authenticateToken,
         verifySignature,
-        cache(cacheIntervals.tenMinutes, true),
+        cache(cacheIntervals.tenMinutes, false),
         onlyAuthorizedRoles(['loanManager', 'itself']),
         queryGetBorrowerValidator,
         controller.getBorrower

@@ -12,7 +12,7 @@ import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationParamsPath, NotificationType } from '../../interfaces/app/appNotification';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
 import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
-import { cleanMicroCreditApplicationsCache } from '../../utils/cache';
+import { cleanMicroCreditApplicationsCache, cleanMicroreditBorrowerCache } from '../../utils/cache';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -298,12 +298,26 @@ export default class MicroCreditCreate {
         }
     };
 
-    public addNote = (managerId: number, userId: number, note: string) => {
-        return models.microCreditNote.create({
+    public addNote = async (managerId: number, userId: number, note: string) => {
+        const newNote = await models.microCreditNote.create({
             managerId,
             userId,
             note
         });
+
+        if (!newNote) {
+            throw new BaseError('ADD_NOTE_ERROR', 'Error adding note');
+        }
+
+        // clear borrower cache
+        models.appUser
+            .findOne({
+                attributes: ['address'],
+                where: { id: userId }
+            })
+            .then(user => user && cleanMicroreditBorrowerCache(user.address));
+
+        return newNote;
     };
 
     private async _notifyApplicationChangeStatusByEmail(
