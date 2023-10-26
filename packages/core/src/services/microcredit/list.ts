@@ -234,6 +234,7 @@ export default class MicroCreditList {
         count: number;
         rows: {
             // from models.appUser
+            id: number;
             address: string;
             firstName: string | null;
             lastName: string | null;
@@ -282,7 +283,7 @@ export default class MicroCreditList {
                 {
                     model: models.appUser,
                     as: 'user',
-                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath']
+                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath']
                 }
             ],
             order: [[orderKey || 'createdAt', orderDirection || 'desc']],
