@@ -246,7 +246,7 @@ async function calculateUbiPulse(
     const getAvgComulativeUbi = async (): Promise<string> => {
         const communityFoundingRate =
             await subgraph.queries.community.communityEntities(
-                `where: { state_not: 2 }, first: 1000`,
+                `where: { state_not: 2, maxClaim_lt: 5000 }, first: 1000`,
                 `maxClaim`
             );
         const comulativeUbi = communityFoundingRate.reduce(
