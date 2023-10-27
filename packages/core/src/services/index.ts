@@ -12,6 +12,7 @@ import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import Protocol from './protocol';
 import StoryServiceV2 from './story/index';
+import * as email from './email';
 
 const learnAndEarn = {
     answer,
@@ -25,4 +26,4 @@ const learnAndEarn = {
     createLevel,
     recalculate
 };
-export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol };
+export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol, email };

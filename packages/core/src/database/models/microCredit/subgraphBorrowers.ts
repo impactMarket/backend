@@ -5,6 +5,7 @@ import {
     SubgraphMicroCreditBorrowers,
     SubgraphMicroCreditBorrowersCreation
 } from '../../../interfaces/microCredit/subgraphBorrowers';
+import { AppUserModel } from '../app/appUser';
 
 export class SubgraphMicroCreditBorrowersModel extends Model<
     SubgraphMicroCreditBorrowers,
@@ -21,6 +22,8 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
     public dailyInterest!: number;
     public repaid!: number;
     public status!: number;
+
+    public readonly user!: AppUserModel;
 
     // timestamps!
     public readonly updatedAt!: Date;

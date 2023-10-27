@@ -79,4 +79,10 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'id',
         as: 'user'
     });
+
+    subgraphMicroCreditBorrowers.belongsTo(appUser, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user'
+    });
 }
