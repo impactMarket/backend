@@ -1,11 +1,11 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
+import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
 import {
     SubgraphMicroCreditBorrowers,
     SubgraphMicroCreditBorrowersCreation
 } from '../../../interfaces/microCredit/subgraphBorrowers';
-import { AppUserModel } from '../app/appUser';
 
 export class SubgraphMicroCreditBorrowersModel extends Model<
     SubgraphMicroCreditBorrowers,

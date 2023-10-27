@@ -1,5 +1,6 @@
 import * as MicroCredit from './microcredit';
 import * as app from './app';
+import * as email from './email';
 import * as global from './global';
 import * as storage from './storage';
 import * as ubi from './ubi';
@@ -12,7 +13,6 @@ import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import Protocol from './protocol';
 import StoryServiceV2 from './story/index';
-import * as email from './email';
 
 const learnAndEarn = {
     answer,
