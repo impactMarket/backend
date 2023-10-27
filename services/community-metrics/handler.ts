@@ -21,8 +21,8 @@ export const calculate = async (event, context) => {
     const today = new Date();
 
     if (today.getHours() <= 1) {
+        await calcuateCommunitiesMetrics(); // community metrics must be executed before all others
         await Promise.all([
-            calcuateCommunitiesMetrics(),
             calcuateGlobalMetrics(),
             calcuateCommunitiesDemographics(),
             calculateGlobalDemographics()

@@ -1,4 +1,4 @@
-import { Op, col, fn } from 'sequelize';
+import { Op, col, fn, literal } from 'sequelize';
 import {
     config,
     database,
@@ -224,8 +224,8 @@ async function calculateUbiPulse(
                 attributes: [
                     [fn('avg', col('ubiRate')), 'avgUbiRate'],
                     [
-                        fn('avg', col('estimatedDuration')),
-                        'avgEstimatedDuration',
+                        literal('AVG(CASE WHEN "estimatedDuration" < 10e5 THEN "estimatedDuration" ELSE NULL END)'),  // ignore outliers
+                        'avgEstimatedDuration'
                     ],
                 ],
                 where: {
