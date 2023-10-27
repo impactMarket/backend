@@ -17,8 +17,8 @@ async function updateExchangeRates(): Promise<void> {
         }
         utils.Logger.info('Updated exchange rates!');
     } catch (error) {
-        utils.Logger.error('Error updateExchangeRates: ', error);
         utils.slack.sendSlackMessage('🚨 Error to update exchange rates', config.slack.lambdaChannel);
+        utils.Logger.error('Error updateExchangeRates: ', error);
     }
 }
 

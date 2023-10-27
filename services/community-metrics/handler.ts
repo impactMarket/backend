@@ -1,3 +1,4 @@
+import 'cross-fetch/polyfill';
 import {
     calcuateCommunitiesDemographics,
     calcuateCommunitiesMetrics,
@@ -9,10 +10,12 @@ import { updateCommunities } from './src/updateCommunities';
 import { updateExchangeRates } from './src/updateExchangeRates';
 import { validateBorrowersClaimHumaFunds, validateBorrowersRepayingHumaFunds } from './src/validateHumaBorrowers';
 import { verifyDeletedAccounts } from './src/user';
+import { updateBeneficiaries } from './src/updateBeneficiaries';
 import { verifyLazyAgenda } from './src/verifyLazyAgenda';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
 global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
+global.fetch = require('node-fetch').default;
 
 export const calculate = async (event, context) => {
     const today = new Date();
@@ -34,8 +37,11 @@ export const calculate = async (event, context) => {
         await validateBorrowersClaimHumaFunds();
         await validateBorrowersRepayingHumaFunds();
     } else if (today.getHours() <= 8) {
-        await updateCommunities();
-    } else if (today.getHours() <= 10) {
         await verifyLazyAgenda();
     }
+};
+
+export const ubiState = async (event, context) => {
+    await updateCommunities();
+    await updateBeneficiaries();
 };

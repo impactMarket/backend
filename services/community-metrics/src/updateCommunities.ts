@@ -41,7 +41,7 @@ export async function updateCommunities(): Promise<void> {
         utils.Logger.info('Communities updated!');
     } catch (error) {
         await t.rollback();
-        utils.Logger.error('Error update communities: ', error);
         utils.slack.sendSlackMessage('🚨 Error to update communities', config.slack.lambdaChannel);
+        utils.Logger.error('Error update communities: ', error);
     }
 }

@@ -7,18 +7,11 @@ import json2csv from 'json2csv';
 
 import { AppUser } from '../../../interfaces/app/appUser';
 import { BaseError } from '../../../utils/baseError';
-import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { CommunityContentStorage } from '../../storage';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
-import {
-    countBeneficiaries,
-    countInactiveBeneficiaries,
-    getBeneficiaries,
-    getBeneficiariesByAddress
-} from '../../../subgraph/queries/beneficiary';
 import { countManagers, getCommunityManagers } from '../../../subgraph/queries/manager';
 import { getCommunityAmbassador, getCommunityUBIParams } from '../../../subgraph/queries/community';
 import { getSearchInput } from '../../../utils/util';
@@ -383,9 +376,8 @@ export class CommunityDetailsService {
 
         let orderKey: string | null = null;
         let orderDirection: string | null = null;
-        let addresses: string[] = [];
         let appUserFilter: WhereOptions | null = null;
-        let beneficiaryState: string | undefined = undefined;
+        let beneficiaryFilter: WhereOptions | null = null;
 
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
@@ -395,118 +387,61 @@ export class CommunityDetailsService {
         if (searchInput) {
             const input = getSearchInput(searchInput);
             if (input.address) {
-                addresses.push(input.address);
+                beneficiaryFilter = {
+                    userAddress: input.address
+                };
             } else if (input.name) {
                 appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
             }
         }
 
-        let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
-
         if (filter.state !== undefined) {
-            beneficiaryState = `state: ${filter.state || 0}`;
-        }
-
-        let appUsers: AppUser[] = [];
-        let count: number = 0;
-        if (appUserFilter) {
-            appUsers = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                where: appUserFilter
-            });
-            addresses = appUsers.map(user => user.address);
-            if (addresses.length === 0) {
-                return {
-                    count: 0,
-                    rows: []
-                };
-            }
-            beneficiariesSubgraph = await getBeneficiariesByAddress(
-                addresses,
-                beneficiaryState,
-                undefined,
-                community.contractAddress,
-                orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt
-            );
-            count = beneficiariesSubgraph.length;
-
-            if (count > limit) {
-                beneficiariesSubgraph = beneficiariesSubgraph.slice(offset, offset + limit);
-            }
-        } else if (addresses.length > 0) {
-            beneficiariesSubgraph = await getBeneficiariesByAddress(
-                addresses,
-                beneficiaryState,
-                undefined,
-                community.contractAddress,
-                orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt
-            );
-            count = beneficiariesSubgraph.length;
-            appUsers = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                where: {
-                    address: {
-                        [Op.in]: addresses
-                    }
-                }
-            });
-        } else {
-            beneficiariesSubgraph = await getBeneficiaries(
-                community.contractAddress,
-                limit,
-                offset,
-                undefined,
-                beneficiaryState,
-                orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt
-            );
-
-            if (lastActivity_lt) {
-                count = await countInactiveBeneficiaries(community.contractAddress, lastActivity_lt);
-            } else {
-                count = await countBeneficiaries(
-                    community.contractAddress,
-                    filter.state !== null ? (filter.state as number) : undefined
-                );
-            }
-            addresses = beneficiariesSubgraph.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
-            appUsers = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-                where: {
-                    address: {
-                        [Op.in]: addresses
-                    }
-                }
-            });
-        }
-
-        if (!beneficiariesSubgraph || !beneficiariesSubgraph.length) {
-            count = 0;
-        }
-
-        const result: any[] = beneficiariesSubgraph.map(beneficiary => {
-            const user = appUsers.find(user => user.address === ethers.utils.getAddress(beneficiary.address));
-            return {
-                address: beneficiary.address,
-                firstName: user?.firstName,
-                lastName: user?.lastName,
-                avatarMediaPath: user?.avatarMediaPath,
-                since: beneficiary.since || 0,
-                claimed: beneficiary.claimed,
-                blocked: beneficiary.state === 2,
-                isDeleted: !user || !!user!.deletedAt,
-                state: beneficiary.state
+            beneficiaryFilter = {
+                ...beneficiaryFilter,
+                state: filter.state || 0
             };
+        }
+
+        if (lastActivity_lt) {
+            beneficiaryFilter = {
+                ...beneficiaryFilter,
+                lastActivity: {
+                    [Op.lt]: lastActivity_lt
+                }
+            };
+        }
+
+        const { rows, count } = await models.subgraphUBIBeneficiary.findAndCountAll({
+            where: {
+                communityAddress: community.contractAddress,
+                ...beneficiaryFilter
+            },
+            include: [
+                {
+                    model: models.appUser,
+                    as: 'user',
+                    required: !!appUserFilter,
+                    where: appUserFilter || {}
+                }
+            ],
+            order: [[orderKey || 'since', orderDirection || 'desc']],
+            limit,
+            offset
         });
 
         return {
             count,
-            rows: result
+            rows: rows.map(row => ({
+                address: row.userAddress,
+                firstName: row.user?.firstName,
+                lastName: row.user?.lastName,
+                avatarMediaPath: row.user?.avatarMediaPath,
+                since: row.since || 0,
+                claimed: row.claimed,
+                blocked: row.state === 2,
+                isDeleted: !row.user || !!row.user!.deletedAt,
+                state: row.state
+            }))
         };
     }
 
