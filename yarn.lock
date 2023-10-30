@@ -6441,10 +6441,10 @@
     "@sendgrid/client" "^7.7.0"
     "@sendgrid/helpers" "^7.7.0"
 
-"@serverless/dashboard-plugin@^7.0.2":
-  version "7.0.5"
-  resolved "https://registry.yarnpkg.com/@serverless/dashboard-plugin/-/dashboard-plugin-7.0.5.tgz#5ca8fdbc5171668d5f8dd1c136c4bc0d23fe41f9"
-  integrity sha512-OpZJpldLCJmQ/JCvuSCbWaNd6CprQ8yDi9lqrpP3WeR61jOGG8JFxmMs6hjpDd9bKyUMnQ9qAJ+C+QbAxdUosw==
+"@serverless/dashboard-plugin@^7.1.0":
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/@serverless/dashboard-plugin/-/dashboard-plugin-7.1.0.tgz#575a2f87277c08325f27206fb5dbc78a06fccfb6"
+  integrity sha512-mAiTU2ERsDHdCrXJa/tihh/r+8ZwSuYYBqln3SkwuBD/49ct9QrK7S00cpiqFoY/geMFlHpOkriGzCPz6UP/rw==
   dependencies:
     "@aws-sdk/client-cloudformation" "^3.410.0"
     "@aws-sdk/client-sts" "^3.410.0"
@@ -24396,12 +24396,12 @@ serverless-webpack@^5.6.1:
   optionalDependencies:
     ts-node ">= 8.3.0"
 
-serverless@3.35.2:
-  version "3.35.2"
-  resolved "https://registry.yarnpkg.com/serverless/-/serverless-3.35.2.tgz#8f0e24ba0814ffb9a3a5937fbd3dbea9802f44be"
-  integrity sha512-1RZ4eHl2OaGG2Rzw0l0ZD3byCk2JMCL9/+btzGQGQruuQWu9HwRZGJI7l4A2ghW3Mu6DVwLYLfceNpmEWBZoag==
+serverless@3.36.0:
+  version "3.36.0"
+  resolved "https://registry.yarnpkg.com/serverless/-/serverless-3.36.0.tgz#bd7b030299b6ce7f75cb405793c6e2f1c1354a83"
+  integrity sha512-VY7UzP4u1/yuTNpF2Wssrru16qhhReLCjgL2oeHCvhujxPyTFv9TQGSlLhaT0ZUCXhRBphwVwITTRopo6NSUgA==
   dependencies:
-    "@serverless/dashboard-plugin" "^7.0.2"
+    "@serverless/dashboard-plugin" "^7.1.0"
     "@serverless/platform-client" "^4.4.0"
     "@serverless/utils" "^6.13.1"
     abort-controller "^3.0.0"
