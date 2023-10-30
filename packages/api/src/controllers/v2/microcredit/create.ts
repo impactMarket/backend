@@ -76,21 +76,33 @@ class MicroCreditController {
             return;
         }
 
-        this.microCreditService
-            .updateApplication(
-                req.body.map(a => a.applicationId),
-                req.body.map(a => a.status)
-            )
-            .then(r => {
-                // we will do the cleaning cache here since this only needs to clean cache
-                // for applications, but if accepted it also needs to clean cache for borrowers list
-                // and the chain subscriber will do that
-                if (req.user?.userId) {
-                    utils.cache.cleanMicroCreditApplicationsCache(req.user?.userId);
-                }
-                standardResponse(res, 201, true, r);
-            })
-            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+        const repaymentsDefined = req.body.filter(a => a.repaymentRate !== undefined);
+
+        if (repaymentsDefined.length > 0) {
+            this.microCreditService
+                .updateRepaymentRate(
+                    req.body.map(a => a.applicationId),
+                    req.body.map(a => a.repaymentRate)
+                )
+                .then(r => standardResponse(res, 201, true, r))
+                .catch(e => standardResponse(res, 400, false, '', { error: e }));
+        } else {
+            this.microCreditService
+                .updateApplication(
+                    req.body.map(a => a.applicationId),
+                    req.body.map(a => a.status)
+                )
+                .then(r => {
+                    // we will do the cleaning cache here since this only needs to clean cache
+                    // for applications, but if accepted it also needs to clean cache for borrowers list
+                    // and the chain subscriber will do that
+                    if (req.user?.userId) {
+                        utils.cache.cleanMicroCreditApplicationsCache(req.user?.userId);
+                    }
+                    standardResponse(res, 201, true, r);
+                })
+                .catch(e => standardResponse(res, 400, false, '', { error: e }));
+        }
     };
 
     saveForm = async (req: RequestWithUser, res: Response): Promise<void> => {

@@ -389,7 +389,7 @@ class ChainSubscribers {
                     await database.models.subgraphUBIBeneficiary.create({
                         userAddress: getAddress(userAddress),
                         communityAddress: getAddress(communityAddress),
-                        since: new Date().getTime() / 1000 | 0,
+                        since: (new Date().getTime() / 1000) | 0,
                         claimed: 0,
                         state: 0
                     });
@@ -428,14 +428,17 @@ class ChainSubscribers {
 
                 if (community) {
                     // update subgraph beneficiary
-                    await database.models.subgraphUBIBeneficiary.update({
-                        state: 1
-                    }, {
-                        where: {
-                            userAddress: getAddress(userAddress),
-                            communityAddress: getAddress(communityAddress),
+                    await database.models.subgraphUBIBeneficiary.update(
+                        {
+                            state: 1
+                        },
+                        {
+                            where: {
+                                userAddress: getAddress(userAddress),
+                                communityAddress: getAddress(communityAddress)
+                            }
                         }
-                    });
+                    );
 
                     this._waitForSubgraphToIndex(log).then(() => {
                         utils.cache.cleanBeneficiaryCache(community);
@@ -456,56 +459,54 @@ class ChainSubscribers {
             if (parsedLog.name === 'LoanAdded') {
                 utils.Logger.info('Add Loan event');
 
-                const [user, transactionsReceipt] = await Promise.all([
+                const [user, application, transactionsReceipt] = await Promise.all([
                     database.models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
                             address: getAddress(userAddress)
                         }
                     }),
+                    database.models.microCreditApplications.findOne({
+                        where: {
+                            userId: userAddress
+                        },
+                        order: [['id', 'DESC']]
+                    }),
                     this.provider.getTransaction(log.transactionHash)
                 ]);
                 if (user) {
-                    const [[borrower, created], loanManagerUser] = await Promise.all([
-                        database.models.microCreditBorrowers.findOrCreate({
-                            where: {
-                                userId: user.id
-                            },
-                            defaults: {
-                                userId: user.id,
-                                manager: transactionsReceipt.from,
-                                performance: 100
-                            },
-                            transaction
-                        }),
+                    const [loanManagerUser] = await Promise.all([
                         database.models.appUser.findOne({
                             attributes: ['id'],
                             where: {
                                 address: getAddress(transactionsReceipt.from)
                             }
                         }),
+                        database.models.microCreditBorrowers.upsert(
+                            {
+                                userId: user.id,
+                                applicationId: application?.id || 1,
+                                manager: transactionsReceipt.from,
+                                performance: 100
+                            },
+                            {
+                                conflictFields: ['userId', 'applicationId'],
+                                transaction
+                            }
+                        ),
                         this.microCreditService.updateApplication(
-                            [userAddress],
+                            application !== null ? [application.id] : [userAddress],
                             [interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED],
                             transaction
                         )
                     ]);
-                    if (!created) {
-                        this._waitForSubgraphToIndex(log).then(() => {
-                            utils.cache.cleanUserRolesCache(userAddress);
-                            if (loanManagerUser) {
-                                utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
-                                utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
-                            }
-                        });
-                        await borrower.update(
-                            {
-                                manager: transactionsReceipt.from,
-                                performance: 100
-                            },
-                            { transaction }
-                        );
-                    }
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanUserRolesCache(userAddress);
+                        if (loanManagerUser) {
+                            utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                            utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                        }
+                    });
                 }
             } else if (parsedLog.name === 'LoanClaimed') {
                 utils.Logger.info('Claim Loan event');

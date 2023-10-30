@@ -39,7 +39,7 @@ export default (route: Router): void => {
      *         name: filter
      *         schema:
      *           type: string
-     *           enum: [not-claimed, ontrack, need-help, repaid, urgent]
+     *           enum: [not-claimed, ontrack, need-help, repaid, urgent, failed-repayment]
      *         required: false
      *         description: optional filter (leave it undefined to get all)
      *       - in: query

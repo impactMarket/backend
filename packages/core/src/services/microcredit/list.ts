@@ -1,6 +1,7 @@
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { Op, Order, WhereOptions, col, fn, literal } from 'sequelize';
+import { SubgraphMicroCreditBorrowers } from '../../interfaces/microCredit/subgraphBorrowers';
 import { config } from '../../..';
 import { getAddress } from '@ethersproject/address';
 import {
@@ -70,7 +71,7 @@ export type GetBorrowersQuery = {
     offset?: number;
     limit?: number;
     addedBy?: string;
-    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent';
+    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -104,12 +105,15 @@ export default class MicroCreditList {
                 maturity: number;
                 amount: number;
                 period: number;
-                dailyInterest: number;
-                claimed: number;
-                repaid: number;
-                lastRepayment: number;
-                lastRepaymentAmount: number;
-                lastDebt: number;
+                dailyInterest?: number;
+                claimed?: number;
+                repaid?: number;
+                lastRepayment?: number;
+                lastRepaymentAmount?: number;
+                lastDebt?: number;
+                //
+                performance: number;
+                repaymentRate: number | null;
             };
         }[];
     }> => {
@@ -179,13 +183,26 @@ export default class MicroCreditList {
                             literal(`(claimed + period) <= ${Math.trunc(limitDate.getTime() / 1000)}`)
                         ]
                     };
+                case 'failed-repayment':
+                    where = {
+                        ...where,
+                        repaymentRate: { [Op.ne]: null } as any
+                    };
+                    return {
+                        [Op.and]: [
+                            { status: 1 },
+                            { lastDebt: { [Op.gt]: 0 } },
+                            { lastRepayment: { [Op.ne]: null } },
+                            literal(`(loan."lastRepayment" + "repaymentRate") < ${Math.trunc(now.getTime() / 1000)}`)
+                        ]
+                    };
                 default:
                     return {};
             }
         };
 
         const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
-            attributes: ['performance'],
+            attributes: ['performance', 'repaymentRate'],
             where: {
                 ...where,
                 manager: query.addedBy
@@ -196,7 +213,7 @@ export default class MicroCreditList {
             include: [
                 {
                     model: models.appUser,
-                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
                     as: 'user',
                     required: true
                 },
@@ -226,8 +243,11 @@ export default class MicroCreditList {
             count: rBorrowers.count,
             rows: rBorrowers.rows.map(r => ({
                 ...r.user!.toJSON(),
-                loan: r.loan!,
-                performance: r.performance
+                loan: {
+                    ...(r.loan!.toJSON() as SubgraphMicroCreditBorrowers & { maturity: number }),
+                    performance: r.performance,
+                    repaymentRate: r.repaymentRate
+                }
             }))
         };
     };
