@@ -39,7 +39,9 @@ type ListApplicationsType = {
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
-    filter: Joi.string().optional().valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent', 'failed-repayment'),
+    filter: Joi.string()
+        .optional()
+        .valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent', 'failed-repayment'),
     orderBy: Joi.string()
         .optional()
         .valid(

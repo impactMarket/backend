@@ -138,9 +138,12 @@ export default class MicroCreditCreate {
                 },
                 include: [
                     {
+                        // get last application only
                         model: models.microCreditApplications,
                         as: 'microCreditApplications',
-                        attributes: ['id']
+                        attributes: ['id'],
+                        order: [['id', 'DESC']],
+                        limit: 1
                     }
                 ]
             });
