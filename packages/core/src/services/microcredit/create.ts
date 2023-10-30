@@ -206,6 +206,31 @@ export default class MicroCreditCreate {
         );
     }
 
+    public async updateRepaymentRate(applicationId_: number[], repaymentRate_: number[]): Promise<void> {
+        for (let x = 0; x < applicationId_.length; x++) {
+            const applicationId = applicationId_[x];
+            const repaymentRate = repaymentRate_[x];
+
+            const application = await models.microCreditApplications.findOne({
+                where: {
+                    id: applicationId
+                }
+            });
+            const borrowerUserId = application!.userId;
+
+            await models.microCreditBorrowers.upsert(
+                {
+                    userId: borrowerUserId,
+                    applicationId,
+                    repaymentRate
+                },
+                {
+                    conflictFields: ['userId', 'applicationId']
+                }
+            );
+        }
+    }
+
     public saveForm = async (
         userId: number,
         form: object,
