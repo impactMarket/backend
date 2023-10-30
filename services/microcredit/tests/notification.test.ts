@@ -62,6 +62,7 @@ describe.skip('notification lambda', () => {
 
             await database.models.microCreditBorrowers.create({
                 userId: user.id,
+                applicationId: 1,
                 performance: idx === 1 ? 100 : 80,
                 manager: 'abc123'
             }); 
