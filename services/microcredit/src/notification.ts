@@ -235,8 +235,9 @@ export const reachingMaturity = async () => {
     const borrowers = await database.models.subgraphMicroCreditBorrowers.findAll({
         attributes: [],
         where: literal(`
-            DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '7 days') = DATE(CURRENT_TIMESTAMP) 
-         OR DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '1 days') = DATE(CURRENT_TIMESTAMP)
+            (DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '7 days') = DATE(CURRENT_TIMESTAMP) 
+         OR DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '1 days') = DATE(CURRENT_TIMESTAMP))
+         AND status != 2
         `),
         include: [{
             attributes: ['language', 'email'],

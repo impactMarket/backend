@@ -119,7 +119,7 @@ export async function sendFirebasePushNotification(
             admin
                 .messaging()
                 .sendEachForMulticast(message, process.env.NODE_ENV === 'developement')
-                .then(Logger.info)
+                .then(res => Logger.info(JSON.stringify(res)))
                 .catch(Logger.error);
 
             if (i + batch > tokens.length) {
