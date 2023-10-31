@@ -546,6 +546,55 @@ class ChainSubscribers {
                         }
                     );
                 }
+            } else if (parsedLog.name === 'UserAddressChanged') {
+                utils.Logger.info('UserAddressChanged event');
+                const newUserAddress = parsedLog.args[1];
+                const transactionsReceipt = await this.provider.getTransaction(log.transactionHash);
+                const [loanManagerUser, oldUser, [newUser]] = await Promise.all([
+                    database.models.appUser.findOne({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(transactionsReceipt.from)
+                        }
+                    }),
+                    database.models.appUser.findOne({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(userAddress)
+                        }
+                    }),
+                    // in case the new user did not connect yet, we create it
+                    database.models.appUser.findOrCreate({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(newUserAddress)
+                        },
+                        defaults: {
+                            address: getAddress(newUserAddress)
+                        },
+                        transaction
+                    })
+                ]);
+                if (oldUser && newUser) {
+                    await database.models.microCreditBorrowers.update(
+                        {
+                            userId: newUser.id
+                        },
+                        {
+                            where: {
+                                userId: oldUser.id
+                            },
+                            transaction
+                        }
+                    );
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanUserRolesCache(userAddress);
+                        if (loanManagerUser) {
+                            utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                            utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                        }
+                    });
+                }
             }
         } catch (error) {
             utils.Logger.error('Failed to process Microcredit Events:', error);
