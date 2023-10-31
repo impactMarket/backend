@@ -118,7 +118,7 @@ export default class UserService {
                     [key in keyof Attributes<AppUserModel>]?: Attributes<AppUserModel>[key];
                 } = {};
 
-                if (user.country === null) {
+                if (_user.country === null) {
                     const country = await geoIpGetCountry(ipAddress);
                     updateFields.country = country;
                 }
