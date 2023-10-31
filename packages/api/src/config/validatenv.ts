@@ -99,7 +99,8 @@ function validateEnv() {
         // hot wallets
         HOT_WALLET_CHECK_BALANCE: str({ devDefault: onlyOnTestEnv('xyz') }),
         // signers
-        SIGNERS_REFERRAL_LINK: str({ devDefault: onlyOnTestEnv('xyz') })
+        SIGNERS_REFERRAL_LINK: str({ devDefault: onlyOnTestEnv('xyz') }),
+        GEOIP_APIKEY: str({ default: 'A5HYjet08D' })
     });
 }
 

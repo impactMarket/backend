@@ -57,7 +57,8 @@ class UserController {
                     clientId
                 },
                 overwrite,
-                recover
+                recover,
+                req.ip
             )
             .then(user =>
                 standardResponse(res, 201, true, {
@@ -80,7 +81,7 @@ class UserController {
         }
         const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
-            .get(req.user.address, clientId)
+            .get(req.user.address, clientId, req.ip)
             .then(
                 user =>
                     !req.timedout &&
