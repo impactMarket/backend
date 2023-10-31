@@ -177,5 +177,12 @@ export default {
      */
     admin: {
         authorisedAddresses: validatedEnv.ADMIN_AUTHORISED_ADDRESSES.split(',').map(a => a.trim())
+    },
+
+    /**
+     * external API keys
+     */
+    apiKeys: {
+        geoIp: validatedEnv.GEOIP_APIKEY
     }
 };
