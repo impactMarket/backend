@@ -97,8 +97,8 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            const country = await geoIpGetCountry(ipAddress);
-            user = await models.appUser.create({ ...userParams, country });
+            user = await models.appUser.create(userParams);
+            geoIpGetCountry(ipAddress).then(country => user.update({ country }));
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -119,8 +119,7 @@ export default class UserService {
                 } = {};
 
                 if (_user.country === null) {
-                    const country = await geoIpGetCountry(ipAddress);
-                    updateFields.country = country;
+                    geoIpGetCountry(ipAddress).then(country => _user.update({ country }));
                 }
 
                 // if a phone number is provided, verify if it
