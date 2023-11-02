@@ -71,7 +71,7 @@ export type GetBorrowersQuery = {
     offset?: number;
     limit?: number;
     addedBy?: string;
-    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment';
+    filter?: 'all' | 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment' | 'in-default';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -181,6 +181,14 @@ export default class MicroCreditList {
                             { status: 1 },
                             { lastDebt: { [Op.gt]: 0 } },
                             literal(`(claimed + period) <= ${Math.trunc(limitDate.getTime() / 1000)}`)
+                        ]
+                    };
+                case 'in-default':
+                    return {
+                        [Op.and]: [
+                            { status: 1 },
+                            { lastDebt: { [Op.gt]: 0 } },
+                            literal(`(claimed + period) >= ${Math.trunc(now.getTime() / 1000)}`)
                         ]
                     };
                 case 'failed-repayment':
