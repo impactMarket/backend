@@ -8,7 +8,7 @@ const validator = createValidator();
 type ListBorrowersType = {
     offset?: number;
     limit?: number;
-    filter?: 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment';
+    filter?: 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment' | 'in-default';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -41,7 +41,7 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     limit: Joi.number().optional().max(20).default(10),
     filter: Joi.string()
         .optional()
-        .valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent', 'failed-repayment'),
+        .valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent', 'failed-repayment', 'in-default'),
     orderBy: Joi.string()
         .optional()
         .valid(

@@ -33,7 +33,8 @@ export async function updateBorrowers(): Promise<void> {
                     lastRepaymentAmount: borrower!.loan.lastRepaymentAmount ? parseFloat(borrower!.loan.lastRepaymentAmount) : 0,
                     lastDebt: parseFloat(borrower!.loan.lastDebt),
                     amount: parseFloat(borrower!.loan.amount),
-                    period: borrower!.loan.period,
+                    // prevent integer overflows
+                    period: borrower!.loan.period < 99999999 ? borrower!.loan.period : 0,
                     claimed: borrower!.loan.claimed,
                     dailyInterest: borrower!.loan.dailyInterest,
                     repaid: parseFloat(borrower!.loan.repaid),
