@@ -29,7 +29,7 @@ export const start = async (): Promise<void> => {
     process.on('uncaughtException', (error: any) => {
         // close all RPC connections and restart when available again
         const strError = JSON.stringify(error);
-        utils.Logger.error('uncaughtException: ', strError);
+        utils.Logger.error('uncaughtException: ', strError, error);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
             (strError.indexOf('figment') !== -1 || strError.indexOf('celo') !== -1) &&

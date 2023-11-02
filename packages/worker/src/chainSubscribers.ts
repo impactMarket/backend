@@ -87,14 +87,14 @@ class ChainSubscribers {
             try {
                 const r = await this._getLogs(startFromBlock, provider);
                 rawLogs = r.logs;
-                startFromBlock = r.lastBlock;
+                startFromBlock = r.toBlock;
                 isLastBlock = r.isLastBlock;
                 utils.Logger.info('Got logs from main provider!');
             } catch (error) {
                 utils.Logger.error('Failed to get logs from main provider!', error);
                 const r = await this._getLogs(startFromBlock, fallbackProvider);
                 rawLogs = r.logs;
-                startFromBlock = r.lastBlock;
+                startFromBlock = r.toBlock;
                 isLastBlock = r.isLastBlock;
                 utils.Logger.info('Got logs from fallback provider!');
             }
@@ -141,9 +141,9 @@ class ChainSubscribers {
             toBlock,
             topics: this.filterTopics
         });
-        return {
+                return {
             logs,
-            lastBlock,
+            toBlock,
             isLastBlock: lastBlock === toBlock
         };
     }
@@ -459,22 +459,27 @@ class ChainSubscribers {
             if (parsedLog.name === 'LoanAdded') {
                 utils.Logger.info('Add Loan event');
 
-                const [user, application, transactionsReceipt] = await Promise.all([
+                const [user, transactionsReceipt] = await Promise.all([
                     database.models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
                             address: getAddress(userAddress)
-                        }
-                    }),
-                    database.models.microCreditApplications.findOne({
-                        where: {
-                            userId: userAddress
                         },
-                        order: [['id', 'DESC']]
+                        include: [
+                            {
+                                model: database.models.microCreditApplications,
+                                as: 'microCreditApplications',
+                                attributes: ['id'],
+                                order: [['id', 'DESC']],
+                                limit: 1,
+                                required: false
+                            }
+                        ]
                     }),
                     this.provider.getTransaction(log.transactionHash)
                 ]);
                 if (user) {
+                    const application = user.microCreditApplications?.[0];
                     const [loanManagerUser] = await Promise.all([
                         database.models.appUser.findOne({
                             attributes: ['id'],
@@ -495,7 +500,7 @@ class ChainSubscribers {
                             }
                         ),
                         this.microCreditService.updateApplication(
-                            application !== null ? [application.id] : [userAddress],
+                            application !== undefined ? [application.id] : [userAddress],
                             [interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED],
                             transaction
                         )
@@ -513,17 +518,26 @@ class ChainSubscribers {
                 const parsedLog = this.ifaceMicrocredit.parseLog(log);
                 const userAddress = parsedLog.args[0];
 
-                await database.models.microCreditApplications.update(
-                    {
-                        claimedOn: new Date()
+                const user = await database.models.appUser.findOne({
+                    attributes: ['id'],
+                    where: {
+                        address: getAddress(userAddress)
                     },
-                    {
-                        where: {
-                            userId: userAddress
-                        },
-                        transaction
-                    }
-                );
+                    include: [
+                        {
+                            model: database.models.microCreditApplications,
+                            as: 'microCreditApplications',
+                            attributes: ['id'],
+                            order: [['id', 'DESC']],
+                            limit: 1,
+                            required: false
+                        }
+                    ]
+                });
+
+                await user?.microCreditApplications?.[0]?.update({
+                    claimedOn: new Date(),
+                }, { transaction });
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
 
