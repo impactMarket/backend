@@ -33,7 +33,7 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'user'
     });
 
-    appUser.hasOne(microCreditBorrowers, {
+    appUser.hasMany(microCreditBorrowers, {
         foreignKey: 'userId',
         sourceKey: 'id',
         as: 'borrower'

@@ -531,6 +531,14 @@ class ChainSubscribers {
                             order: [['id', 'DESC']],
                             limit: 1,
                             required: false
+                        },
+                        {
+                            model: database.models.microCreditBorrowers,
+                            as: 'borrower',
+                            attributes: ['id', 'repaymentRate'],
+                            order: [['id', 'DESC']],
+                            limit: 1,
+                            required: true
                         }
                     ]
                 });
@@ -538,6 +546,16 @@ class ChainSubscribers {
                 await user?.microCreditApplications?.[0]?.update({
                     claimedOn: new Date(),
                 }, { transaction });
+                // update repayment rate to be 5 days prior to maturity
+                if (user?.borrower?.[0]?.repaymentRate === 1) {
+                    const claimed = new Date();
+                    const microCreditContract = new ethers.Contract(config.microcreditContractAddress, contracts.MicrocreditABI, this.provider);
+                    const { period } = await microCreditContract.userLoans(userAddress, parsedLog.args[1]);
+                    const fiveDays = 5 * 24 * 60 * 60 * 1000;
+                    await user?.borrower[0].update({
+                        repaymentRate: Math.trunc((claimed.getTime() + period.toNumber() * 1000 - fiveDays) / 1000)
+                    }, { transaction });
+                }
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
 

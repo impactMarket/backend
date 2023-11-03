@@ -223,5 +223,79 @@
       }
     ],
     "anonymous": false
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_loanId",
+        "type": "uint256"
+      }
+    ],
+    "name": "userLoans",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountBorrowed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "period",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "dailyInterest",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "claimDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentDebt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastComputedDebt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountRepayed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "repaymentsLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastComputedDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "managerAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]

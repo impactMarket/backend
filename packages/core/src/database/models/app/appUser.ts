@@ -34,7 +34,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public readonly updatedAt!: Date;
     public readonly deletedAt!: Date;
 
-    public readonly borrower?: MicroCreditBorrowersModel;
+    public readonly borrower?: MicroCreditBorrowersModel[];
     public readonly microCreditApplications?: MicroCreditApplicationModel[];
 }
 
