@@ -200,8 +200,36 @@ export default class MicroCreditList {
                         [Op.and]: [
                             { status: 1 },
                             { lastDebt: { [Op.gt]: 0 } },
-                            { lastRepayment: { [Op.ne]: null } },
-                            literal(`(loan."lastRepayment" + "repaymentRate") < ${Math.trunc(now.getTime() / 1000)}`)
+                            {
+                                [Op.or]: [
+                                    {
+                                        [Op.and]: [
+                                            { lastRepayment: { [Op.ne]: null } },
+                                            literal(
+                                                `(loan."lastRepayment" + "repaymentRate") < ${Math.trunc(
+                                                    now.getTime() / 1000
+                                                )}`
+                                            )
+                                        ]
+                                    },
+                                    {
+                                        [Op.and]: [
+                                            { lastRepayment: { [Op.eq]: null } },
+                                            literal(
+                                                `(loan.claimed + "repaymentRate") < ${Math.trunc(now.getTime() / 1000)}`
+                                            )
+                                        ]
+                                    },
+                                    // if the repayment rate is a one time repayment, it will be the timestamp in seconds
+                                    // on that case we need to verify the seconds timestamp is greater than now
+                                    {
+                                        [Op.and]: [
+                                            { $repaymentRate$: { [Op.gt]: 1672531200 } },
+                                            { $repaymentRate$: { [Op.lte]: Math.trunc(now.getTime() / 1000) } }
+                                        ]
+                                    }
+                                ]
+                            }
                         ]
                     };
                 default:
