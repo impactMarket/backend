@@ -264,7 +264,7 @@ export const reachingMaturity = async () => {
         });
 
         const data = response[0].data;
-        const baseKey = ''
+        const baseKey = 'reaching-maturity';
         const subject = data[`${baseKey}-form-email-notification-subject`];
         const subtitle = data[`${baseKey}-form-email-notification-subtitle`];
 
