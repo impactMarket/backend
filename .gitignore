@@ -127,3 +127,5 @@ path-for-js-ipfs-repo/
 .env.*
 postgres_data/
 redis_data/
+
+firebase.json

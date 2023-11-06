@@ -222,7 +222,9 @@ export const _sendPushNotification = async (usersToNotify: number[], type: numbe
         }
     });
 
-    utils.pushNotification.sendNotification(
+    utils.Logger.info(`Sending ${users.length} notifications of type ${type}`);
+
+    await utils.pushNotification.sendNotification(
         users,
         type,
         true,

@@ -18,6 +18,6 @@
         "useUnknownInCatchVariables": false,
         "skipLibCheck": true
     },
-    "include": ["src", "index.ts"],
+    "include": ["src", "index.ts", "src/utils/firebase.json"],
     "exclude": ["node_modules"]
 }

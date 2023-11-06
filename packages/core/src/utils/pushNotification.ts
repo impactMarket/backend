@@ -7,8 +7,7 @@ import localesConfig from '../utils/locale.json';
 import { AppUser } from '../interfaces/app/appUser';
 import { Logger } from './logger';
 import { Transaction } from 'sequelize';
-import { utils } from '../../index';
-import admin from 'firebase-admin';
+import admin, { ServiceAccount } from 'firebase-admin';
 import config from '../config';
 
 export async function sendNotification(
@@ -83,15 +82,17 @@ export async function sendNotification(
         await Promise.all(languages.map(fetchNotificationsFromPrismic));
 
         // send notification by group of languages
-        Object.keys(prismicNotifications).forEach(async (key, i) => {
-            const prismicData = prismicNotifications[key];
-            sendFirebasePushNotification(
-                prismicData.users.map(el => el.walletPNT!),
-                prismicData.title,
-                prismicData.description,
-                params && (params instanceof Array ? params[i] : params)
-            ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
-        });
+        await Promise.all(
+            Object.keys(prismicNotifications).map(async (key, i) => {
+                const prismicData = prismicNotifications[key];
+                return sendFirebasePushNotification(
+                    prismicData.users.map(el => el.walletPNT!),
+                    prismicData.title,
+                    prismicData.description,
+                    params && (params instanceof Array ? params[i] : params)
+                );
+            })
+        );
     } catch (error) {
         Logger.error('Failed to add notification:', error);
     }
@@ -116,11 +117,11 @@ export async function sendFirebasePushNotification(
                 tokens: tokens_batch
             };
 
-            admin
+            const result = await admin
                 .messaging()
-                .sendEachForMulticast(message, process.env.NODE_ENV === 'developement')
-                .then(res => Logger.info(JSON.stringify(res)))
-                .catch(Logger.error);
+                .sendEachForMulticast(message, process.env.NODE_ENV === 'developement');
+
+            Logger.info(JSON.stringify(result));
 
             if (i + batch > tokens.length) {
                 break;
@@ -133,9 +134,15 @@ export async function sendFirebasePushNotification(
 
 export function initPushNotificationService() {
     try {
-        // recover config file
-        const base64file = config.firebaseFileBase64;
-        const jsonConfig = JSON.parse(Buffer.from(base64file, 'base64').toString());
+        let jsonConfig: ServiceAccount = {};
+
+        try {
+            jsonConfig = require('./firebase.json');
+        } catch (error) {
+            // recover config file
+            const base64file = config.firebaseFileBase64;
+            jsonConfig = JSON.parse(Buffer.from(base64file, 'base64').toString());
+        }
 
         admin.initializeApp({
             credential: admin.credential.cert(jsonConfig)
