@@ -123,6 +123,7 @@ class UserController {
             return;
         }
 
+        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         const {
             language,
             currency,
@@ -140,23 +141,26 @@ class UserController {
             phone
         } = req.body;
         this.userService
-            .update({
-                address: req.user.address,
-                language,
-                currency,
-                walletPNT,
-                appPNT,
-                firstName,
-                lastName,
-                children,
-                avatarMediaPath,
-                email,
-                gender,
-                bio,
-                country,
-                phone,
-                ...(age && { year: new Date().getUTCFullYear() - age })
-            })
+            .update(
+                {
+                    address: req.user.address,
+                    language,
+                    currency,
+                    walletPNT,
+                    appPNT,
+                    firstName,
+                    lastName,
+                    children,
+                    avatarMediaPath,
+                    email,
+                    gender,
+                    bio,
+                    country,
+                    phone,
+                    ...(age && { year: new Date().getUTCFullYear() - age })
+                },
+                clientId
+            )
             .then(user =>
                 standardResponse(res, 200, true, {
                     ...user,

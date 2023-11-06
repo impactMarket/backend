@@ -171,7 +171,13 @@ export default class UserService {
 
         this._updateLastLogin(user.id);
 
-        const token = utils.jwt.generateAccessToken(userParams.address, user.id);
+        const token = utils.jwt.generateAccessToken({
+            clientId: userParams.clientId,
+            address: userParams.address,
+            userId: user.id,
+            language: user.language,
+            country: user.country
+        });
         const jsonUser = user.toJSON();
         return {
             ...jsonUser,
@@ -204,8 +210,13 @@ export default class UserService {
                 read: false
             }
         });
+        const { id: userId, language, country } = user;
 
         return {
+            // this token here is temporary, will be removed after some time
+            // we are temporarly forcing the token to be generated with the
+            // user's address, id, language and country
+            token: utils.jwt.generateAccessToken({ clientId, address, userId, language, country }),
             ...user.toJSON(),
             ...userRoles,
             ...userRules,
@@ -226,7 +237,7 @@ export default class UserService {
         return await this.get(address);
     }
 
-    public async update(user: AppUserUpdate) {
+    public async update(user: AppUserUpdate, clientId?: number) {
         if (user.phone) {
             const existsPhone = await this._existsAccountByPhone(user.phone, user.address);
 
@@ -246,8 +257,10 @@ export default class UserService {
         }
 
         this.userLogService.create(rows[0].id, LogTypes.EDITED_PROFILE, user);
+        const { address, id: userId, language, country } = rows[0];
 
         return {
+            token: utils.jwt.generateAccessToken({ clientId, address, userId, language, country }),
             ...rows[0].toJSON(),
             ...(await this._userRoles(user.address)),
             ...(await this._userRules(user.address))
