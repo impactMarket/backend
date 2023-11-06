@@ -8,6 +8,8 @@ import BigNumber from 'bignumber.js';
 
 import { BaseError } from '../../utils/baseError';
 import { cleanLearnAndEarnCache } from '../../utils/cache';
+import { contracts } from '../../../index';
+import { ethers } from 'ethers';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models, sequelize } from '../../database';
 import config from '../../config';
@@ -251,6 +253,32 @@ export async function answer(user: { userId: number; address: string }, answers:
         const availableLessons = await countAvailableLessons(lessonRegistry.levelId, user.userId);
 
         if (availableLessons === 0) {
+            // verify if user comply with rules
+            const level = await models.learnAndEarnLevel.findOne({
+                attributes: ['rules', 'rewardLimit'],
+                where: { id: lessonRegistry.levelId }
+            });
+
+            if (!level) {
+                throw new BaseError('LEVEL_NOT_FOUND', 'level not found');
+            }
+
+            // validate if user has the required tokens
+            if (level.rules.tokens) {
+                const provider = new ethers.providers.StaticJsonRpcProvider(config.chain.jsonRPCUrlCelo, {
+                    name: 'Celo',
+                    chainId: config.chain.isMainnet ? 42220 : 44787
+                });
+                for (const token of level.rules.tokens) {
+                    const tokenContract = new ethers.Contract(token.address, contracts.ERC20ABI, provider);
+                    const balance = new BigNumber((await tokenContract.balanceOf(user.address)).toString());
+                    const amount = new BigNumber(token.amount).multipliedBy(new BigNumber(10).pow(18));
+                    if (balance.lt(amount)) {
+                        throw new BaseError('INSUFFICIENT_TOKENS', 'user has insufficient tokens');
+                    }
+                }
+            }
+
             // if so, complete the level and make the payment
             await models.learnAndEarnUserLevel.update(
                 {
@@ -267,15 +295,11 @@ export async function answer(user: { userId: number; address: string }, answers:
             );
 
             // create signature
-            const level = await models.learnAndEarnLevel.findOne({
-                attributes: ['rewardLimit'],
-                where: { id: lessonRegistry.levelId }
-            });
             const amount = await calculateReward(user.userId, lessonRegistry.levelId, points);
             const signature = await signParams(user.address, lessonRegistry.levelId, amount);
 
             // check available reward
-            if (level?.rewardLimit) {
+            if (level.rewardLimit) {
                 const payments = await models.learnAndEarnPayment.sum('amount', {
                     where: {
                         levelId: lessonRegistry.levelId
