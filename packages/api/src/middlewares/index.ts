@@ -12,13 +12,50 @@ import config from '~config/index';
 const { getUserRoles } = subgraph.queries.user;
 const { redisClient } = database;
 
+export function authenticateAppKey(req: RequestWithUser, res: Response, next: NextFunction): void {
+    const appKeyHeader = req.headers['app-key'];
+
+    if (appKeyHeader && appKeyHeader instanceof String) {
+        const appKey = appKeyHeader as string;
+
+        database.models.appClientCredential
+            .findOne({
+                where: {
+                    // TODO: to be refactored
+                    clientId: appKey,
+                    status: 'active'
+                }
+            })
+            .then(credential => {
+                if (credential && credential.roles) {
+                    let path = req.path.split('/')[1];
+                    if (!path) {
+                        const baseUrl = req.baseUrl.split('/');
+                        path = baseUrl[baseUrl.length - 1];
+                    }
+                    const authorization = checkRoles(credential.roles, path, req.method);
+                    if (!authorization) {
+                        res.send(`App Key not allowed to ${req.path}`).status(403);
+                        return;
+                    }
+                } else {
+                    res.sendStatus(403);
+                    return;
+                }
+                next();
+            });
+    } else {
+        next();
+    }
+}
+
 export function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const clientIdHeader = req.headers['client-id'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (clientIdHeader) {
+    if (clientIdHeader && clientIdHeader instanceof String) {
         req.clientId = parseInt(clientIdHeader as string, 10);
     }
 
@@ -41,33 +78,7 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
             res.sendStatus(403);
             return;
         }
-        
-        // TODO: need to unify with header client-id
-        const appId = _user.clientId;
-        if (appId) {
-            // validate external token
-            const credential = await database.models.appClientCredential.findOne({
-                where: {
-                    clientId: appId,
-                    status: 'active'
-                }
-            });
-            if (credential && credential.roles) {
-                let path = req.path.split('/')[1];
-                if (!path) {
-                    const baseUrl = req.baseUrl.split('/');
-                    path = baseUrl[baseUrl.length - 1];
-                }
-                const authorization = checkRoles(credential.roles, path, req.method);
-                if (!authorization) {
-                    res.send(`User has no permition to ${req.path}`).status(403);
-                    return;
-                }
-            } else {
-                res.sendStatus(403);
-                return;
-            }
-        }
+
         const user = _user as UserInRequest;
         req.user = user;
         //

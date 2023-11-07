@@ -6,7 +6,7 @@ import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-import { rateLimiter } from './middlewares';
+import { authenticateAppKey, rateLimiter } from './middlewares';
 import config from './config';
 import v1routes from './routes/v1';
 import v2routes from './routes/v2';
@@ -154,6 +154,8 @@ export default (app: express.Application): void => {
             })
         );
     }
+
+    app.use(authenticateAppKey);
 
     // Load API routes
     // currenclty only PACT supply endpoints (used by external services)
