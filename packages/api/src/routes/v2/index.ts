@@ -13,6 +13,7 @@ import protocol from './protocol';
 import referrals from './referrals';
 import story from './story';
 import user from './user';
+import savingCircle from './savingCircle';
 
 export default (): Router => {
     const app = Router();
@@ -29,6 +30,7 @@ export default (): Router => {
     referrals(app);
     cico(app);
     lazyAgenda(app);
+    savingCircle(app);
 
     return app;
 };
