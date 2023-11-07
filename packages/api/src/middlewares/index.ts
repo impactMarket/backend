@@ -41,13 +41,14 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
             res.sendStatus(403);
             return;
         }
-
+        
         // TODO: need to unify with header client-id
-        if (_user.clientId) {
+        const appId = _user.clientId;
+        if (appId) {
             // validate external token
             const credential = await database.models.appClientCredential.findOne({
                 where: {
-                    clientId: _user.clientId,
+                    clientId: appId,
                     status: 'active'
                 }
             });

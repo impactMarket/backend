@@ -36,7 +36,6 @@ class UserController {
             overwrite,
             recover
         } = req.body;
-        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
             .create(
                 {
@@ -54,7 +53,7 @@ class UserController {
                     gender,
                     bio,
                     phone,
-                    clientId
+                    clientId: req.clientId
                 },
                 overwrite,
                 recover,
@@ -79,9 +78,8 @@ class UserController {
             });
             return;
         }
-        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         this.userService
-            .get(req.user.address, clientId, req.ip)
+            .get(req.user.address, req.clientId, req.ip)
             .then(
                 user =>
                     !req.timedout &&
@@ -123,7 +121,6 @@ class UserController {
             return;
         }
 
-        const clientId = req.headers['client-id'] ? parseInt(req.headers['client-id'] as string, 10) : undefined;
         const {
             language,
             currency,
@@ -159,7 +156,7 @@ class UserController {
                     phone,
                     ...(age && { year: new Date().getUTCFullYear() - age })
                 },
-                clientId
+                req.clientId
             )
             .then(user =>
                 standardResponse(res, 200, true, {
