@@ -11,9 +11,9 @@ import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
 import protocol from './protocol';
 import referrals from './referrals';
+import savingCircle from './savingCircle';
 import story from './story';
 import user from './user';
-import savingCircle from './savingCircle';
 
 export default (): Router => {
     const app = Router();
