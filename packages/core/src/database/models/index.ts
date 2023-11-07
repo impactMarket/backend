@@ -40,6 +40,8 @@ import { initializeMicroCreditBorrowersHuma } from './microCredit/borrowersHuma'
 import { initializeMicroCreditDocs } from './microCredit/docs';
 import { initializeMicroCreditLoanManager } from './microCredit/loanManagers';
 import { initializeMicroCreditNote } from './microCredit/note';
+import { initializeSavingCircle } from './savingCircle/savingCircle';
+import { initializeSavingCircleMember } from './savingCircle/savingCircleMember';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -148,6 +150,10 @@ export default function initModels(sequelize: Sequelize): void {
 
     // Exchange
     initializeExchangeRegistry(sequelize);
+
+    // Saving Circle
+    initializeSavingCircle(sequelize);
+    initializeSavingCircleMember(sequelize);
 
     // associations
     userAssociation(sequelize);
