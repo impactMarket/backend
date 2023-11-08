@@ -12,7 +12,8 @@ export function userAssociation(sequelize: Sequelize) {
         microCreditNote,
         subgraphMicroCreditBorrowers,
         microCreditLoanManager,
-        subgraphUBIBeneficiary
+        subgraphUBIBeneficiary,
+        savingCircleMember
     } = sequelize.models as DbModels;
 
     appLog.belongsTo(appUser, {
@@ -43,6 +44,12 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'userId',
         sourceKey: 'id',
         as: 'microCreditApplications'
+    });
+
+    appUser.hasMany(savingCircleMember, {
+        foreignKey: 'userId',
+        sourceKey: 'id',
+        as: 'savingCircleMember'
     });
 
     subgraphUBIBeneficiary.belongsTo(appUser, {

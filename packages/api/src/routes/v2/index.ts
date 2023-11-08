@@ -11,6 +11,7 @@ import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
 import protocol from './protocol';
 import referrals from './referrals';
+import savingCircle from './savingCircle';
 import story from './story';
 import user from './user';
 
@@ -29,6 +30,7 @@ export default (): Router => {
     referrals(app);
     cico(app);
     lazyAgenda(app);
+    savingCircle(app);
 
     return app;
 };

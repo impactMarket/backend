@@ -40,6 +40,8 @@ import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
 import { MicroCreditLoanManagerModel } from './models/microCredit/loanManagers';
 import { MicroCreditNoteModel } from './models/microCredit/note';
+import { SavingCircleMemberModel } from './models/savingCircle/savingCircleMember';
+import { SavingCircleModel } from './models/savingCircle/savingCircle';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
@@ -133,6 +135,9 @@ export type DbModels = {
     microCreditLoanManager: ModelStatic<MicroCreditLoanManagerModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
+    //
+    savingCircle: ModelStatic<SavingCircleModel>;
+    savingCircleMember: ModelStatic<SavingCircleMemberModel>;
 };
 export interface DbLoader {
     sequelize: Sequelize;
