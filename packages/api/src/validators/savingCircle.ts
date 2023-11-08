@@ -13,6 +13,12 @@ class SavingCirclelidator {
             members: Joi.array().items(Joi.string()).min(2).required()
         })
     });
+
+    invite = celebrate({
+        body: defaultSchema.object({
+            decision: Joi.string().required().valid('accepted', 'declined')
+        })
+    });
 }
 
 export default SavingCirclelidator;

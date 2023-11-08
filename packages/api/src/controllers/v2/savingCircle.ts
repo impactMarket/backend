@@ -23,6 +23,24 @@ class SavingCircleController {
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    invite = async (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+        const { decision } = req.body;
+        const { id } = req.params;
+        this.savingCircleService
+            .invite(req.user.userId, parseInt(id), decision)
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    }
 }
 
 export default SavingCircleController;

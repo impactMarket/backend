@@ -51,4 +51,31 @@ export default (app: Router): void => {
      *     - BearerToken: []
      */
     route.post('/', authenticateToken, savingCircleValidator.create, savingCircleController.create);
+
+    /**
+     * @swagger
+     *
+     * /saving-circles/{id}/invites:
+     *   put:
+     *     tags:
+     *       - "saving-circles"
+     *     summary: Invite response
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               decision:
+     *                 type: string
+     *                 description: Group name
+     *                 enum: [declined, accepted]
+     *                 required: true
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - BearerToken: []
+     */
+    route.put('/:id/invites', authenticateToken, savingCircleValidator.invite, savingCircleController.invite);
 };

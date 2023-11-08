@@ -54,7 +54,8 @@ export enum NotificationType {
     HIGH_PERFORMANCE = 18,
     LEARN_AND_EARN_FINISH_LEVEL = 19,
     LEARN_AND_EARN_NEW_LEVEL = 20,
-    SAVING_GROUP_INVITE = 21
+    SAVING_GROUP_INVITE = 21,
+    SAVING_GROUP_CREATION_REFUSED = 22
 }
 
 export type NotificationParams = {
