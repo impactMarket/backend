@@ -26,11 +26,38 @@ type UserRoles = {
     loanManager: { state: number } | null;
 };
 
+async function geoIpGetCountry(ipAddress?: string): Promise<string | undefined> {
+    if (!ipAddress) {
+        return;
+    }
+
+    const myHeaders = new Headers();
+    myHeaders.append('apikey', config.apiKeys.geoIp);
+
+    try {
+        const r = await fetch(`https://api.apilayer.com/ip_to_location/${ipAddress}`, {
+            method: 'GET',
+            redirect: 'follow',
+            headers: myHeaders
+        });
+        const data = await r.json();
+
+        return data.country_code;
+    } catch (_) {
+        return;
+    }
+}
+
 export default class UserService {
     private userLogService = new UserLogService();
     private profileContentStorage = new ProfileContentStorage();
 
-    public async create(userParams: AppUserCreationAttributes, overwrite: boolean = false, recover: boolean = false) {
+    public async create(
+        userParams: AppUserCreationAttributes,
+        overwrite: boolean = false,
+        recover: boolean = false,
+        ipAddress?: string
+    ) {
         const exists = await this._exists(userParams.address);
 
         if (overwrite) {
@@ -71,6 +98,7 @@ export default class UserService {
             // create new user
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
+            geoIpGetCountry(ipAddress).then(country => user.update({ country }));
         } else {
             const findAndUpdate = async () => {
                 // it's not null at this point
@@ -89,6 +117,10 @@ export default class UserService {
                 const updateFields: {
                     [key in keyof Attributes<AppUserModel>]?: Attributes<AppUserModel>[key];
                 } = {};
+
+                if (_user.country === null) {
+                    geoIpGetCountry(ipAddress).then(country => _user.update({ country }));
+                }
 
                 // if a phone number is provided, verify if it
                 // is associated with another account
@@ -150,7 +182,7 @@ export default class UserService {
         };
     }
 
-    public async get(address: string, clientId?: number) {
+    public async get(address: string, clientId?: number, ipAddress?: string) {
         const [user, userRoles, userRules] = await Promise.all([
             models.appUser.findOne({
                 where: { address }
@@ -161,6 +193,10 @@ export default class UserService {
 
         if (user === null) {
             throw new utils.BaseError('USER_NOT_FOUND', 'user not found');
+        }
+        // TODO: this is temporarly here, will be removed after some time
+        if (user.country === null) {
+            geoIpGetCountry(ipAddress).then(country => user.update({ country }));
         }
         const notificationsCount = await models.appNotification.count({
             where: {

@@ -8,7 +8,7 @@ const validator = createValidator();
 type ListBorrowersType = {
     offset?: number;
     limit?: number;
-    filter?: 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent';
+    filter?: 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment' | 'in-default';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -39,7 +39,9 @@ type ListApplicationsType = {
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
-    filter: Joi.string().optional().valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent'),
+    filter: Joi.string()
+        .optional()
+        .valid('not-claimed', 'ontrack', 'need-help', 'repaid', 'urgent', 'failed-repayment', 'in-default'),
     orderBy: Joi.string()
         .optional()
         .valid(
@@ -134,6 +136,7 @@ type PostDocsRequestType = {
 type PutApplicationsRequestType = [
     {
         applicationId: number;
+        repaymentRate: number;
         status: number;
     }
 ];
@@ -164,7 +167,8 @@ const putApplicationsValidator = celebrate({
         .items(
             Joi.object({
                 applicationId: Joi.number().required(),
-                status: Joi.number().required()
+                repaymentRate: Joi.number().optional(),
+                status: Joi.number().optional()
             }).required()
         )
         .required()

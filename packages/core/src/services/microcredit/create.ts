@@ -12,7 +12,7 @@ import { MicroCreditContentStorage } from '../../services/storage';
 import { NotificationParamsPath, NotificationType } from '../../interfaces/app/appNotification';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
 import { Op, Optional, Transaction, WhereOptions } from 'sequelize';
-import { cleanMicroCreditApplicationsCache } from '../../utils/cache';
+import { cleanMicroCreditApplicationsCache, cleanMicroreditBorrowerCache } from '../../utils/cache';
 import { config } from '../../..';
 import { models } from '../../database';
 import { sendEmail } from '../../services/email';
@@ -138,9 +138,12 @@ export default class MicroCreditCreate {
                 },
                 include: [
                     {
+                        // get last application only
                         model: models.microCreditApplications,
                         as: 'microCreditApplications',
-                        attributes: ['id']
+                        attributes: ['id'],
+                        order: [['id', 'DESC']],
+                        limit: 1
                     }
                 ]
             });
@@ -204,6 +207,31 @@ export default class MicroCreditCreate {
             applicationIds.map(a => ({ path: `${NotificationParamsPath.LOAN_APPLICATION}${a}` })),
             transaction
         );
+    }
+
+    public async updateRepaymentRate(applicationId_: number[], repaymentRate_: number[]): Promise<void> {
+        for (let x = 0; x < applicationId_.length; x++) {
+            const applicationId = applicationId_[x];
+            const repaymentRate = repaymentRate_[x];
+
+            const application = await models.microCreditApplications.findOne({
+                where: {
+                    id: applicationId
+                }
+            });
+            const borrowerUserId = application!.userId;
+
+            await models.microCreditBorrowers.upsert(
+                {
+                    userId: borrowerUserId,
+                    applicationId,
+                    repaymentRate
+                },
+                {
+                    conflictFields: ['userId', 'applicationId']
+                }
+            );
+        }
     }
 
     public saveForm = async (
@@ -298,12 +326,26 @@ export default class MicroCreditCreate {
         }
     };
 
-    public addNote = (managerId: number, userId: number, note: string) => {
-        return models.microCreditNote.create({
+    public addNote = async (managerId: number, userId: number, note: string) => {
+        const newNote = await models.microCreditNote.create({
             managerId,
             userId,
             note
         });
+
+        if (!newNote) {
+            throw new BaseError('ADD_NOTE_ERROR', 'Error adding note');
+        }
+
+        // clear borrower cache
+        models.appUser
+            .findOne({
+                attributes: ['address'],
+                where: { id: userId }
+            })
+            .then(user => user && cleanMicroreditBorrowerCache(user.address));
+
+        return newNote;
     };
 
     private async _notifyApplicationChangeStatusByEmail(

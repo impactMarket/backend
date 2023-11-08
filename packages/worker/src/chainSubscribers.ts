@@ -87,14 +87,14 @@ class ChainSubscribers {
             try {
                 const r = await this._getLogs(startFromBlock, provider);
                 rawLogs = r.logs;
-                startFromBlock = r.lastBlock;
+                startFromBlock = r.toBlock;
                 isLastBlock = r.isLastBlock;
                 utils.Logger.info('Got logs from main provider!');
             } catch (error) {
                 utils.Logger.error('Failed to get logs from main provider!', error);
                 const r = await this._getLogs(startFromBlock, fallbackProvider);
                 rawLogs = r.logs;
-                startFromBlock = r.lastBlock;
+                startFromBlock = r.toBlock;
                 isLastBlock = r.isLastBlock;
                 utils.Logger.info('Got logs from fallback provider!');
             }
@@ -141,9 +141,9 @@ class ChainSubscribers {
             toBlock,
             topics: this.filterTopics
         });
-        return {
+                return {
             logs,
-            lastBlock,
+            toBlock,
             isLastBlock: lastBlock === toBlock
         };
     }
@@ -389,7 +389,7 @@ class ChainSubscribers {
                     await database.models.subgraphUBIBeneficiary.create({
                         userAddress: getAddress(userAddress),
                         communityAddress: getAddress(communityAddress),
-                        since: new Date().getTime() / 1000 | 0,
+                        since: (new Date().getTime() / 1000) | 0,
                         claimed: 0,
                         state: 0
                     });
@@ -428,14 +428,17 @@ class ChainSubscribers {
 
                 if (community) {
                     // update subgraph beneficiary
-                    await database.models.subgraphUBIBeneficiary.update({
-                        state: 1
-                    }, {
-                        where: {
-                            userAddress: getAddress(userAddress),
-                            communityAddress: getAddress(communityAddress),
+                    await database.models.subgraphUBIBeneficiary.update(
+                        {
+                            state: 1
+                        },
+                        {
+                            where: {
+                                userAddress: getAddress(userAddress),
+                                communityAddress: getAddress(communityAddress)
+                            }
                         }
-                    });
+                    );
 
                     this._waitForSubgraphToIndex(log).then(() => {
                         utils.cache.cleanBeneficiaryCache(community);
@@ -461,68 +464,98 @@ class ChainSubscribers {
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
                             address: getAddress(userAddress)
-                        }
+                        },
+                        include: [
+                            {
+                                model: database.models.microCreditApplications,
+                                as: 'microCreditApplications',
+                                attributes: ['id'],
+                                order: [['id', 'DESC']],
+                                limit: 1,
+                                required: false
+                            }
+                        ]
                     }),
                     this.provider.getTransaction(log.transactionHash)
                 ]);
                 if (user) {
-                    const [[borrower, created], loanManagerUser] = await Promise.all([
-                        database.models.microCreditBorrowers.findOrCreate({
-                            where: {
-                                userId: user.id
-                            },
-                            defaults: {
-                                userId: user.id,
-                                manager: transactionsReceipt.from,
-                                performance: 100
-                            },
-                            transaction
-                        }),
+                    const application = user.microCreditApplications?.[0];
+                    const [loanManagerUser] = await Promise.all([
                         database.models.appUser.findOne({
                             attributes: ['id'],
                             where: {
                                 address: getAddress(transactionsReceipt.from)
                             }
                         }),
+                        database.models.microCreditBorrowers.upsert(
+                            {
+                                userId: user.id,
+                                applicationId: application?.id || 1,
+                                manager: transactionsReceipt.from,
+                                performance: 100
+                            },
+                            {
+                                conflictFields: ['userId', 'applicationId'],
+                                transaction
+                            }
+                        ),
                         this.microCreditService.updateApplication(
-                            [userAddress],
+                            application !== undefined ? [application.id] : [userAddress],
                             [interfaces.microcredit.microCreditApplications.MicroCreditApplicationStatus.APPROVED],
                             transaction
                         )
                     ]);
-                    if (!created) {
-                        this._waitForSubgraphToIndex(log).then(() => {
-                            utils.cache.cleanUserRolesCache(userAddress);
-                            if (loanManagerUser) {
-                                utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
-                                utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
-                            }
-                        });
-                        await borrower.update(
-                            {
-                                manager: transactionsReceipt.from,
-                                performance: 100
-                            },
-                            { transaction }
-                        );
-                    }
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanUserRolesCache(userAddress);
+                        if (loanManagerUser) {
+                            utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                            utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                        }
+                    });
                 }
             } else if (parsedLog.name === 'LoanClaimed') {
                 utils.Logger.info('Claim Loan event');
                 const parsedLog = this.ifaceMicrocredit.parseLog(log);
                 const userAddress = parsedLog.args[0];
 
-                await database.models.microCreditApplications.update(
-                    {
-                        claimedOn: new Date()
+                const user = await database.models.appUser.findOne({
+                    attributes: ['id'],
+                    where: {
+                        address: getAddress(userAddress)
                     },
-                    {
-                        where: {
-                            userId: userAddress
+                    include: [
+                        {
+                            model: database.models.microCreditApplications,
+                            as: 'microCreditApplications',
+                            attributes: ['id'],
+                            order: [['id', 'DESC']],
+                            limit: 1,
+                            required: false
                         },
-                        transaction
-                    }
-                );
+                        {
+                            model: database.models.microCreditBorrowers,
+                            as: 'borrower',
+                            attributes: ['id', 'repaymentRate'],
+                            order: [['id', 'DESC']],
+                            limit: 1,
+                            required: true
+                        }
+                    ]
+                });
+
+                await user?.microCreditApplications?.[0]?.update({
+                    claimedOn: new Date(),
+                }, { transaction });
+                // update repayment rate to be 5 days prior to maturity
+                if (user?.borrower?.[0]?.repaymentRate === 1) {
+                    const claimed = new Date();
+                    const microCreditContract = new ethers.Contract(config.microcreditContractAddress, contracts.MicrocreditABI, this.provider);
+                    const { period } = await microCreditContract.userLoans(userAddress, parsedLog.args[1]);
+                    const fiveDays = 5 * 24 * 60 * 60 * 1000;
+                    await user?.borrower[0].update({
+                        repaymentRate: Math.trunc((claimed.getTime() + period.toNumber() * 1000 - fiveDays) / 1000)
+                    }, { transaction });
+                }
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
 
@@ -544,6 +577,55 @@ class ChainSubscribers {
                             transaction
                         }
                     );
+                }
+            } else if (parsedLog.name === 'UserAddressChanged') {
+                utils.Logger.info('UserAddressChanged event');
+                const newUserAddress = parsedLog.args[1];
+                const transactionsReceipt = await this.provider.getTransaction(log.transactionHash);
+                const [loanManagerUser, oldUser, [newUser]] = await Promise.all([
+                    database.models.appUser.findOne({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(transactionsReceipt.from)
+                        }
+                    }),
+                    database.models.appUser.findOne({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(userAddress)
+                        }
+                    }),
+                    // in case the new user did not connect yet, we create it
+                    database.models.appUser.findOrCreate({
+                        attributes: ['id'],
+                        where: {
+                            address: getAddress(newUserAddress)
+                        },
+                        defaults: {
+                            address: getAddress(newUserAddress)
+                        },
+                        transaction
+                    })
+                ]);
+                if (oldUser && newUser) {
+                    await database.models.microCreditBorrowers.update(
+                        {
+                            userId: newUser.id
+                        },
+                        {
+                            where: {
+                                userId: oldUser.id
+                            },
+                            transaction
+                        }
+                    );
+                    this._waitForSubgraphToIndex(log).then(() => {
+                        utils.cache.cleanUserRolesCache(userAddress);
+                        if (loanManagerUser) {
+                            utils.cache.cleanMicroCreditBorrowersCache(loanManagerUser.id);
+                            utils.cache.cleanMicroCreditApplicationsCache(loanManagerUser.id);
+                        }
+                    });
                 }
             }
         } catch (error) {

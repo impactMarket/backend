@@ -39,7 +39,7 @@ export default (route: Router): void => {
      *         name: filter
      *         schema:
      *           type: string
-     *           enum: [not-claimed, ontrack, need-help, repaid, urgent]
+     *           enum: [not-claimed, ontrack, need-help, repaid, urgent, failed-repayment, in-default]
      *         required: false
      *         description: optional filter (leave it undefined to get all)
      *       - in: query
@@ -116,7 +116,7 @@ export default (route: Router): void => {
         '/borrower/:query?',
         authenticateToken,
         verifySignature,
-        cache(cacheIntervals.tenMinutes, true),
+        cache(cacheIntervals.tenMinutes, false),
         onlyAuthorizedRoles(['loanManager', 'itself']),
         queryGetBorrowerValidator,
         controller.getBorrower

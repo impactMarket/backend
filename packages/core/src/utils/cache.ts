@@ -45,3 +45,12 @@ export const cleanMicroCreditApplicationsCache = async (userId?: number) => {
         redisClient.del(key);
     });
 };
+
+export const cleanMicroreditBorrowerCache = async (borrowerAddress: string) => {
+    const cachedBody = await redisClient.keys(
+        '__express__/api/v2/microcredit/borrower*address=' + borrowerAddress + '*'
+    );
+    cachedBody.forEach(key => {
+        redisClient.del(key);
+    });
+};

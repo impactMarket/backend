@@ -97,7 +97,7 @@ export default (route: Router): void => {
      *     tags:
      *       - "microcredit"
      *     summary: "Update microcredit applications"
-     *     description: "Status can be 0: draft, 1: pending, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
+     *     description: "repaymentRate is in seconds. Status can be 0: draft, 1: pending, 2: in-review, 3: requested-changes, 4: interview, 5: approved, 6: rejected"
      *     requestBody:
      *       required: true
      *       content:
@@ -113,6 +113,9 @@ export default (route: Router): void => {
      *                 status:
      *                   type: number
      *                   example: 1
+     *                 repaymentRate:
+     *                   type: number
+     *                   example: 604800
      *     responses:
      *       "200":
      *         description: "Success"
