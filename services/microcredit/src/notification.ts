@@ -140,11 +140,13 @@ export const highPerformance = async () => {
 
     const { HIGH_PERFORMANCE } = interfaces.app.appNotification.NotificationType;
 
-    // get borrowers with performance bellow 100
+    // get borrowers with performance above 100%
     const borrowersPerformance = await database.models.microCreditBorrowers.findAll({
         attributes: ['userId'],
         where: {
-            performance: 100
+            performance: {
+                [Op.gte]: 100
+            }
         }
     });
 
