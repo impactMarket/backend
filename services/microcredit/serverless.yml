@@ -30,6 +30,12 @@ functions:
       # Invoke Lambda function every 30 minutes
       - schedule: rate(30 minutes)
 
+  currentDebt:
+    handler: handler.currentDebt
+    events:
+      # Invoke Lambda function every day
+      - schedule: rate(1 day)
+
   notification:
     handler: handler.notification
     events:

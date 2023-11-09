@@ -1,5 +1,8 @@
-import { database, utils, subgraph, config } from '@impactmarket/core';
+import { database, utils, subgraph, config, contracts } from '@impactmarket/core';
 import { getAddress } from '@ethersproject/address';
+import { ethers } from 'ethers';
+import { Op } from 'sequelize';
+import BigNumber from 'bignumber.js';
 
 export async function updateBorrowers(): Promise<void> {
     utils.Logger.info('Updating borrowers...');
@@ -61,5 +64,64 @@ export async function updateBorrowers(): Promise<void> {
         await t.rollback();
         utils.Logger.error('Error update borrowers: ', error);
         utils.slack.sendSlackMessage('🚨 Error to update borrowers', config.slack.lambdaChannel);
+    }
+}
+
+export async function updateCurrentDebt(): Promise<void> {
+    utils.Logger.info('Updating current debt...');
+    const { subgraphMicroCreditBorrowers, appUser } = database.models;
+    const t = await database.sequelize.transaction();
+
+    try {
+        // get borrowers that did not repay for more that 3 weeks
+        const threeWeeksAgo = new Date();
+        threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+
+        const borrowers = await subgraphMicroCreditBorrowers.findAll({
+            include: [{
+                model: appUser,
+                as: 'user',
+            }],
+            where: {
+                lastRepayment: {
+                    [Op.lt]: threeWeeksAgo.getTime() / 1000 | 0
+                },
+                lastDebt: {
+                    [Op.gt]: 0
+                }
+            }
+        });
+
+        const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+
+        const promises = borrowers.map(async (borrower) => {
+            try {
+                // get current debt
+                const microCreditContract = new ethers.Contract(config.microcreditContractAddress, contracts.MicrocreditABI, provider);
+                const { loansLength } = await microCreditContract.walletMetadata(borrower.user!.address);
+
+                // get last loan
+                const { currentDebt } = await microCreditContract.userLoans(borrower.user!.address, loansLength-1);
+                const currentDebtFormated = new BigNumber(currentDebt.toString()).dividedBy(new BigNumber(10).pow(18)).toNumber();
+                return subgraphMicroCreditBorrowers.update({
+                    lastDebt: currentDebtFormated,
+                }, {
+                    where: {
+                        userId: borrower.user!.id
+                    },
+                    transaction: t,
+                });
+            } catch (error) {
+                utils.Logger.error(`Failed to update address: ${borrower.user!.address}`);
+            }
+        });
+        await Promise.all(promises);
+
+        await t.commit();
+        utils.Logger.info('Current debt updated!');       
+    } catch (error) {
+        await t.rollback();
+        utils.slack.sendSlackMessage('🚨 Error to update current debt', config.slack.lambdaChannel);
+        utils.Logger.error('Error update current debt: ', error);
     }
 }

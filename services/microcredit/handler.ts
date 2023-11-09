@@ -1,4 +1,4 @@
-import { updateBorrowers } from './src/borrowers';
+import { updateBorrowers, updateCurrentDebt } from './src/borrowers';
 import { welcome, increasingInterest, unpaidLoan, lowPerformance, highPerformance } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
@@ -7,6 +7,10 @@ global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
 
 export const borrowers = async (event, context) => {
     await updateBorrowers();
+};
+
+export const currentDebt = async (event, context) => {
+    await updateCurrentDebt();
 };
 
 export const notification = async (event, context) => {
