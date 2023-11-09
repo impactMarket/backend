@@ -22,6 +22,10 @@ export async function listLevels(
         prismicId: string;
         totalReward: number;
         totalLessons: number;
+        asset: string;
+        // this is actually a json object
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rules: any;
         status: string; // TODO: to be removed
     }[];
 }> {
@@ -45,7 +49,7 @@ export async function listLevels(
     }
 
     include.push({
-        attributes: ['id', 'totalReward', 'lessons', 'asset'],
+        attributes: ['id', 'totalReward', 'lessons', 'asset', 'rules'],
         model: learnAndEarnLevel,
         where: {
             [Op.and]: [
@@ -103,6 +107,7 @@ export async function listLevels(
             totalReward: level!.totalReward,
             totalLessons: level!.lessons,
             asset: level!.asset,
+            rules: level!.rules,
             status: level!.userLevel?.status || 'available'
         }))
     };
