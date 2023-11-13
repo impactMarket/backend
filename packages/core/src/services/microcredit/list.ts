@@ -1,5 +1,6 @@
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
+import { AppUser } from '../../interfaces/app/appUser';
 import { Op, Order, WhereOptions, col, fn, literal } from 'sequelize';
 import { SubgraphMicroCreditBorrowers } from '../../interfaces/microCredit/subgraphBorrowers';
 import { config } from '../../..';
@@ -12,6 +13,7 @@ import {
 } from '../../subgraph/queries/microcredit';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
+import { getSearchInput } from '../../utils/util';
 import { utils } from '@impactmarket/core';
 export enum LoanStatus {
     NO_LOAN = 0,
@@ -68,6 +70,7 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
 }
 
 export type GetBorrowersQuery = {
+    search?: string;
     offset?: number;
     limit?: number;
     addedBy?: string;
@@ -119,6 +122,18 @@ export default class MicroCreditList {
     }> => {
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
+        let whereAppUser: WhereOptions<AppUser> | undefined;
+
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                whereAppUser = {
+                    address: input.address
+                };
+            } else if (input.name) {
+                whereAppUser = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
+            }
+        }
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
@@ -251,7 +266,8 @@ export default class MicroCreditList {
                     model: models.appUser,
                     attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
                     as: 'user',
-                    required: true
+                    required: true,
+                    where: whereAppUser,
                 },
                 {
                     model: models.subgraphMicroCreditBorrowers,
@@ -292,6 +308,7 @@ export default class MicroCreditList {
     public listApplications = async (
         userIdOrAddress: number | string,
         query: {
+            search?: string;
             offset?: number;
             limit?: number;
             status?: number;
@@ -317,6 +334,19 @@ export default class MicroCreditList {
         }[];
     }> => {
         let userId = 0;
+        let whereAppUser: WhereOptions<AppUser> | undefined;
+
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                whereAppUser = {
+                    address: input.address
+                };
+            } else if (input.name) {
+                whereAppUser = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
+            }
+        }
+
         if (typeof userIdOrAddress === 'string') {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
@@ -350,7 +380,8 @@ export default class MicroCreditList {
                 {
                     model: models.appUser,
                     as: 'user',
-                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath']
+                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    where: whereAppUser,
                 }
             ],
             order: [[orderKey || 'createdAt', orderDirection || 'desc']],

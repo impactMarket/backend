@@ -6,6 +6,7 @@ import { defaultSchema } from './defaultSchema';
 const validator = createValidator();
 
 type ListBorrowersType = {
+    search?: string;
     offset?: number;
     limit?: number;
     filter?: 'not-claimed' | 'ontrack' | 'need-help' | 'repaid' | 'urgent' | 'failed-repayment' | 'in-default';
@@ -29,6 +30,7 @@ type ListBorrowersType = {
 };
 
 type ListApplicationsType = {
+    search?: string;
     offset?: number;
     limit?: number;
     status?: number;
@@ -37,6 +39,7 @@ type ListApplicationsType = {
 };
 
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
+    search: Joi.string().optional(),
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
     filter: Joi.string()
@@ -65,6 +68,7 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
 });
 
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
+    search: Joi.string().optional(),
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
     status: Joi.number().optional().min(0),
