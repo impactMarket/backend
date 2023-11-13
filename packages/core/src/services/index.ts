@@ -11,6 +11,7 @@ import { registerClaimRewards } from './learnAndEarn/claimRewards';
 import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import Protocol from './protocol';
+import SavingCircleService from './savingCircle/index';
 import StoryServiceV2 from './story/index';
 
 const learnAndEarn = {
@@ -25,4 +26,4 @@ const learnAndEarn = {
     createLevel,
     recalculate
 };
-export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol };
+export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol, SavingCircleService };
