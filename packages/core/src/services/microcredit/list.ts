@@ -1,6 +1,6 @@
+import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
-import { AppUser } from '../../interfaces/app/appUser';
 import { Op, Order, WhereOptions, col, fn, literal } from 'sequelize';
 import { SubgraphMicroCreditBorrowers } from '../../interfaces/microCredit/subgraphBorrowers';
 import { config } from '../../..';
@@ -11,9 +11,9 @@ import {
     getBorrowers,
     getUserLastLoanStatusFromSubgraph
 } from '../../subgraph/queries/microcredit';
+import { getSearchInput } from '../../utils/util';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
-import { getSearchInput } from '../../utils/util';
 import { utils } from '@impactmarket/core';
 export enum LoanStatus {
     NO_LOAN = 0,
@@ -267,7 +267,7 @@ export default class MicroCreditList {
                     attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
                     as: 'user',
                     required: true,
-                    where: whereAppUser,
+                    where: whereAppUser
                 },
                 {
                     model: models.subgraphMicroCreditBorrowers,
@@ -381,7 +381,7 @@ export default class MicroCreditList {
                     model: models.appUser,
                     as: 'user',
                     attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
-                    where: whereAppUser,
+                    where: whereAppUser
                 }
             ],
             order: [[orderKey || 'createdAt', orderDirection || 'desc']],
