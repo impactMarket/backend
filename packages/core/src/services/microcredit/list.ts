@@ -188,7 +188,7 @@ export default class MicroCreditList {
                         [Op.and]: [
                             { status: 1 },
                             { lastDebt: { [Op.gt]: 0 } },
-                            literal(`(claimed + period) >= ${Math.trunc(now.getTime() / 1000)}`)
+                            literal(`(claimed + period) < ${Math.trunc(now.getTime() / 1000)}`)
                         ]
                     };
                 case 'failed-repayment':
@@ -224,6 +224,7 @@ export default class MicroCreditList {
                                     // on that case we need to verify the seconds timestamp is greater than now
                                     {
                                         [Op.and]: [
+                                            // below timestamp is 1 Jan 2023, which is before microcredit launch
                                             { $repaymentRate$: { [Op.gt]: 1672531200 } },
                                             { $repaymentRate$: { [Op.lte]: Math.trunc(now.getTime() / 1000) } }
                                         ]
