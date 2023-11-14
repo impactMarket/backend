@@ -24,6 +24,12 @@ export default (route: Router): void => {
      *     summary: "Get list of borrowers by manager"
      *     parameters:
      *       - in: query
+     *         name: search
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: search by user name or wallet address
+     *       - in: query
      *         name: offset
      *         schema:
      *           type: integer
@@ -131,6 +137,12 @@ export default (route: Router): void => {
      *       - "microcredit"
      *     summary: "Get list of applications"
      *     parameters:
+     *       - in: query
+     *         name: search
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: search by user name or wallet address
      *       - in: query
      *         name: offset
      *         schema:

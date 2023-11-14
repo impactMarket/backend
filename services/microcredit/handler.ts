@@ -1,5 +1,5 @@
 import { updateBorrowers, updateCurrentDebt } from './src/borrowers';
-import { welcome, increasingInterest, unpaidLoan, lowPerformance, highPerformance } from './src/notification';
+import { welcome, increasingInterest, unpaidLoan, lowPerformance, highPerformance, reachingMaturity } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
@@ -57,5 +57,14 @@ export const notification = async (event, context) => {
     } catch (error) {
         utils.Logger.error('Error remind increasing interest: ', error);
         utils.slack.sendSlackMessage('🚨 Error to remind increasing interest', config.slack.lambdaChannel);
+    }
+
+    // one week before reaching maturity and 24 hours again
+    try {
+        await reachingMaturity();
+        utils.Logger.info('Remind reaching maturity!');
+    } catch (error) {
+        utils.Logger.error('Error remind reaching maturity: ', error);
+        utils.slack.sendSlackMessage('🚨 Error to remind reaching maturity', config.slack.lambdaChannel);
     }
 };

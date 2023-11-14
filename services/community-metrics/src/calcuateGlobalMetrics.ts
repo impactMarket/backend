@@ -131,7 +131,7 @@ async function globalMetrics(): Promise<void> {
             totalBackers: 0,
             totalBeneficiaries: 0,
             givingRate,
-            ubiRate: Math.round(ubiRate * 100) / 100,
+            ubiRate: parseFloat(ubiRate.toFixed(3)),
             fundingRate: parseFloat(fundingRate),
             spendingRate,
             avgComulativeUbi,

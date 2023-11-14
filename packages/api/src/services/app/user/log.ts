@@ -50,8 +50,8 @@ export default class UserLogService {
         const contractAddress = roles.beneficiary?.community
             ? roles.beneficiary.community
             : roles.manager?.community
-            ? roles.manager.community
-            : null;
+              ? roles.manager.community
+              : null;
         if (!contractAddress) {
             throw new utils.BaseError('USER_NOT_FOUND', 'user not found');
         }

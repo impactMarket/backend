@@ -17,6 +17,7 @@ export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEar
     public rules!: {
         countries: string[];
         roles: string[];
+        tokens: { address: string; amount: number }[];
         limitUsers: number;
     };
 

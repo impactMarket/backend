@@ -1,3 +1,4 @@
+import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditApplication, MicroCreditApplicationStatus } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { Op, Order, WhereOptions, col, fn, literal } from 'sequelize';
@@ -10,6 +11,7 @@ import {
     getBorrowers,
     getUserLastLoanStatusFromSubgraph
 } from '../../subgraph/queries/microcredit';
+import { getSearchInput } from '../../utils/util';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
 import { utils } from '@impactmarket/core';
@@ -68,6 +70,7 @@ async function getLastLoanStatus(user: { id: number; address: string }): Promise
 }
 
 export type GetBorrowersQuery = {
+    search?: string;
     offset?: number;
     limit?: number;
     addedBy?: string;
@@ -119,6 +122,18 @@ export default class MicroCreditList {
     }> => {
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
+        let whereAppUser: WhereOptions<AppUser> | undefined;
+
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                whereAppUser = {
+                    address: input.address
+                };
+            } else if (input.name) {
+                whereAppUser = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
+            }
+        }
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
@@ -188,7 +203,7 @@ export default class MicroCreditList {
                         [Op.and]: [
                             { status: 1 },
                             { lastDebt: { [Op.gt]: 0 } },
-                            literal(`(claimed + period) >= ${Math.trunc(now.getTime() / 1000)}`)
+                            literal(`(claimed + period) < ${Math.trunc(now.getTime() / 1000)}`)
                         ]
                     };
                 case 'failed-repayment':
@@ -224,6 +239,7 @@ export default class MicroCreditList {
                                     // on that case we need to verify the seconds timestamp is greater than now
                                     {
                                         [Op.and]: [
+                                            // below timestamp is 1 Jan 2023, which is before microcredit launch
                                             { $repaymentRate$: { [Op.gt]: 1672531200 } },
                                             { $repaymentRate$: { [Op.lte]: Math.trunc(now.getTime() / 1000) } }
                                         ]
@@ -251,7 +267,8 @@ export default class MicroCreditList {
                     model: models.appUser,
                     attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
                     as: 'user',
-                    required: true
+                    required: true,
+                    where: whereAppUser
                 },
                 {
                     model: models.subgraphMicroCreditBorrowers,
@@ -292,6 +309,7 @@ export default class MicroCreditList {
     public listApplications = async (
         userIdOrAddress: number | string,
         query: {
+            search?: string;
             offset?: number;
             limit?: number;
             status?: number;
@@ -317,6 +335,19 @@ export default class MicroCreditList {
         }[];
     }> => {
         let userId = 0;
+        let whereAppUser: WhereOptions<AppUser> | undefined;
+
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                whereAppUser = {
+                    address: input.address
+                };
+            } else if (input.name) {
+                whereAppUser = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
+            }
+        }
+
         if (typeof userIdOrAddress === 'string') {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
@@ -344,13 +375,14 @@ export default class MicroCreditList {
             };
         }
         const applications = await models.microCreditApplications.findAndCountAll({
-            attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'signedOn', 'claimedOn', 'createdAt'],
+            attributes: ['id', 'status', 'decisionOn', 'signedOn', 'claimedOn', ['createdAt', 'appliedOn']],
             where,
             include: [
                 {
                     model: models.appUser,
                     as: 'user',
-                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath']
+                    attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    where: whereAppUser
                 }
             ],
             order: [[orderKey || 'createdAt', orderDirection || 'desc']],
@@ -361,11 +393,11 @@ export default class MicroCreditList {
         return {
             count: applications.count,
             rows: applications.rows.map(a => {
-                const v = { application: { ...a.toJSON(), appliedOn: a.createdAt } };
-                delete v.application['user'];
+                const application: MicroCreditApplication & { appliedOn: Date } = a.toJSON();
+                delete application['user'];
 
                 return {
-                    ...v,
+                    application,
                     ...a.user!.toJSON()
                 };
             })
@@ -489,7 +521,7 @@ export default class MicroCreditList {
                 : Promise.resolve([]),
             include.includes('forms')
                 ? models.microCreditApplications.findAll({
-                      attributes: ['id', 'status', 'decisionOn', 'createdAt'],
+                      attributes: ['id', 'status', 'decisionOn', 'signedOn', 'claimedOn', ['createdAt', 'appliedOn']],
                       where: {
                           userId: user.id
                       },

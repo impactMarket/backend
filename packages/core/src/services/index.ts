@@ -1,5 +1,6 @@
 import * as MicroCredit from './microcredit';
 import * as app from './app';
+import * as email from './email';
 import * as global from './global';
 import * as storage from './storage';
 import * as ubi from './ubi';
@@ -25,4 +26,4 @@ const learnAndEarn = {
     createLevel,
     recalculate
 };
-export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol };
+export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol, email };

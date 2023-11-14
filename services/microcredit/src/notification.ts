@@ -1,6 +1,7 @@
-import { database, interfaces, utils } from '@impactmarket/core';
-import { Op, fn, col, WhereOptions, where } from 'sequelize';
+import { database, interfaces, utils, services } from '@impactmarket/core';
+import { Op, fn, col, WhereOptions, where, literal } from 'sequelize';
 import admin from 'firebase-admin';
+import { MailDataRequired } from '@sendgrid/mail';
 
 export const welcome = async () => {
     const oneWeekAgo = new Date();
@@ -139,11 +140,13 @@ export const highPerformance = async () => {
 
     const { HIGH_PERFORMANCE } = interfaces.app.appNotification.NotificationType;
 
-    // get borrowers with performance bellow 100
+    // get borrowers with performance above 100%
     const borrowersPerformance = await database.models.microCreditBorrowers.findAll({
         attributes: ['userId'],
         where: {
-            performance: 100
+            performance: {
+                [Op.gte]: 100
+            }
         }
     });
 
@@ -221,11 +224,75 @@ export const _sendPushNotification = async (usersToNotify: number[], type: numbe
         }
     });
 
-    utils.pushNotification.sendNotification(
+    utils.Logger.info(`Sending ${users.length} notifications of type ${type}`);
+
+    await utils.pushNotification.sendNotification(
         users,
         type,
         true,
         true,
         { path: interfaces.app.appNotification.NotificationParamsPath.LOAN_APPROVED }
     );
+}
+
+export const reachingMaturity = async () => {
+    const borrowers = await database.models.subgraphMicroCreditBorrowers.findAll({
+        attributes: [],
+        where: literal(`
+            (DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '7 days') = DATE(CURRENT_TIMESTAMP) 
+         OR DATE(TO_TIMESTAMP(claimed + period) - INTERVAL '1 days') = DATE(CURRENT_TIMESTAMP))
+         AND status != 2
+        `),
+        include: [{
+            attributes: ['language', 'email'],
+            model: database.models.appUser,
+            as: 'user',
+            required: true,
+            where: {
+                email: { [Op.not]: null }
+            }
+        }]
+    });
+    const languages = [...new Set(borrowers.map(el => el.user.language))];
+
+    const fetchNotificationsFromPrismic = async (language: string) => {
+        const borrowersToNotify = borrowers.filter(el => el.user.language === language);
+        const locale = utils.locales.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
+        const defaultLocale = utils.locales.find(({ isDefault }) => isDefault)?.code;
+
+        // get prismic document
+        const response = await utils.prismic.client.getAllByType('push_notifications_data', {
+            lang: locale || defaultLocale
+        });
+
+        const data = response[0].data;
+        const baseKey = 'reaching-maturity';
+        const subject = data[`${baseKey}-form-email-notification-subject`];
+        const subtitle = data[`${baseKey}-form-email-notification-subtitle`];
+
+        const dynamicTemplateData = {
+            subtitle,
+            subject,
+            emailType: 0
+        };
+
+        const personalizations = [
+            {
+                to: borrowersToNotify.map(borrower => ({ email: borrower.user.email })),
+                dynamicTemplateData
+            }
+        ];
+
+        const sendgridData: MailDataRequired = {
+            from: {
+                name: 'impactMarket',
+                email: 'no-reply@impactmarket.com'
+            },
+            personalizations,
+            templateId: 'd-b257690897ff41028d7ad8cabe88f8cb'
+        };
+        services.email.sendEmail(sendgridData);
+    }
+
+    await Promise.all(languages.map(fetchNotificationsFromPrismic));
 }
