@@ -67,7 +67,7 @@ export function initializeLearnAndEarnUserLesson(sequelize: Sequelize): typeof L
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             }
         },
         {
