@@ -86,6 +86,9 @@ export async function updateCurrentDebt(): Promise<void> {
                 lastRepayment: {
                     [Op.lt]: threeWeeksAgo.getTime() / 1000 | 0
                 },
+                updatedAt: {
+                    [Op.lt]: threeWeeksAgo
+                },
                 lastDebt: {
                     [Op.gt]: 0
                 }
