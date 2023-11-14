@@ -1,5 +1,6 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
+import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
 import {
     SubgraphMicroCreditBorrowers,
@@ -21,6 +22,8 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
     public dailyInterest!: number;
     public repaid!: number;
     public status!: number;
+
+    public readonly user!: AppUserModel;
 
     // timestamps!
     public readonly updatedAt!: Date;
