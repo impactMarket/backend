@@ -375,7 +375,7 @@ export default class MicroCreditList {
             };
         }
         const applications = await models.microCreditApplications.findAndCountAll({
-            attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'signedOn', 'claimedOn', 'createdAt'],
+            attributes: ['id', 'status', 'decisionOn', 'signedOn', 'claimedOn', ['createdAt', 'appliedOn']],
             where,
             include: [
                 {
@@ -393,11 +393,11 @@ export default class MicroCreditList {
         return {
             count: applications.count,
             rows: applications.rows.map(a => {
-                const v = { application: { ...a.toJSON(), appliedOn: a.createdAt } };
-                delete v.application['user'];
+                const application: MicroCreditApplication & { appliedOn: Date } = a.toJSON();
+                delete application['user'];
 
                 return {
-                    ...v,
+                    application,
                     ...a.user!.toJSON()
                 };
             })
@@ -521,7 +521,7 @@ export default class MicroCreditList {
                 : Promise.resolve([]),
             include.includes('forms')
                 ? models.microCreditApplications.findAll({
-                      attributes: ['id', 'status', 'decisionOn', 'createdAt'],
+                      attributes: ['id', 'status', 'decisionOn', 'signedOn', 'claimedOn', ['createdAt', 'appliedOn']],
                       where: {
                           userId: user.id
                       },
