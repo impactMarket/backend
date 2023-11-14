@@ -55,8 +55,10 @@ export function authenticateToken(req: RequestWithUser, res: Response, next: Nex
     const clientIdHeader = req.headers['client-id'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (clientIdHeader && clientIdHeader instanceof String) {
-        req.clientId = parseInt(clientIdHeader as string, 10);
+    if (clientIdHeader) {
+        if (typeof clientIdHeader === 'string') {
+            req.clientId = parseInt(clientIdHeader as string, 10);
+        }
     }
 
     if (token === null || token === undefined) {

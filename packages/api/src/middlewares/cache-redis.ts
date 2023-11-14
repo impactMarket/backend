@@ -18,6 +18,7 @@ export const cache =
             const key =
                 '__express__' +
                 (req.originalUrl || req.url) +
+                (req.clientId ? `client${req.clientId}` : '') +
                 (useUserCache && req.user ? `user${req.user!.userId}` : '');
             const cachedBody = await redis.get(key);
             if (cachedBody) {
