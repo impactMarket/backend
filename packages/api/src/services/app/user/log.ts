@@ -47,11 +47,7 @@ export default class UserLogService {
             });
         }
         const roles = await getUserRoles(entity);
-        const contractAddress = roles.beneficiary?.community
-            ? roles.beneficiary.community
-            : roles.manager?.community
-            ? roles.manager.community
-            : null;
+        const contractAddress = roles.beneficiary?.community ?? roles.manager?.community ?? null;
         if (!contractAddress) {
             throw new utils.BaseError('USER_NOT_FOUND', 'user not found');
         }
