@@ -366,7 +366,7 @@ export default class MicroCreditList {
         }
 
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
-        let where: WhereOptions<MicroCreditApplication> = {
+        const where: WhereOptions<MicroCreditApplication> = {
             selectedLoanManagerId: userId,
             // we want only the most recent application to each user
             createdAt: {
