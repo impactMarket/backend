@@ -157,9 +157,18 @@ export async function listLessons(levelId: number | string, userId?: number, lan
             throw new BaseError('LANGUAGE_NOT_FOUND', 'language not found');
         }
 
+        let rules: object | undefined;
         if (typeof levelId === 'string') {
             const level = await models.learnAndEarnPrismicLevel.findOne({
                 attributes: ['levelId'],
+                include: [
+                    {
+                        attributes: ['rules'],
+                        model: learnAndEarnLevel,
+                        as: 'level',
+                        required: true // INNER JOIN
+                    }
+                ],
                 where: {
                     prismicId: levelId
                 }
@@ -169,6 +178,19 @@ export async function listLessons(levelId: number | string, userId?: number, lan
                 throw new BaseError('LEVEL_NOT_FOUND', 'level not found');
             }
             levelId = level.levelId;
+            rules = level.level!.rules;
+        } else {
+            const level = await models.learnAndEarnLevel.findOne({
+                attributes: ['rules'],
+                where: {
+                    id: levelId
+                }
+            });
+
+            if (!level) {
+                throw new BaseError('LEVEL_NOT_FOUND', 'level not found');
+            }
+            rules = level.rules;
         }
 
         const lessons = await models.learnAndEarnPrismicLesson.findAll({
@@ -221,7 +243,8 @@ export async function listLessons(levelId: number | string, userId?: number, lan
             asset,
             rewardAvailable,
             completedToday: completedToday > 0,
-            lessons: mappedLessons
+            lessons: mappedLessons,
+            rules
         };
     } catch (error) {
         throw new BaseError(error.name || 'LIST_LESSONS_FAILED', error.message || 'list lessons failed');
