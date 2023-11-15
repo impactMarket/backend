@@ -253,10 +253,10 @@ export const reachingMaturity = async () => {
             }
         }]
     });
-    const languages = [...new Set(borrowers.map(el => el.user.language))];
+    const languages = [...new Set(borrowers.map(el => el.user!.language))];
 
     const fetchNotificationsFromPrismic = async (language: string) => {
-        const borrowersToNotify = borrowers.filter(el => el.user.language === language);
+        const borrowersToNotify = borrowers.filter(el => el.user!.language === language);
         const locale = utils.locales.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
         const defaultLocale = utils.locales.find(({ isDefault }) => isDefault)?.code;
 
@@ -278,7 +278,7 @@ export const reachingMaturity = async () => {
 
         const personalizations = [
             {
-                to: borrowersToNotify.map(borrower => ({ email: borrower.user.email })),
+                to: borrowersToNotify.map(borrower => ({ email: borrower.user!.email })),
                 dynamicTemplateData
             }
         ];

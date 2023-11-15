@@ -23,7 +23,7 @@ export class SubgraphMicroCreditBorrowersModel extends Model<
     public repaid!: number;
     public status!: number;
 
-    public readonly user!: AppUserModel;
+    public readonly user?: AppUserModel;
 
     // timestamps!
     public readonly updatedAt!: Date;

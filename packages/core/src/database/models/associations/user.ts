@@ -75,6 +75,12 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'loan'
     });
 
+    subgraphMicroCreditBorrowers.belongsTo(appUser, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user'
+    });
+
     microCreditLoanManager.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
@@ -82,12 +88,6 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     appLazyAgenda.belongsTo(appUser, {
-        foreignKey: 'userId',
-        targetKey: 'id',
-        as: 'user'
-    });
-
-    subgraphMicroCreditBorrowers.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user'
