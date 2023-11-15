@@ -138,9 +138,12 @@ export default class GlobalDailyStateService {
             );
 
             return ubiDaily.map(ubi => {
-                const globalDaily = globalDailyState.find(el => {
+                let globalDaily = globalDailyState.find(el => {
                     return Number(ubi.id) === new Date(el.date).getTime() / 1000 / 86400;
                 });
+                if (!globalDaily) {
+                    globalDaily = globalDailyState[0];
+                }
                 const date = new Date(Number(ubi.id) * 86400 * 1000);
                 return {
                     date: date.toISOString().split('T')[0] as any,
