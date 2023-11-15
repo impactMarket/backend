@@ -15,6 +15,8 @@ export class LearnAndEarnUserLessonModel extends Model<LearnAndEarnUserLesson, L
     public completionDate!: Date;
     public attempts!: number;
     public points!: number;
+
+    public readonly createdAt!: Date;
 }
 
 export function initializeLearnAndEarnUserLesson(sequelize: Sequelize): typeof LearnAndEarnUserLessonModel {
@@ -62,12 +64,16 @@ export function initializeLearnAndEarnUserLesson(sequelize: Sequelize): typeof L
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false
             }
         },
         {
             tableName: 'learn_and_earn_user_lesson',
             modelName: 'learnAndEarnUserLesson',
-            timestamps: false,
+            updatedAt: false,
             sequelize
         }
     );

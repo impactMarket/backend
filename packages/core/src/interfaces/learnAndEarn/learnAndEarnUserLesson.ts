@@ -39,6 +39,7 @@ export interface LearnAndEarnUserLesson {
     completionDate: Date;
     attempts: number;
     points: number;
+    createdAt: Date;
 }
 
 export interface LearnAndEarnUserLessonCreation {
