@@ -366,7 +366,15 @@ export default class MicroCreditList {
         }
 
         const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
-        const where: WhereOptions<MicroCreditApplication> = { selectedLoanManagerId: userId };
+        const where: WhereOptions<MicroCreditApplication> = {
+            selectedLoanManagerId: userId,
+            // we want only the most recent application to each user
+            createdAt: {
+                [Op.eq]: literal(
+                    '(SELECT MAX("createdAt") FROM microcredit_applications ma WHERE ma."userId" = "microCreditApplications"."userId")'
+                )
+            }
+        };
         if (query.status !== undefined) {
             where.status = query.status;
         } else {
