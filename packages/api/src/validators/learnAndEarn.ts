@@ -1,6 +1,7 @@
 import { Joi, celebrate } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
+import config from '~config/index';
 
 // I wish this comes true https://github.com/hapijs/joi/issues/2864#issuecomment-1322736004
 
@@ -15,8 +16,8 @@ export type StartLessonRequestType = {
 export type ListLevelsRequestType = {
     status?: 'available' | 'started' | 'completed';
     category?: string;
-    limit?: string;
-    offset?: string;
+    limit?: number;
+    offset?: number;
     language?: string;
     client?: number;
 };
@@ -42,8 +43,8 @@ class LearnAndEarnValidator {
         query: {
             status: Joi.string().optional().valid('available', 'started', 'completed'), // TODO: add .default('available'),
             category: Joi.string().optional(),
-            limit: Joi.number().optional(),
-            offset: Joi.number().optional(),
+            limit: Joi.number().optional().default(config.defaultLimit),
+            offset: Joi.number().optional().default(config.defaultOffset),
             language: Joi.string().optional(), // TODO: make required
             client: Joi.number().optional().default(1)
         }

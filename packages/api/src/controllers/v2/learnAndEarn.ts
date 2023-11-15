@@ -29,19 +29,12 @@ class LearnAndEarnController {
 
     listLevels = (req: RequestWithUser<never, never, never, ListLevelsRequestType>, res: Response) => {
         const { status, language } = req.query;
-        let { limit, offset } = req.query;
-
-        if (offset === undefined || typeof offset !== 'string') {
-            offset = config.defaultOffset.toString();
-        }
-        if (limit === undefined || typeof limit !== 'string') {
-            limit = config.defaultLimit.toString();
-        }
+        const { limit, offset } = req.query;
 
         services.learnAndEarn
             .listLevels(
-                parseInt(offset, 10),
-                parseInt(limit, 10),
+                offset!,
+                limit!,
                 req.clientId || 1,
                 status,
                 language,

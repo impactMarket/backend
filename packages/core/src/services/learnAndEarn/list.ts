@@ -9,8 +9,8 @@ import config from '../../config';
 const { learnAndEarnLevel, learnAndEarnPrismicLevel, appUser } = models;
 
 export async function listLevels(
-    _offset: number,
-    _limit: number,
+    offset: number,
+    limit: number,
     clientId: number,
     status?: 'available' | 'started' | 'completed',
     language?: string,
@@ -56,7 +56,7 @@ export async function listLevels(
                 literal(
                     `(CAST("level"."rules"#>>\'{limitUsers}\' AS INTEGER) < (SELECT COUNT(*) FROM learn_and_earn_user_level AS ule WHERE ule."levelId" = level.id AND ((ule.status = \'started\' AND ule."createdAt" < '${new Date(
                         new Date().getTime() - 24 * 60 * 60 * 1000 * config.daysToLimitUsers
-                    ).toISOString()}') OR ule.status = \'completed\')) OR "level"."rules" IS NULL)`
+                    ).toISOString()}') OR ule.status = \'completed\')) OR "level"."rules"#>>\'{limitUsers}\' IS NULL)`
                 ),
                 clientId ? { clients: { [Op.contains]: [clientId] } } : {}
             ]
@@ -96,7 +96,10 @@ export async function listLevels(
         include,
         where: where || {
             [Op.and]: [{ language }, process.env.API_ENVIRONMENT === 'production' ? { isLive: true } : {}]
-        }
+        },
+        limit,
+        offset,
+        order: [[literal('"level"."id"'), 'DESC']]
     });
 
     return {
