@@ -551,7 +551,7 @@ export default class MicroCreditList {
                 where: {
                     userId: user.id
                 },
-                order: [['createdAt', 'DESC']]
+                order: [['id', 'DESC']]
             })
         ]);
 
