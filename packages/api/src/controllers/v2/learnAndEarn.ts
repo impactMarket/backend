@@ -6,7 +6,7 @@ import {
 } from '~validators/learnAndEarn';
 import { Request, Response } from 'express';
 import { RequestWithUser } from '~middlewares/core';
-import { config, services } from '@impactmarket/core';
+import { services } from '@impactmarket/core';
 import { standardResponse } from '~utils/api';
 
 class LearnAndEarnController {
@@ -29,24 +29,10 @@ class LearnAndEarnController {
 
     listLevels = (req: RequestWithUser<never, never, never, ListLevelsRequestType>, res: Response) => {
         const { status, language } = req.query;
-        let { limit, offset } = req.query;
-
-        if (offset === undefined || typeof offset !== 'string') {
-            offset = config.defaultOffset.toString();
-        }
-        if (limit === undefined || typeof limit !== 'string') {
-            limit = config.defaultLimit.toString();
-        }
+        const { limit, offset } = req.query;
 
         services.learnAndEarn
-            .listLevels(
-                parseInt(offset, 10),
-                parseInt(limit, 10),
-                req.clientId || 1,
-                status,
-                language,
-                req.user?.userId
-            )
+            .listLevels(offset!, limit!, req.clientId || 1, status, language, req.user?.userId)
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
