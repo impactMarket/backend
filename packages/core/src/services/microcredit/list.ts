@@ -509,14 +509,14 @@ export default class MicroCreditList {
             throw new utils.BaseError('USER_NOT_FOUND', 'Borrower not found');
         }
 
-        const [docs, forms, notes] = await Promise.all([
+        const [docs, forms, notes, loansCount, lastLoanStatus, lastLoanPerformance] = await Promise.all([
             include.includes('docs')
                 ? models.microCreditDocs.findAll({
                       attributes: ['filepath', 'category'],
                       where: {
                           userId: user.id
                       },
-                      order: [['createdAt', 'desc']]
+                      order: [['createdAt', 'DESC']]
                   })
                 : Promise.resolve([]),
             include.includes('forms')
@@ -525,7 +525,7 @@ export default class MicroCreditList {
                       where: {
                           userId: user.id
                       },
-                      order: [['createdAt', 'desc']]
+                      order: [['createdAt', 'DESC']]
                   })
                 : Promise.resolve([]),
             include.includes('notes')
@@ -541,17 +541,25 @@ export default class MicroCreditList {
                       where: {
                           userId: user.id
                       },
-                      order: [['createdAt', 'desc']]
+                      order: [['createdAt', 'DESC']]
                   })
-                : Promise.resolve([])
+                : Promise.resolve([]),
+            getBorrowerLoansCount(address),
+            getLastLoanStatus({ id: user.id, address: user.address }),
+            models.microCreditBorrowers.findOne({
+                attributes: ['performance'],
+                where: {
+                    userId: user.id
+                },
+                order: [['createdAt', 'DESC']]
+            })
         ]);
-        const loans = await getBorrowerLoansCount(address);
-        const lastLoanStatus = await getLastLoanStatus({ id: user.id, address: user.address });
 
         return {
             ...user.toJSON(),
-            loans,
+            loans: { count: loansCount },
             lastLoanStatus,
+            lastLoanPerformance: lastLoanPerformance?.performance || 0,
             docs: docs.map(d => d.toJSON()),
             forms: forms.map(f => f.toJSON()),
             notes: notes.map(n => n.toJSON())
