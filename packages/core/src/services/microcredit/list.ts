@@ -220,6 +220,8 @@ export default class MicroCreditList {
                                     {
                                         [Op.and]: [
                                             { lastRepayment: { [Op.ne]: null } },
+                                            // below timestamp is 1 Jan 2023, which is before microcredit launch
+                                            { $repaymentRate$: { [Op.lt]: 1672531200 } },
                                             literal(
                                                 `(loan."lastRepayment" + "repaymentRate") < ${Math.trunc(
                                                     now.getTime() / 1000
@@ -230,6 +232,8 @@ export default class MicroCreditList {
                                     {
                                         [Op.and]: [
                                             { lastRepayment: { [Op.eq]: null } },
+                                            // below timestamp is 1 Jan 2023, which is before microcredit launch
+                                            { $repaymentRate$: { [Op.lt]: 1672531200 } },
                                             literal(
                                                 `(loan.claimed + "repaymentRate") < ${Math.trunc(now.getTime() / 1000)}`
                                             )
