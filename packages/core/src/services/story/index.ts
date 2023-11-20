@@ -289,7 +289,7 @@ export default class StoryServiceV2 {
             offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
             limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
             group: [
-                'StoryContentModel.id',
+                'storyContent.id',
                 'storyCommunity.id',
                 'storyCommunity->community.id',
                 'storyEngagement.id',
