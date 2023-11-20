@@ -3,6 +3,11 @@ service: orchestrator
 frameworkVersion: '3'
 useDotenv: true
 
+custom:
+  webpack:
+    includeModules: true
+    packager: yarn
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -28,4 +33,4 @@ functions:
           cors: true
 
 plugins:
-  - serverless-bundle
+  - serverless-webpack
