@@ -87,9 +87,9 @@ class ChainSubscribers {
             try {
                 const r = await this._getLogs(startFromBlock, provider);
                 rawLogs = r.logs;
+                utils.Logger.info(`Got logs from main provider! Start from block ${startFromBlock} to ${r.toBlock}.`);
                 startFromBlock = r.toBlock;
                 isLastBlock = r.isLastBlock;
-                utils.Logger.info('Got logs from main provider!');
             } catch (error) {
                 utils.Logger.error('Failed to get logs from main provider!', error);
                 const r = await this._getLogs(startFromBlock, fallbackProvider);
@@ -135,7 +135,7 @@ class ChainSubscribers {
      */
     async _getLogs(startFromBlock: number, provider: ethers.providers.JsonRpcProvider) {
         const lastBlock = await provider.getBlockNumber();
-        const toBlock = lastBlock - startFromBlock > 100 ? startFromBlock + 100 : lastBlock;
+        const toBlock = lastBlock - startFromBlock > 10 ? startFromBlock + 10 : lastBlock;
         const logs = await provider.getLogs({
             fromBlock: startFromBlock,
             toBlock,
