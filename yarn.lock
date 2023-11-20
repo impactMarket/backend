@@ -24467,10 +24467,10 @@ sequelize-test-helpers@1.4.2:
   resolved "https://registry.yarnpkg.com/sequelize-test-helpers/-/sequelize-test-helpers-1.4.2.tgz#647f0e98104cb18d6f936b2957fa80068f43a8a4"
   integrity sha512-v7Yy9DKjzFA/OHLtxvFClgN2CKA9cRwxn9+6ha6xoqUzRngXdsbrmle0KD1onSqnCwVIweWlRTLJxcEl1ueozA==
 
-sequelize@6.34.0:
-  version "6.34.0"
-  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-6.34.0.tgz#03a315bafbaf50d14af9689b2f37985d51072af0"
-  integrity sha512-B3eYLG4nUnsIcPO8k6UH6bqSf5Hi3HHCEtcwfiKsp2J0iG3tv9v8lpHFz6Qd8g5QnWxAl9R5rCCXG8fRWo902Q==
+sequelize@6.35.1:
+  version "6.35.1"
+  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-6.35.1.tgz#e640bc11a7a37f6fa23a92974b5e5ca20affd150"
+  integrity sha512-UlP5k33nJsN11wCDLaWZXw9bB8w4ESKc5QmG6D04qMimwBwKVNeqRJiaaBlEJdtg8cRK+OJh95dliP+uEi+g9Q==
   dependencies:
     "@types/debug" "^4.1.8"
     "@types/validator" "^13.7.17"
