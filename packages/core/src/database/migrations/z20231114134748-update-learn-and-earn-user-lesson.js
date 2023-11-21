@@ -8,17 +8,8 @@ module.exports = {
 
         await queryInterface.addColumn('learn_and_earn_user_lesson', 'createdAt', {
             type: Sequelize.DATE,
-            allowNull: true
-        });
-
-        await queryInterface.sequelize.query(`
-          UPDATE learn_and_earn_user_lesson
-          SET "createdAt" = COALESCE("completionDate", CURRENT_DATE);
-        `);
-
-        await queryInterface.changeColumn('learn_and_earn_user_lesson', 'createdAt', {
-          type: Sequelize.DATE,
-          allowNull: false
+            allowNull: true,
+            defaultValue: Date.now()
         });
     },
     async down(queryInterface, Sequelize) {
