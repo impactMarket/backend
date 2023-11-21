@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "@slack/web-api": "6.10.0",
-        "aws-sdk": "2.1473.0",
+        "aws-sdk": "2.1500.0",
         "axios": "1.6.0"
     },
     "devDependencies": {

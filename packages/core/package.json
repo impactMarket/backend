@@ -52,7 +52,7 @@
         "@slack/web-api": "6.9.0",
         "@turf/distance": "6.5.0",
         "@turf/points-within-polygon": "6.5.0",
-        "aws-sdk": "2.1473.0",
+        "aws-sdk": "2.1500.0",
         "axios": "1.6.0",
         "axios-retry": "3.8.0",
         "bignumber.js": "9.1.1",
