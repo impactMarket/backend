@@ -44,18 +44,23 @@ export const herokuTrigger = async (event: any, context: any) => {
 
             if (tags.Tags && tags.Tags.STAGE === stage) {
                 console.log('updating: ', res.FunctionName);
-                return lambda
-                    .updateFunctionConfiguration({
-                        FunctionName: res.FunctionName!,
-                        Environment: {
-                            Variables: {
-                                ...res.Environment?.Variables,
-                                REDIS_URL,
-                                DATABASE_URL,
+                const config = await lambda.getFunctionConfiguration({
+                    FunctionName: res.FunctionName!,
+                }).promise();
+                if (config.LastUpdateStatus !== 'InProgress') {
+                    return lambda
+                        .updateFunctionConfiguration({
+                            FunctionName: res.FunctionName!,
+                            Environment: {
+                                Variables: {
+                                    ...res.Environment?.Variables,
+                                    REDIS_URL,
+                                    DATABASE_URL,
+                                },
                             },
-                        },
-                    })
-                    .promise();
+                        })
+                        .promise();
+                }
             }
         });
 
