@@ -99,8 +99,19 @@ class CommunityController {
                 .then(community => standardResponse(res, 200, !!community, community))
                 .catch(e => standardResponse(res, 400, false, '', { error: e }));
         } else {
+            const communityId = parseInt(idOrAddress, 10);
+            if (!communityId) {
+                standardResponse(res, 400, false, '', {
+                    error: {
+                        name: 'INVALID_PARAMS',
+                        message: 'community ID or address is expected'
+                    }
+                });
+                return;
+            }
+
             this.detailsService
-                .findById(parseInt(idOrAddress, 10), req.user?.address, req.query)
+                .findById(communityId, req.user?.address, req.query)
                 .then(community => standardResponse(res, 200, true, community))
                 .catch(e => standardResponse(res, 400, false, '', { error: e }));
         }
