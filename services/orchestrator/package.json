@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "scripts": {
         "build": "tsc",
-        "test": "NODE_ENV=test mocha"
+        "test": "NODE_ENV=test mocha",
+        "start": "nodemon -w src handler.ts"
     },
     "author": "impact-market",
     "license": "Apache-2.0",
@@ -11,12 +12,18 @@
         "node": "18.x"
     },
     "dependencies": {
+        "@slack/web-api": "6.10.0",
         "aws-sdk": "2.1473.0",
         "axios": "1.6.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.102",
         "@types/node": "18.16.4",
-        "serverless-bundle": "fancywriter/serverless-bundle#c53aa061ed83f683dbb665f9734fc1dca624788a"
+        "serverless": "3.36.0",
+        "serverless-plugin-tracing": "2.0.0",
+        "serverless-webpack": "5.11.0",
+        "ts-loader": "9.5.0",
+        "webpack": "5.89.0",
+        "webpack-node-externals": "3.0.0"
     }
 }
