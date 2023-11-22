@@ -264,7 +264,7 @@ export async function answer(user: { userId: number; address: string }, answers:
             }
 
             // validate if user has the required tokens
-            if (level.rules.tokens) {
+            if (level.rules?.tokens) {
                 const provider = new ethers.providers.StaticJsonRpcProvider(config.chain.jsonRPCUrlCelo, {
                     name: 'Celo',
                     chainId: config.chain.isMainnet ? 42220 : 44787
