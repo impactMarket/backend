@@ -5,8 +5,10 @@ import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../.
 import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
 import {
+    getFormValidator,
     listApplicationsValidator,
     listBorrowersValidator,
+    listManagersByCountryValidator,
     queryGetBorrowerValidator,
     repaymentsHistoryValidator
 } from '../../../validators/microcredit';
@@ -287,7 +289,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/form/:id', authenticateToken, controller.getUserForm);
+    route.get('/form/:id', authenticateToken, getFormValidator, controller.getUserForm);
 
     /**
      * @swagger
@@ -309,7 +311,12 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/managers/:country', cache(cacheIntervals.oneHour), controller.getLoanManagersByCountry);
+    route.get(
+        '/managers/:country',
+        cache(cacheIntervals.oneHour),
+        listManagersByCountryValidator,
+        controller.getLoanManagersByCountry
+    );
 
     /**
      * @swagger

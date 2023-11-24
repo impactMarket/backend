@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/create';
 import { authenticateToken, verifySignature } from '../../../middlewares';
-import CommunityValidator from '../../../validators/community';
+import { create, edit, editSubmission, review } from '../../../validators/community';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -96,7 +96,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/', authenticateToken, CommunityValidator.create, controller.create);
+    route.post('/', authenticateToken, create, controller.create);
 
     /**
      * @swagger
@@ -179,7 +179,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.patch('/:id', authenticateToken, CommunityValidator.editSubmission, controller.editSubmission);
+    route.patch('/:id', authenticateToken, editSubmission, controller.editSubmission);
 
     /**
      * @swagger
@@ -213,7 +213,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.put('/:id/review', authenticateToken, CommunityValidator.review, controller.review);
+    route.put('/:id/review', authenticateToken, review, controller.review);
 
     /**
      * @swagger
@@ -254,5 +254,5 @@ export default (route: Router): void => {
      *     - SignatureMessage: []
      *     - Signature: []
      */
-    route.put('/:id', authenticateToken, verifySignature, CommunityValidator.edit, controller.edit);
+    route.put('/:id', authenticateToken, verifySignature, edit, controller.edit);
 };

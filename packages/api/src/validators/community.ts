@@ -2,6 +2,104 @@ import { Joi, celebrate } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 
+const getCommunitySchema = defaultSchema.object<{ id: number; query: any }>({
+    id: Joi.number().required(),
+    query: Joi.any() // validation on getCommunityQuerySchema
+});
+const getCommunityQuerySchema = defaultSchema.object<{
+    limit: number;
+    offset: number;
+    state: number;
+    search: string;
+    orderBy: string;
+}>({
+    limit: Joi.number().optional(),
+    offset: Joi.number().optional(),
+    state: Joi.number().optional().valid(0, 1),
+    search: Joi.string().optional(),
+    orderBy: Joi.string()
+        .optional()
+        .valid(
+            'state',
+            'state:asc',
+            'state:desc',
+            'added',
+            'added:asc',
+            'added:desc',
+            'removed',
+            'removed:asc',
+            'removed:desc',
+            'since',
+            'since:asc',
+            'since:desc',
+            'until',
+            'until:asc',
+            'until:desc'
+        )
+});
+
+const getBeneficiariesQuerySchema = defaultSchema.object<{
+    limit: number;
+    offset: number;
+    state: number;
+    search: string;
+    orderBy: string;
+    lastActivity_lt: number;
+}>({
+    limit: Joi.number().optional(),
+    offset: Joi.number().optional(),
+    state: Joi.number().optional().valid(0, 1, 2),
+    search: Joi.string().optional(),
+    orderBy: Joi.string()
+        .optional()
+        .valid(
+            'state',
+            'state:asc',
+            'state:desc',
+            'claimed',
+            'claimed:asc',
+            'claimed:desc',
+            'since',
+            'since:asc',
+            'since:desc'
+        ),
+    lastActivity_lt: Joi.number().optional()
+});
+
+const getCommunityByIDOrAddressQuerySchema = defaultSchema.object<{ state: string }>({
+    state: Joi.string().optional().valid('ubi', 'base')
+});
+
+const getCommunityByIDOrAddressSchema = defaultSchema.object<{ idOrAddress: number | string; query: any }>({
+    idOrAddress: Joi.alternatives(
+        Joi.number(),
+        Joi.string()
+            .messages({
+                startWith: 'An address should start with 0x'
+            })
+            .custom((value, helpers) => {
+                if (!value.startsWith('0x')) {
+                    return helpers.error('startWith');
+                }
+                return value;
+            })
+    ),
+    query: Joi.any() // validation on getCommunityByIDOrAddressQuerySchema
+});
+
+const getCommunityValidator = celebrate({
+    params: getCommunitySchema,
+    query: getCommunityQuerySchema
+});
+const getBeneficiariesValidator = celebrate({
+    params: getCommunitySchema,
+    query: getBeneficiariesQuerySchema
+});
+const getCommunityByIDOrAddressValidator = celebrate({
+    params: getCommunityByIDOrAddressSchema,
+    query: getCommunityByIDOrAddressQuerySchema
+});
+
 const create = celebrate({
     body: defaultSchema.object({
         requestByAddress: Joi.string().required(),
@@ -66,9 +164,12 @@ const review = celebrate({
     })
 });
 
-export default {
+export {
     create,
     edit,
     editSubmission,
-    review
+    review,
+    getCommunityValidator,
+    getCommunityByIDOrAddressValidator,
+    getBeneficiariesValidator
 };
