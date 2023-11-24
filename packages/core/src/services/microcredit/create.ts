@@ -228,7 +228,7 @@ export default class MicroCreditCreate {
                     repaymentRate
                 },
                 {
-                    conflictFields: ['userId', 'applicationId']
+                    conflictFields: ['userId']
                 }
             );
         }
