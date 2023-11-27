@@ -34,7 +34,8 @@ export function initializeMicroCreditBorrowers(sequelize: Sequelize): typeof Mic
                     key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false
+                allowNull: false,
+                unique: true
             },
             applicationId: {
                 type: DataTypes.INTEGER,
@@ -68,14 +69,7 @@ export function initializeMicroCreditBorrowers(sequelize: Sequelize): typeof Mic
             tableName: 'microcredit_borrowers',
             modelName: 'microCreditBorrowers',
             sequelize,
-            timestamps: false,
-            // ensure that applicationId + userId is unique
-            indexes: [
-                {
-                    unique: true,
-                    fields: ['applicationId', 'userId']
-                }
-            ]
+            timestamps: false
         }
     );
     return MicroCreditBorrowersModel;

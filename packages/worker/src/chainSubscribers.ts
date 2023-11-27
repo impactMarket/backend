@@ -492,10 +492,13 @@ class ChainSubscribers {
                                 userId: user.id,
                                 applicationId: application?.id || 1,
                                 manager: transactionsReceipt.from,
-                                performance: 100
+                                performance: 100,
+                                // clear previous data, if exists
+                                repaymentRate: undefined,
+                                lastNotificationRepayment: undefined 
                             },
                             {
-                                conflictFields: ['userId', 'applicationId'],
+                                conflictFields: ['userId'],
                                 transaction
                             }
                         ),
