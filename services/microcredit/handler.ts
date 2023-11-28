@@ -1,9 +1,11 @@
+import 'cross-fetch/polyfill';
 import { updateBorrowers, updateCurrentDebt } from './src/borrowers';
 import { welcome, increasingInterest, unpaidLoan, lowPerformance, highPerformance, reachingMaturity } from './src/notification';
 import { utils, config } from '@impactmarket/core';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
 global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
+global.fetch = require('node-fetch').default;
 
 export const borrowers = async (event, context) => {
     await updateBorrowers();
