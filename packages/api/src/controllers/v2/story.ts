@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { services } from '@impactmarket/core';
 
+import { GetStoryCommentsRequestSchema } from '~validators/story';
 import { RequestWithUser } from '../../middlewares/core';
+import { ValidatedRequest } from '~utils/queryValidator';
 import { standardResponse } from '../../utils/api';
 
 class StoryController {
@@ -168,9 +170,10 @@ class StoryController {
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    getComments = (req: Request, res: Response) => {
+    getComments = (req: RequestWithUser & ValidatedRequest<GetStoryCommentsRequestSchema>, res: Response) => {
+        const { offset, limit } = req.query;
         this.storyService
-            .getComments(parseInt(req.params.id, 10), req.query)
+            .getComments(parseInt(req.params.id, 10), { offset: offset!, limit: limit! })
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

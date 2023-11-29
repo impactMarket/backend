@@ -61,7 +61,7 @@ class CommunityController {
                     loginInactivity
                 },
                 search !== undefined && typeof search === 'string' ? search : undefined,
-                orderBy as string,
+                orderBy,
                 lastActivity_lt
             )
             .then(r => standardResponse(res, 200, true, r))

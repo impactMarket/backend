@@ -1,9 +1,19 @@
 import { Joi, celebrate } from 'celebrate';
 
-import { createValidator } from '../utils/queryValidator';
+import { ContainerTypes, ValidatedRequestSchema, createValidator } from '../utils/queryValidator';
+import { config } from '@impactmarket/core';
 import { defaultSchema } from './defaultSchema';
 
 const validator = createValidator();
+
+type GetStoryCommentsRequestType = {
+    limit?: number;
+    offset?: number;
+};
+
+interface GetStoryCommentsRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: GetStoryCommentsRequestType;
+}
 
 const getStorySchema = defaultSchema.object<{ id: number; query: any }>({
     id: Joi.number().required(),
@@ -11,8 +21,8 @@ const getStorySchema = defaultSchema.object<{ id: number; query: any }>({
 });
 
 const getStoryQuerySchema = defaultSchema.object<{ limit: number; offset: number }>({
-    limit: Joi.number().optional(),
-    offset: Joi.number().optional()
+    limit: Joi.number().optional().default(config.defaultLimit),
+    offset: Joi.number().optional().default(config.defaultOffset)
 });
 
 const getStoryValidator = validator.params(getStorySchema);
@@ -34,4 +44,4 @@ const addComment = celebrate({
     })
 });
 
-export { getStoryValidator, getStoryCommentsValidator, add, addComment };
+export { getStoryValidator, getStoryCommentsValidator, add, addComment, GetStoryCommentsRequestSchema };
