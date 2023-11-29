@@ -9,14 +9,15 @@ export async function updateBorrowers(): Promise<void> {
     const { subgraphMicroCreditBorrowers, appUser } = database.models;
     const t = await database.sequelize.transaction();
     try {
-        const lastUpdate = await subgraphMicroCreditBorrowers.findOne({
-            attributes: ['updatedAt'],
-            order: [['updatedAt', 'DESC']]
-        });
+        // const lastUpdate = await subgraphMicroCreditBorrowers.findOne({
+        //     attributes: ['updatedAt'],
+        //     order: [['updatedAt', 'DESC']]
+        // });
 
-        const entityLastUpdated = lastUpdate ? (lastUpdate.updatedAt.getTime() / 1000) | 0 : undefined;
+        // const entityLastUpdated = lastUpdate ? (lastUpdate.updatedAt.getTime() / 1000) | 0 : undefined;
 
-        const borrowers = await subgraph.queries.microcredit.getBorrowers({ entityLastUpdated, limit: 1000 });
+        // const borrowers = await subgraph.queries.microcredit.getBorrowers({ entityLastUpdated, limit: 1000 });
+        const borrowers = await subgraph.queries.microcredit.getBorrowers({ limit: 1000 });
 
         const users = await appUser.findAll({
             attributes: ['address', 'id'],
