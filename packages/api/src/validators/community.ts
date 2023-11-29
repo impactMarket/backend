@@ -1,6 +1,37 @@
 import { Joi, celebrate } from 'celebrate';
 
+import { ContainerTypes, ValidatedRequestSchema } from '~utils/queryValidator';
+import { config } from '@impactmarket/core';
 import { defaultSchema } from './defaultSchema';
+
+type GetManagersRequestType = {
+    search?: string;
+    state?: 0 | 1;
+    orderBy?: string;
+    limit?: number;
+    offset?: number;
+};
+
+type GetBeneficiariesRequestType = {
+    limit?: number;
+    offset?: number;
+    state?: 0 | 1 | 2;
+    search?: string;
+    orderBy?: string;
+    lastActivity_lt?: number;
+    suspect?: boolean;
+    inactivity?: boolean;
+    unidentified?: boolean;
+    loginInactivity?: boolean;
+};
+
+interface GetManagersRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: GetManagersRequestType;
+}
+
+interface GetBeneficiariesRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: GetBeneficiariesRequestType;
+}
 
 const getCommunitySchema = defaultSchema.object<{ id: number; query: any }>({
     id: Joi.number().required(),
@@ -13,8 +44,8 @@ const getCommunityQuerySchema = defaultSchema.object<{
     search: string;
     orderBy: string;
 }>({
-    limit: Joi.number().optional(),
-    offset: Joi.number().optional(),
+    limit: Joi.number().optional().default(config.defaultLimit),
+    offset: Joi.number().optional().default(config.defaultOffset),
     state: Joi.number().optional().valid(0, 1),
     search: Joi.string().optional(),
     orderBy: Joi.string()
@@ -45,9 +76,13 @@ const getBeneficiariesQuerySchema = defaultSchema.object<{
     search: string;
     orderBy: string;
     lastActivity_lt: number;
+    suspect: boolean;
+    inactivity: boolean;
+    unidentified: boolean;
+    loginInactivity: boolean;
 }>({
-    limit: Joi.number().optional(),
-    offset: Joi.number().optional(),
+    limit: Joi.number().optional().default(config.defaultLimit),
+    offset: Joi.number().optional().default(config.defaultOffset),
     state: Joi.number().optional().valid(0, 1, 2),
     search: Joi.string().optional(),
     orderBy: Joi.string()
@@ -63,7 +98,11 @@ const getBeneficiariesQuerySchema = defaultSchema.object<{
             'since:asc',
             'since:desc'
         ),
-    lastActivity_lt: Joi.number().optional()
+    lastActivity_lt: Joi.number().optional(),
+    suspect: Joi.boolean().optional(),
+    inactivity: Joi.boolean().optional(),
+    unidentified: Joi.boolean().optional(),
+    loginInactivity: Joi.boolean().optional()
 });
 
 const getCommunityByIDOrAddressQuerySchema = defaultSchema.object<{ state: string }>({
@@ -171,5 +210,8 @@ export {
     review,
     getCommunityValidator,
     getCommunityByIDOrAddressValidator,
-    getBeneficiariesValidator
+    getBeneficiariesValidator,
+    GetManagersRequestType,
+    GetManagersRequestSchema,
+    GetBeneficiariesRequestSchema
 };
