@@ -125,7 +125,7 @@ export async function answer(user: { userId: number; address: string }, answers:
                 }
             }),
             models.appUser.findOne({
-                attributes: ['id'],
+                attributes: ['id', 'clientId'],
                 where: {
                     id: user.userId,
                     [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
@@ -137,7 +137,8 @@ export async function answer(user: { userId: number; address: string }, answers:
         if (!lessonRegistry) {
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
         }
-        if (!verifiedUser && !userRoles.beneficiary && !userRoles.manager) {
+        const isValidUser = verifiedUser?.clientId === 2 || userRoles.beneficiary || userRoles.manager;
+        if (!isValidUser) {
             throw new BaseError(
                 'USER_NOT_VALIDATED',
                 'user phone number or email is not validated nor beneficiary/manager'
