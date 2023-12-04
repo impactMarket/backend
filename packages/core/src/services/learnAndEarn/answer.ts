@@ -128,7 +128,7 @@ export async function answer(user: { userId: number; address: string }, answers:
                 attributes: ['id', 'clientId'],
                 where: {
                     id: user.userId,
-                    [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
+                    // [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
                 }
             }),
             getUserRoles(user.address)
