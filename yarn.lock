@@ -1885,10 +1885,10 @@
     mime-types "^2.1.34"
     near-seed-phrase "^0.2.0"
 
-"@celo/base@5.0.2":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@celo/base/-/base-5.0.2.tgz#df125d1b9104ac830129b01de725ef63cf20d957"
-  integrity sha512-WiyCWNa4BQ4rmOTLL9squYEy0FbY2zM9LBI5pMPfVgnBD591c+RTUar2Z/SnQNarh6AJ9fP3mGmVuOddHqag7g==
+"@celo/base@6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@celo/base/-/base-6.0.0.tgz#23811b0bc8730a0d13fa90df55a7ec0e90d370cd"
+  integrity sha512-z29p7glyh69R4tKSbZuomEvnAihmzgQKxmGoqt/4S6zSx6uOjTILUlhqlcDl2Wbkd+V0h85ft14nui2HXY2Lsg==
 
 "@celo/base@^5.0.4", "@celo/base@^5.0.5":
   version "5.0.5"

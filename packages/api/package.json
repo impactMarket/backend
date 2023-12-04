@@ -45,7 +45,7 @@
     },
     "dependencies": {
         "@appsignal/nodejs": "3.0.14",
-        "@celo/base": "5.0.2",
+        "@celo/base": "6.0.0",
         "@celo/identity": "5.1.0",
         "@impactmarket/core": "1.0.0",
         "@slack/events-api": "3.0.1",
