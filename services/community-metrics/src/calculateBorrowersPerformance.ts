@@ -67,8 +67,8 @@ async function calculateBorrowersPerformance(): Promise<void> {
         }
         utils.Logger.info('Updated borrowers performance!');
     } catch (error) {
-        utils.slack.sendSlackMessage('🚨 Error to calculate borrowers performance', config.slack.lambdaChannel);
         utils.Logger.error('Error calculateBorrowersPerformance: ', error);
+        throw error;
     }
 }
 

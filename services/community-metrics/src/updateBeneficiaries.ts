@@ -24,8 +24,8 @@ export async function updateBeneficiaries(): Promise<void> {
         utils.Logger.info('Beneficiaries updated!');
     } catch (error) {
         await t.rollback();
-        utils.slack.sendSlackMessage('🚨 Error to update beneficiaries', config.slack.lambdaChannel);
         utils.Logger.error('Error update beneficiaries: ', error);
+        throw error;
     }
 }
 
