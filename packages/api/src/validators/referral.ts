@@ -1,13 +1,24 @@
 import { Joi, celebrate } from 'celebrate';
 
+import { createValidator } from '../utils/queryValidator';
 import { defaultSchema } from './defaultSchema';
 
-export type ReferralRequestType = {
+const validator = createValidator();
+
+type ReferralRequestType = {
     code: string;
 };
 
-export const referralPostValidator = celebrate({
+const getReferralCodeSchema = defaultSchema.object<{ cid: number }>({
+    cid: Joi.number().required()
+});
+
+const getReferralCodeValidator = validator.params(getReferralCodeSchema);
+
+const referralPostValidator = celebrate({
     body: defaultSchema.object<ReferralRequestType>({
         code: Joi.string().required()
     })
 });
+
+export { referralPostValidator, getReferralCodeValidator, ReferralRequestType };

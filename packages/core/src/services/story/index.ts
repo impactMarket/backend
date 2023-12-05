@@ -607,7 +607,7 @@ export default class StoryServiceV2 {
         }
     }
 
-    public async getComments(contentId: number, query: { offset?: string; limit?: string }) {
+    public async getComments(contentId: number, query: { offset: number; limit: number }) {
         try {
             const comments = await models.storyComment.findAndCountAll({
                 include: [
@@ -619,8 +619,8 @@ export default class StoryServiceV2 {
                 ],
                 where: { contentId },
                 order: [['createdAt', 'desc']],
-                offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-                limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit
+                offset: query.offset,
+                limit: query.limit
             });
             return comments;
         } catch (error) {

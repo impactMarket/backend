@@ -5,6 +5,11 @@ import { CommunityController } from '../../../controllers/v2/community/details';
 import { authenticateToken, optionalAuthentication, verifySignature } from '../../../middlewares';
 import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
+import {
+    getBeneficiariesValidator,
+    getCommunityByIDOrAddressValidator,
+    getCommunityValidator
+} from '../../../validators/community';
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -123,7 +128,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getManagersResponse'
      */
-    route.get('/:id/managers/:query?', optionalAuthentication, controller.getManagers);
+    route.get('/:id/managers/:query?', optionalAuthentication, getCommunityValidator, controller.getManagers);
 
     /**
      * @swagger
@@ -148,7 +153,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-    route.get('/:id/contract', controller.getContract);
+    route.get('/:id/contract', getCommunityValidator, controller.getContract);
 
     /**
      * @swagger
@@ -173,7 +178,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-    route.get('/:id/ambassador', optionalAuthentication, controller.getAmbassador);
+    route.get('/:id/ambassador', getCommunityValidator, optionalAuthentication, controller.getAmbassador);
 
     /**
      * @swagger
@@ -194,7 +199,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/merchant', controller.getMerchant);
+    route.get('/:id/merchant', getCommunityValidator, controller.getMerchant);
 
     /**
      * @swagger
@@ -260,6 +265,7 @@ export default (route: Router): void => {
         '/:id/beneficiaries/:query?',
         authenticateToken,
         cache(cacheIntervals.halfHour),
+        getBeneficiariesValidator,
         controller.getBeneficiaries
     );
 
@@ -293,7 +299,7 @@ export default (route: Router): void => {
      *                   longitude:
      *                     type: integer
      */
-    route.get('/:id/claims-location', cache(cacheIntervals.oneDay), controller.getClaimLocation);
+    route.get('/:id/claims-location', cache(cacheIntervals.oneDay), getCommunityValidator, controller.getClaimLocation);
 
     /**
      * @swagger
@@ -341,7 +347,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiPromoter'
      */
-    route.get('/:id/promoter', controller.getPromoter);
+    route.get('/:id/promoter', getCommunityValidator, controller.getPromoter);
 
     /**
      * @swagger
@@ -401,7 +407,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityCampaign'
      */
-    route.get('/:id/campaign', cache(cacheIntervals.oneHour), controller.getCampaign);
+    route.get('/:id/campaign', cache(cacheIntervals.oneHour), getCommunityValidator, controller.getCampaign);
 
     /**
      * @swagger
@@ -433,5 +439,5 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/:idOrAddress/:query?', optionalAuthentication, controller.findBy);
+    route.get('/:idOrAddress/:query?', optionalAuthentication, getCommunityByIDOrAddressValidator, controller.findBy);
 };

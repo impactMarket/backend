@@ -96,6 +96,14 @@ const queryGetBorrowerSchema = defaultSchema.object<{ address: string; formId: n
     include: Joi.alternatives(Joi.string(), Joi.array<string[]>()).optional().default([])
 });
 
+const getFormSchema = defaultSchema.object<{ id: number }>({
+    id: Joi.number().required()
+});
+
+const listManagersByCountrySchema = defaultSchema.object<{ country: string }>({
+    country: Joi.string().length(2).required()
+});
+
 interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
     [ContainerTypes.Query]: ListBorrowersType;
 }
@@ -145,6 +153,8 @@ type PutApplicationsRequestType = [
     }
 ];
 
+const getFormValidator = validator.params(getFormSchema);
+const listManagersByCountryValidator = validator.params(listManagersByCountrySchema);
 const listBorrowersValidator = validator.query(queryListBorrowersSchema);
 const listApplicationsValidator = validator.query(queryListApplicationsSchema);
 const repaymentsHistoryValidator = validator.query(queryRepaymentsHistorySchema);
@@ -198,6 +208,8 @@ const addNote = celebrate({
 });
 
 export {
+    getFormValidator,
+    listManagersByCountryValidator,
     listBorrowersValidator,
     listApplicationsValidator,
     preSignerUrlFromAWSValidator,

@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 import { services } from '@impactmarket/core';
 
+import { GetBeneficiariesRequestSchema, GetManagersRequestSchema } from '~validators/community';
 import { RequestWithUser } from '../../../middlewares/core';
+import { ValidatedRequest } from '~utils/queryValidator';
 import { standardResponse } from '../../../utils/api';
 
 class CommunityController {
@@ -13,30 +15,17 @@ class CommunityController {
         this.claimLocationService = new services.ubi.ClaimLocationServiceV2();
     }
 
-    getManagers = (req: RequestWithUser, res: Response) => {
+    getManagers = (req: RequestWithUser & ValidatedRequest<GetManagersRequestSchema>, res: Response) => {
         const community = req.params.id;
-        const { search } = req.query;
-        let { state, offset, limit, orderBy } = req.query;
-        if (state === undefined || typeof state !== 'string') {
-            state = undefined;
-        }
-        if (offset === undefined || typeof offset !== 'string') {
-            offset = '0';
-        }
-        if (limit === undefined || typeof limit !== 'string') {
-            limit = '5';
-        }
-        if (orderBy === undefined || typeof orderBy !== 'string') {
-            orderBy = undefined;
-        }
+        const { search, state, offset, limit, orderBy } = req.query;
 
         this.detailsService
             .listManagers(
                 parseInt(community, 10),
-                parseInt(offset, 10),
-                parseInt(limit, 10),
+                offset!,
+                limit!,
                 {
-                    state: state ? parseInt(state, 10) : undefined
+                    state
                 },
                 search !== undefined && typeof search === 'string' ? search : undefined,
                 orderBy,
@@ -46,7 +35,7 @@ class CommunityController {
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    getBeneficiaries = (req: RequestWithUser, res: Response) => {
+    getBeneficiaries = (req: RequestWithUser & ValidatedRequest<GetBeneficiariesRequestSchema>, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
@@ -57,35 +46,23 @@ class CommunityController {
             return;
         }
         const { suspect, inactivity, unidentified, loginInactivity, search, lastActivity_lt } = req.query;
-        let { state, offset, limit, orderBy } = req.query;
-        if (state === undefined || typeof state !== 'string') {
-            state = undefined;
-        }
-        if (offset === undefined || typeof offset !== 'string') {
-            offset = '0';
-        }
-        if (limit === undefined || typeof limit !== 'string') {
-            limit = '5';
-        }
-        if (orderBy === undefined || typeof orderBy !== 'string') {
-            orderBy = undefined;
-        }
+        const { state, offset, limit, orderBy } = req.query;
         this.detailsService
             .listBeneficiaries(
                 req.user.address,
                 parseInt(req.params.id, 10),
-                parseInt(offset, 10),
-                parseInt(limit, 10),
+                offset!,
+                limit!,
                 {
-                    state: state ? parseInt(state, 10) : undefined,
-                    suspect: suspect ? suspect === 'true' : undefined,
-                    inactivity: inactivity ? inactivity === 'true' : undefined,
-                    unidentified: unidentified ? unidentified === 'true' : undefined,
-                    loginInactivity: loginInactivity ? loginInactivity === 'true' : undefined
+                    state,
+                    suspect,
+                    inactivity,
+                    unidentified,
+                    loginInactivity
                 },
                 search !== undefined && typeof search === 'string' ? search : undefined,
                 orderBy,
-                lastActivity_lt && typeof lastActivity_lt === 'string' ? parseInt(lastActivity_lt, 10) : undefined
+                lastActivity_lt
             )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
@@ -93,12 +70,7 @@ class CommunityController {
 
     findBy = (req: RequestWithUser, res: Response) => {
         const { idOrAddress } = req.params;
-        if (idOrAddress.startsWith('0x')) {
-            this.detailsService
-                .findByContractAddress(getAddress(idOrAddress), req.user?.address, req.query)
-                .then(community => standardResponse(res, 200, !!community, community))
-                .catch(e => standardResponse(res, 400, false, '', { error: e }));
-        } else {
+        if (typeof idOrAddress === 'number') {
             const communityId = parseInt(idOrAddress, 10);
             if (!communityId) {
                 standardResponse(res, 400, false, '', {
@@ -113,6 +85,11 @@ class CommunityController {
             this.detailsService
                 .findById(communityId, req.user?.address, req.query)
                 .then(community => standardResponse(res, 200, true, community))
+                .catch(e => standardResponse(res, 400, false, '', { error: e }));
+        } else {
+            this.detailsService
+                .findByContractAddress(getAddress(idOrAddress), req.user?.address, req.query)
+                .then(community => standardResponse(res, 200, !!community, community))
                 .catch(e => standardResponse(res, 400, false, '', { error: e }));
         }
     };

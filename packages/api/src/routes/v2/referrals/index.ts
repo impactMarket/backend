@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { authenticateToken, verifyTypedSignature } from '~middlewares/index';
 import { cache } from '~middlewares/cache-redis';
 import { cacheIntervals } from '~utils/api';
-import { referralPostValidator } from '~validators/referral';
+import { getReferralCodeValidator, referralPostValidator } from '~validators/referral';
 import ReferralController from '~controllers/v2/referral';
 
 export default (app: Router): void => {
@@ -61,6 +61,7 @@ export default (app: Router): void => {
         authenticateToken,
         verifyTypedSignature,
         cache(cacheIntervals.fiveMinutes),
+        getReferralCodeValidator,
         controller.getByCampaign
     );
 

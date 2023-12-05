@@ -1,14 +1,13 @@
 import { Router } from 'express';
 
+import { add, addComment, getStoryCommentsValidator, getStoryValidator } from '../../validators/story';
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
 import { cache } from '../../middlewares/cache-redis';
 import { cacheIntervals } from '../../utils/api';
 import StoryController from '../../controllers/v2/story';
-import StoryValidator from '../../validators/story';
 
 export default (app: Router): void => {
     const storyController = new StoryController();
-    const storyValidator = new StoryValidator();
     const route = Router();
     app.use('/stories', route);
 
@@ -68,7 +67,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/', authenticateToken, storyValidator.add, storyController.add);
+    route.post('/', authenticateToken, add, storyController.add);
 
     /**
      * @swagger
@@ -136,7 +135,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/:id', optionalAuthentication, storyController.getById);
+    route.get('/:id', optionalAuthentication, getStoryValidator, storyController.getById);
 
     /**
      * @swagger
@@ -289,7 +288,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get('/:id/comments/:query?', storyController.getComments);
+    route.get('/:id/comments/:query?', getStoryCommentsValidator, storyController.getComments);
 
     /**
      * @swagger
@@ -321,7 +320,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/:id/comments', authenticateToken, storyValidator.addComment, storyController.addComment);
+    route.post('/:id/comments', authenticateToken, addComment, storyController.addComment);
 
     /**
      * @swagger
