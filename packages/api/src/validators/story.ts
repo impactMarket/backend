@@ -1,8 +1,8 @@
 import { Joi, celebrate } from 'celebrate';
 
 import { ContainerTypes, ValidatedRequestSchema, createValidator } from '../utils/queryValidator';
-import { config } from '@impactmarket/core';
 import { defaultSchema } from './defaultSchema';
+import config from '~config/index';
 
 const validator = createValidator();
 
