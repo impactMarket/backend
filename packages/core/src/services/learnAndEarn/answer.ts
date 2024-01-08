@@ -123,7 +123,7 @@ export async function answer(user: { userId: number; address: string }, answers:
                 where: {
                     prismicId
                 }
-            }),
+            })
             // models.appUser.findOne({
             //     attributes: ['id', 'clientId'],
             //     where: {

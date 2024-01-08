@@ -1,56 +1,50 @@
 import { Interface } from '@ethersproject/abi';
 import { JsonRpcProvider } from '@ethersproject/providers';
-
-import { config } from '../../..';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
+import config from '../../config';
 
 const iface = new Interface(['event RewardClaimed(address indexed beneficiary, uint256 indexed levelId)']);
 
 export async function registerClaimRewards(userId: number, transactionHash: string) {
-    const provider = new JsonRpcProvider(config.jsonRpcUrl);
+    const provider = new JsonRpcProvider(config.chain.jsonRPCUrlCelo);
 
     // data is updated in background
-    provider.waitForTransaction(transactionHash).then(transaction => {
-        // in case other unknown events are included on that transaction,
-        // ignore them
-        const events = transaction.logs.map(log => {
-            try {
-                return iface.parseLog(log);
-            } catch (_) {
-                return null;
-            }
-        });
-
-        sequelize
-            .transaction(async t => {
-                for (let index = 0; index < events.length; index++) {
-                    const event = events[index];
-
-                    if (event === null) {
-                        continue;
-                    }
-                    if (event.name !== 'RewardClaimed') {
-                        continue;
-                    }
-
-                    await models.learnAndEarnPayment.update(
-                        { status: 'paid' },
-                        {
-                            where: {
-                                levelId: event.args.levelId,
-                                userId
-                            },
-                            transaction: t
-                        }
-                    );
+    provider
+        .waitForTransaction(transactionHash, 1, 7000)
+        .then(async transaction => {
+            // in case other unknown events are included on that transaction,
+            // ignore them
+            const events = transaction.logs.map(log => {
+                try {
+                    return iface.parseLog(log);
+                } catch (_) {
+                    return null;
                 }
-            })
-            .catch(error => {
-                // If the execution reaches this line, an error occurred.
-                // The transaction has already been rolled back automatically by Sequelize!
-
-                console.log(error);
             });
-    });
+
+            for (let index = 0; index < events.length; index++) {
+                const event = events[index];
+
+                if (event === null) {
+                    continue;
+                }
+                if (event.name !== 'RewardClaimed') {
+                    continue;
+                }
+
+                await models.learnAndEarnPayment.update(
+                    { status: 'paid' },
+                    {
+                        where: {
+                            levelId: event.args.levelId,
+                            userId
+                        }
+                    }
+                );
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
     return true;
 }
