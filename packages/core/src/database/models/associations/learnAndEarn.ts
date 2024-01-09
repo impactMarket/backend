@@ -10,6 +10,7 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         learnAndEarnUserLesson,
         learnAndEarnPrismicLevel,
         learnAndEarnPrismicLesson,
+        learnAndEarnPayment,
         appNotification
     } = sequelize.models as DbModels;
 
@@ -82,5 +83,11 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         foreignKey: 'adminUserId',
         targetKey: 'id',
         as: 'adminUser'
+    });
+
+    learnAndEarnPayment.belongsTo(learnAndEarnLevel, {
+        foreignKey: 'levelId',
+        targetKey: 'id',
+        as: 'level'
     });
 }
