@@ -64,6 +64,7 @@ export async function total(
         amount: number;
         signature: string;
     }[];
+    rewards: { token: string; amount: number }[];
 }> {
     try {
         if (!language) {
@@ -81,7 +82,7 @@ export async function total(
 
         // first requested is cached here, the others are cached on the endpoint
         // it is cleared when the user submits a correct answer, changing this values
-        const [allData, userData, claimRewards] = await Promise.all([
+        const [allData, userData, claimRewards, payments] = await Promise.all([
             countAllLevelsAndLessons(clientId, language),
             models.learnAndEarnUserData.findOne({
                 attributes: ['levels', 'lessons'],
@@ -92,6 +93,19 @@ export async function total(
                 where: {
                     userId,
                     status: 'pending'
+                }
+            }),
+            models.learnAndEarnPayment.findAll({
+                attributes: ['amount'],
+                include: [
+                    {
+                        model: models.learnAndEarnLevel,
+                        attributes: ['asset'],
+                        as: 'level'
+                    }
+                ],
+                where: {
+                    userId
                 }
             })
         ]);
@@ -109,6 +123,10 @@ export async function total(
                 levelId,
                 amount,
                 signature
+            })),
+            rewards: payments.map(payment => ({
+                token: payment.level!.asset,
+                amount: payment.amount
             }))
         };
     } catch (error) {

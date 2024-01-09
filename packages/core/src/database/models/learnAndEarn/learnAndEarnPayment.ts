@@ -1,6 +1,7 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { DbModels } from '../../../database/db';
+import { LearnAndEarnLevelModel } from './learnAndEarnLevel';
 import { LearnAndEarnPayment, LearnAndEarnPaymentCreation } from '../../../interfaces/learnAndEarn/learnAndEarnPayment';
 
 export class LearnAndEarnPaymentModel extends Model<LearnAndEarnPayment, LearnAndEarnPaymentCreation> {
@@ -12,6 +13,8 @@ export class LearnAndEarnPaymentModel extends Model<LearnAndEarnPayment, LearnAn
     public status!: 'pending' | 'paid';
     public tx!: string | null;
     public txAt!: Date | null;
+
+    public level?: LearnAndEarnLevelModel;
 }
 
 export function initializeLearnAndEarnPayment(sequelize: Sequelize): typeof LearnAndEarnPaymentModel {

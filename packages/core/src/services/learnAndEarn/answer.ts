@@ -10,7 +10,7 @@ import { BaseError } from '../../utils/baseError';
 import { cleanLearnAndEarnCache } from '../../utils/cache';
 import { contracts } from '../../../index';
 import { ethers } from 'ethers';
-import { getUserRoles } from '../../subgraph/queries/user';
+// import { getUserRoles } from '../../subgraph/queries/user';
 import { models, sequelize } from '../../database';
 import config from '../../config';
 
@@ -117,32 +117,49 @@ export async function answer(user: { userId: number; address: string }, answers:
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
 
-        const [lessonRegistry, verifiedUser, userRoles] = await Promise.all([
+        const [lessonRegistry] = await Promise.all([
             models.learnAndEarnPrismicLesson.findOne({
                 attributes: ['lessonId', 'levelId'],
                 where: {
                     prismicId
                 }
-            }),
-            models.appUser.findOne({
-                attributes: ['id'],
-                where: {
-                    id: user.userId,
-                    [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
-                }
-            }),
-            getUserRoles(user.address)
+            })
+            // models.appUser.findOne({
+            //     attributes: ['id', 'clientId'],
+            //     where: {
+            //         id: user.userId,
+            //         // [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
+            //     }
+            // }),
+            // getUserRoles(user.address)
         ]);
+        // const [lessonRegistry, verifiedUser, userRoles] = await Promise.all([
+        //     models.learnAndEarnPrismicLesson.findOne({
+        //         attributes: ['lessonId', 'levelId'],
+        //         where: {
+        //             prismicId
+        //         }
+        //     }),
+        //     models.appUser.findOne({
+        //         attributes: ['id', 'clientId'],
+        //         where: {
+        //             id: user.userId,
+        //             // [Op.or]: [{ phoneValidated: true }, { emailValidated: true }]
+        //         }
+        //     }),
+        //     getUserRoles(user.address)
+        // ]);
 
         if (!lessonRegistry) {
             throw new BaseError('LESSON_NOT_FOUND', 'lesson not found for the given id');
         }
-        if (!verifiedUser && !userRoles.beneficiary && !userRoles.manager) {
-            throw new BaseError(
-                'USER_NOT_VALIDATED',
-                'user phone number or email is not validated nor beneficiary/manager'
-            );
-        }
+        // const isValidUser = verifiedUser?.clientId === 2 || userRoles.beneficiary || userRoles.manager;
+        // if (!isValidUser) {
+        //     throw new BaseError(
+        //         'USER_NOT_VALIDATED',
+        //         'user phone number or email is not validated nor beneficiary/manager'
+        //     );
+        // }
 
         // check if already completed a lesson today
         const concludedLessons = await models.learnAndEarnUserLesson.count({
