@@ -29,8 +29,8 @@ type RegisterClaimRewardsRequestType = {
     transactionHash: string;
 };
 
-const listLessonsSchema = defaultSchema.object<{ id: number }>({
-    id: Joi.number().required()
+const listLessonsSchema = defaultSchema.object<{ id: number | string }>({
+    id: Joi.alternatives().try(Joi.string(), Joi.number()).required()
 });
 
 const listLessonsValidator = validator.params(listLessonsSchema);
