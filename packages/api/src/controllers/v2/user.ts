@@ -4,7 +4,7 @@ import { getAddress } from '@ethersproject/address';
 import { ListUserNotificationsRequestSchema } from '~validators/user';
 import { RequestWithUser } from '~middlewares/core';
 import { ValidatedRequest } from '~utils/queryValidator';
-import { send } from '~services/attestation';
+import { AttestationType, send, verify } from '~services/attestation';
 import { standardResponse } from '~utils/api';
 import UserLogService from '~services/app/user/log';
 import UserService from '~services/app/user';
@@ -350,6 +350,22 @@ class UserController {
         const { plainTextIdentifier, type } = req.body;
 
         send(plainTextIdentifier, type, req.user.userId)
+            .then(r => standardResponse(res, 200, true, r, {}))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
+    };
+    public verify = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+        const { plainTextIdentifier, code } = req.body;
+
+        verify(plainTextIdentifier, AttestationType.EMAIL_LINK, code!, req.user.userId)
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };

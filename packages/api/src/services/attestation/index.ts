@@ -27,7 +27,7 @@ interface IERC20Contract extends Contract {
     increaseAllowance(spender: string, value: BigNumber): Promise<TransactionResponse>;
 }
 
-enum AttestationType {
+export enum AttestationType {
     PHONE_NUMBER = 0,
     EMAIL = 1,
     EMAIL_LINK = 2
@@ -265,7 +265,7 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
             attributes: ['address'],
             where: { id: userId }
         });
-        const uri = `https://app.impactmarket.com/user/verify?code=${code}&address=${user?.address}`;
+        const uri = `https://app.impactmarket.com/user/verify?code=${code}&address=${user?.address}&email=${plainTextIdentifier}`;
 
         const body = emailValidationBody!.replace('{{link}}', `<a href=${uri}>Click Me!<a>`);
         sendEmail({

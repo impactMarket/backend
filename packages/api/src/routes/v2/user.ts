@@ -491,4 +491,5 @@ export default (app: Router): void => {
     );
 
     route.post('/request-verify', authenticateToken, userController.requestVerify);
+    route.post('/verify', authenticateToken, userController.verify);
 };
