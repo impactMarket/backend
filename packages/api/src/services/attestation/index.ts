@@ -287,7 +287,6 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
             },
             { where: { id: userId } }
         );
-        return body;
     }
 
     // save code to db
