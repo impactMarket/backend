@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 
+import { AttestationType, send, verify } from '~services/attestation';
 import { ListUserNotificationsRequestSchema } from '~validators/user';
 import { RequestWithUser } from '~middlewares/core';
 import { ValidatedRequest } from '~utils/queryValidator';
-import { AttestationType, send, verify } from '~services/attestation';
 import { standardResponse } from '~utils/api';
 import UserLogService from '~services/app/user/log';
 import UserService from '~services/app/user';
