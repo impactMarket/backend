@@ -489,4 +489,7 @@ export default (app: Router): void => {
         userSendPushNotifications,
         userController.sendPushNotifications
     );
+
+    route.post('/request-verify', authenticateToken, userController.requestVerify);
+    route.post('/verify', authenticateToken, userController.verify);
 };

@@ -27,9 +27,10 @@ interface IERC20Contract extends Contract {
     increaseAllowance(spender: string, value: BigNumber): Promise<TransactionResponse>;
 }
 
-enum AttestationType {
+export enum AttestationType {
     PHONE_NUMBER = 0,
-    EMAIL = 1
+    EMAIL = 1,
+    EMAIL_LINK = 2
 }
 
 /**
@@ -145,6 +146,13 @@ export const verify = async (plainTextIdentifier: string, type: AttestationType,
             },
             { where: { id: userId } }
         );
+    } else if (type === AttestationType.EMAIL_LINK) {
+        await database.models.appUser.update(
+            {
+                emailValidated: true
+            },
+            { where: { id: userId } }
+        );
     }
 
     return obfuscatedIdentifier;
@@ -222,6 +230,55 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
             from: 'no-reply@impactmarket.com',
             subject: emailValidationSubject,
             text: body
+        });
+
+        await database.models.appUser.update(
+            {
+                email: plainTextIdentifier
+            },
+            { where: { id: userId } }
+        );
+    } else if (type === AttestationType.EMAIL_LINK) {
+        code = randomBytes(4).toString('hex');
+
+        const response = await prismic.getAllByType('push_notifications_data', {
+            lang: locale || 'en-US'
+        });
+        let emailValidationSubject: string | undefined;
+        let emailValidationBody: string | undefined;
+
+        if (response.length > 0) {
+            const data = response[0].data;
+            emailValidationSubject = data['email-link-validation-message-subject'];
+            emailValidationBody = data['email-link-validation-message-body'];
+        }
+        if (!emailValidationSubject || !emailValidationBody) {
+            const response = await prismic.getAllByType('push_notifications_data', {
+                lang: 'en-US'
+            });
+            const data = response[0].data;
+            emailValidationSubject = data['email-link-validation-message-subject'];
+            emailValidationBody = data['email-link-validation-message-body'];
+        }
+
+        const user = await database.models.appUser.findOne({
+            attributes: ['address'],
+            where: { id: userId }
+        });
+        const uri = `https://app.impactmarket.com/user/verify?code=${code}&address=${user?.address}&email=${plainTextIdentifier}`;
+
+        const body = emailValidationBody!.replace('{{link}}', `<a href=${uri}>Click Me!<a>`);
+        sendEmail({
+            to: plainTextIdentifier,
+            // TODO: move to env
+            from: 'no-reply@impactmarket.com',
+            subject: emailValidationSubject,
+            content: [
+                {
+                    type: 'text/html',
+                    value: body
+                }
+            ]
         });
 
         await database.models.appUser.update(
