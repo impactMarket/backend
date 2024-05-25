@@ -165,7 +165,7 @@ export const verify = async (plainTextIdentifier: string, type: AttestationType,
  * @param userId user id doing the verification
  * @returns void
  */
-export const send = async (plainTextIdentifier: string, type: AttestationType, userId: number) => {
+export const send = async (plainTextIdentifier: string, type: AttestationType, userId: number, url?: string) => {
     let code = '';
 
     const user = await database.models.appUser.findOne({
@@ -265,7 +265,7 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
             attributes: ['address'],
             where: { id: userId }
         });
-        const uri = `https://app.impactmarket.com/user/verify?code=${code}&address=${user?.address}&email=${plainTextIdentifier}`;
+        const uri = `${url}?code=${code}&address=${user?.address}&email=${plainTextIdentifier}`;
 
         const body = emailValidationBody!.replace('{{link}}', `<a href=${uri}>Click Me!<a>`);
         sendEmail({
