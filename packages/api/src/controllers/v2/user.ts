@@ -363,9 +363,11 @@ class UserController {
             });
             return;
         }
+
         const { email, code } = req.body;
 
         verify(email, AttestationType.EMAIL_LINK, code!, req.user.userId)
+
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
