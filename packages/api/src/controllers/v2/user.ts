@@ -347,9 +347,9 @@ class UserController {
             });
             return;
         }
-        const { plainTextIdentifier, type } = req.body;
+        const { email, url } = req.body;
 
-        send(plainTextIdentifier, type, req.user.userId)
+        send(email, 2, req.user.userId, url)
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
@@ -363,9 +363,11 @@ class UserController {
             });
             return;
         }
-        const { plainTextIdentifier, code } = req.body;
 
-        verify(plainTextIdentifier, AttestationType.EMAIL_LINK, code!, req.user.userId)
+        const { email, code } = req.body;
+
+        verify(email, AttestationType.EMAIL_LINK, code!, req.user.userId)
+
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
