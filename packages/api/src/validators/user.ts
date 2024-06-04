@@ -47,6 +47,14 @@ const update = celebrate({
     })
 });
 
+const verify = celebrate({
+    body: defaultSchema.object({
+        email: Joi.string().required(),
+        code: Joi.string().required(),
+        userId: Joi.string().required()
+    })
+});
+
 const report = celebrate({
     body: defaultSchema.object({
         communityId: Joi.any().required(),
@@ -97,6 +105,7 @@ export {
     create,
     update,
     report,
+    verify,
     readNotifications,
     sendPushNotifications,
     queryListUserNotificationsValidator,
