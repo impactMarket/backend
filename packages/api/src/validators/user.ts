@@ -3,7 +3,6 @@ import { Joi, celebrate } from 'celebrate';
 import { ContainerTypes, ValidatedRequestSchema, createValidator } from '~utils/queryValidator';
 import { defaultSchema } from './defaultSchema';
 import config from '~config/index';
-import user from 'routes/v2/user';
 
 const validator = createValidator();
 
