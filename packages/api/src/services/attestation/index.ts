@@ -265,7 +265,7 @@ export const send = async (plainTextIdentifier: string, type: AttestationType, u
             attributes: ['address'],
             where: { id: userId }
         });
-        const uri = `${url}?code=${code}&address=${user?.address}&email=${plainTextIdentifier}`;
+        const uri = `${url}?code=${code}&address=${user?.address}&email=${plainTextIdentifier}&userId=${userId}`;
 
         const body = emailValidationBody!.replace('{{link}}', `<a href=${uri}>Click Me!<a>`);
         sendEmail({
