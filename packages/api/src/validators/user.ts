@@ -3,6 +3,7 @@ import { Joi, celebrate } from 'celebrate';
 import { ContainerTypes, ValidatedRequestSchema, createValidator } from '~utils/queryValidator';
 import { defaultSchema } from './defaultSchema';
 import config from '~config/index';
+import user from 'routes/v2/user';
 
 const validator = createValidator();
 
@@ -44,6 +45,14 @@ const update = celebrate({
         bio: Joi.alternatives(Joi.string(), null).optional(),
         email: Joi.alternatives(Joi.string().email({ tlds: { allow: false } }), null).optional(),
         country: Joi.string().optional()
+    })
+});
+
+const verify = celebrate({
+    body: defaultSchema.object({
+        email: Joi.string().required(),
+        code: Joi.string().required(),
+        userId: Joi.string().required()
     })
 });
 
@@ -97,6 +106,7 @@ export {
     create,
     update,
     report,
+    verify,
     readNotifications,
     sendPushNotifications,
     queryListUserNotificationsValidator,

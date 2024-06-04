@@ -354,18 +354,10 @@ class UserController {
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
     public verify = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!'
-                }
-            });
-            return;
-        }
-        const { email, code } = req.body;
+     
+        const { email, code, userId } = req.body;
 
-        verify(email, AttestationType.EMAIL_LINK, code!, req.user.userId)
+        verify(email, AttestationType.EMAIL_LINK, code!, userId)
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };

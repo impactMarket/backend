@@ -8,7 +8,8 @@ import {
     readNotifications as userReadNotifications,
     report as userReport,
     sendPushNotifications as userSendPushNotifications,
-    update as userUpdate
+    update as userUpdate,
+    verify as userVerify
 } from '~validators/user';
 import UserController from '~controllers/v2/user';
 
@@ -491,5 +492,5 @@ export default (app: Router): void => {
     );
 
     route.post('/request-verify', authenticateToken, userController.requestVerify);
-    route.post('/verify', authenticateToken, userController.verify);
+    route.post('/verify', userVerify, userController.verify);
 };
