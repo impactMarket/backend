@@ -354,7 +354,6 @@ class UserController {
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
     public verify = (req: RequestWithUser, res: Response) => {
-     
         const { email, code, userId } = req.body;
 
         verify(email, AttestationType.EMAIL_LINK, code!, userId)
