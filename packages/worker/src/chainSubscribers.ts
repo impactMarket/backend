@@ -44,6 +44,7 @@ class ChainSubscribers {
                 ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
                 ethers.utils.id('LoanAdded(address,address,uint256,uint256,uint256,uint256,uint256)'),
                 ethers.utils.id('ManagerChanged(address,address)'),
+                ethers.utils.id('UserAddressChanged(address,address)'),
                 ethers.utils.id('Transfer(address,address,uint256)')
             ]
         ];

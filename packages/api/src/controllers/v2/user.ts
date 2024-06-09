@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 
+import { AttestationType, send, verify } from '~services/attestation';
 import { ListUserNotificationsRequestSchema } from '~validators/user';
 import { RequestWithUser } from '~middlewares/core';
 import { ValidatedRequest } from '~utils/queryValidator';
@@ -334,6 +335,29 @@ class UserController {
         this.userService
             .sendPushNotifications(title, body, country, communities, data)
             .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
+    };
+    public requestVerify = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+        const { email, url } = req.body;
+
+        send(email, 2, req.user.userId, url)
+            .then(r => standardResponse(res, 200, true, r, {}))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
+    };
+    public verify = (req: RequestWithUser, res: Response) => {
+        const { email, code, userId } = req.body;
+
+        verify(email, AttestationType.EMAIL_LINK, code!, userId)
+            .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 }
