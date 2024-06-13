@@ -1,17 +1,9 @@
-import { WebClient } from '@slack/web-api';
 import AWS from 'aws-sdk';
 import axios from 'axios';
 
 const lambda = new AWS.Lambda();
 const API_KEY = process.env.API_KEY;
 const HEROKU_URL = process.env.HEROKU_URL;
-const SLACK_TOKEN = process.env.SLACK_TOKEN;
-const SLACK_CHANNEL = process.env.SLACK_CHANNEL;
-
-const sendSlackMessage = async () => {
-    const web = new WebClient(SLACK_TOKEN);
-    await web.chat.postMessage({ channel: SLACK_CHANNEL!, text: '🚨 Error to update lambda envs' }).catch(console.error);
-}
 
 const getHerokuConfigVars = async (appId: string) => {
     const response = await axios.get(
@@ -74,7 +66,6 @@ export const herokuTrigger = async (event: any, context: any) => {
         };
     } catch (error) {
         console.log(error);
-        await sendSlackMessage();
         throw error;
     }
 };

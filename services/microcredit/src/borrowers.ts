@@ -64,7 +64,7 @@ export async function updateBorrowers(): Promise<void> {
     } catch (error) {
         await t.rollback();
         utils.Logger.error('Error update borrowers: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to update borrowers', config.slack.lambdaChannel);
+        throw error;
     }
 }
 
@@ -125,7 +125,7 @@ export async function updateCurrentDebt(): Promise<void> {
         utils.Logger.info('Current debt updated!');       
     } catch (error) {
         await t.rollback();
-        utils.slack.sendSlackMessage('🚨 Error to update current debt', config.slack.lambdaChannel);
         utils.Logger.error('Error update current debt: ', error);
+        throw error;
     }
 }
