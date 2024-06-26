@@ -90,6 +90,7 @@ function validateEnv() {
         DEFAULT_LIMIT: num({ default: 10 }),
         DEFAULT_OFFSET: num({ default: 0 }),
         PACT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        PACTV2_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AIRGRAB_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         DONATION_MINER_CONTRACT_ADDRESS: str({
             devDefault: onlyOnTestEnv('xyz')
