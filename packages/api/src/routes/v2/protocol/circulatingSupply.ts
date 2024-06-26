@@ -11,7 +11,7 @@ export default (route: Router): void => {
      * /protocol/circulating-supply:
      *   get:
      *     tags:
-     *       - "generic"
+     *       - "total-supply"
      *     summary: Gets PACT circulating supply.
      *     responses:
      *       "200":
@@ -25,7 +25,7 @@ export default (route: Router): void => {
      * /protocol/total-supply:
      *   get:
      *     tags:
-     *       - "generic"
+     *       - "total-supply"
      *     summary: Gets total PACT supply.
      *     responses:
      *       "200":
@@ -40,5 +40,5 @@ export default (route: Router): void => {
      *                 data:
      *                   type: number
      */
-    route.get('/total-supply', (_req: Request, res: Response) => res.send(100_000_000_000));
+    route.get('/total-supply', (_req: Request, res: Response) => res.send('100000000000'));
 };
