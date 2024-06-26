@@ -80,7 +80,6 @@ export default {
     /** contract addresses */
     contractAddresses: {
         pact: validatedEnv.PACT_CONTRACT_ADDRESS,
-        pactV2: validatedEnv.PACTV2_CONTRACT_ADDRESS,
         airgrab: validatedEnv.AIRGRAB_CONTRACT_ADDRESS,
         donationMiner: validatedEnv.DONATION_MINER_CONTRACT_ADDRESS,
         impactLabs: validatedEnv.IMPACTLABS_CONTRACT_ADDRESS,
