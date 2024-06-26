@@ -7,8 +7,8 @@ import { config, contracts } from '@impactmarket/core';
 // this is required for external services to access the circulating supply
 export const circulatingSupply = async (_req: Request, res: Response) => {
     const decimals = new BigNumber(10).pow(18);
-    const pact = new Contract(
-        config.contractAddresses.pact,
+    const pactV2 = new Contract(
+        config.contractAddresses.pactV2,
         contracts.ERC20ABI,
         new JsonRpcProvider(config.jsonRpcUrl)
     );
@@ -20,7 +20,7 @@ export const circulatingSupply = async (_req: Request, res: Response) => {
         '0x213962Ba8e4cef1D618c88d62D2FFA39eC5Eb22D',
         '0x1854c78e5401A501A8F32f3a9DFae3d356Fb9A9E'
     ];
-    const topHoldersBalances = await Promise.all(topHolders.map(holder => pact.balanceOf(holder)));
+    const topHoldersBalances = await Promise.all(topHolders.map(holder => pactV2.balanceOf(holder)));
 
     const totalSupply = new BigNumber(100_000_000_000).multipliedBy(decimals);
     let circulatingSupply = new BigNumber(totalSupply);
