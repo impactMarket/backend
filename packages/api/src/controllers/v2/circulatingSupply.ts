@@ -19,13 +19,11 @@ export const circulatingSupply = async (_req: Request, res: Response) => {
         '0x3844cb665cf676B1Eb7C896E04D3E9eC3BAB5a75',
         '0x213962Ba8e4cef1D618c88d62D2FFA39eC5Eb22D',
         '0x1854c78e5401A501A8F32f3a9DFae3d356Fb9A9E'
-    ]
-    const topHoldersBalances = await Promise.all(
-        topHolders.map(holder => pact.balanceOf(holder))
-    );
+    ];
+    const topHoldersBalances = await Promise.all(topHolders.map(holder => pact.balanceOf(holder)));
 
     const totalSupply = new BigNumber(100_000_000_000).multipliedBy(decimals);
-    let circulatingSupply = new BigNumber(totalSupply)
+    let circulatingSupply = new BigNumber(totalSupply);
     topHoldersBalances.forEach(balance => {
         circulatingSupply = circulatingSupply.minus(balance.toString());
     });
