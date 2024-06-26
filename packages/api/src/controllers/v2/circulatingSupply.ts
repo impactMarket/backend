@@ -22,7 +22,6 @@ export const circulatingSupply = async (_req: Request, res: Response) => {
     ];
     const topHoldersBalances = await Promise.all(topHolders.map(holder => pactV2.balanceOf(holder)));
 
-
     const totalSupply = new BigNumber(100_000_000_000).multipliedBy(decimals);
     let circulatingSupply = new BigNumber(totalSupply);
     topHoldersBalances.forEach(balance => {

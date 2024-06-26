@@ -9,5 +9,4 @@ export default (app: Router): void => {
 
     microcredit(route);
     circulatingSupply(route);
-
 };
