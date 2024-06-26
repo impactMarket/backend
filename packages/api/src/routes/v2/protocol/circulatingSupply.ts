@@ -4,11 +4,11 @@ import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
 import { circulatingSupply } from '~controllers/v2/circulatingSupply';
 
-export default (app: Router): void => {
+export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /circulating-supply:
+     * /protocol/circulating-supply:
      *   get:
      *     tags:
      *       - "generic"
@@ -17,12 +17,12 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    app.get('/circulating-supply', cache(cacheIntervals.oneDay), circulatingSupply);
+    route.get('/circulating-supply', cache(cacheIntervals.oneDay), circulatingSupply);
 
     /**
      * @swagger
      *
-     * /total-supply:
+     * /protocol/total-supply:
      *   get:
      *     tags:
      *       - "generic"
@@ -40,5 +40,5 @@ export default (app: Router): void => {
      *                 data:
      *                   type: number
      */
-    app.get('/total-supply', (_req: Request, res: Response) => res.send(100_000_000_000));
+    route.get('/total-supply', (_req: Request, res: Response) => res.send(100_000_000_000));
 };
