@@ -163,6 +163,13 @@ export const verify = async (
             },
             { where: { id: userId } }
         );
+    } else if (type === AttestationType.EMAIL_LINK) {
+        await database.models.appUser.update(
+            {
+                emailValidated: true
+            },
+            { where: { id: userId } }
+        );
     }
 
     return obfuscatedIdentifier;
