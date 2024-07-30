@@ -148,12 +148,14 @@ export default class UserService {
                 this._userRoles(userParams.address, userParams.clientId),
                 this._userRules(userParams.address, userParams.clientId)
             ]);
+            console.log('After promises', user, userRoles, userRules);
             notificationsCount = await models.appNotification.count({
                 where: {
                     userId: user.id,
                     read: false
                 }
             });
+            console.log('Notifications count', notificationsCount);
         }
 
         // we could prevent this update, but we don't want to make the user wait
@@ -168,9 +170,10 @@ export default class UserService {
                 user.update({ clientId: 2 });
             }
         }
-
+        console.log('Before last login');
         this._updateLastLogin(user.id);
 
+        console.log('Before token');
         const token = utils.jwt.generateAccessToken({
             clientId: userParams.clientId,
             address: userParams.address,
@@ -631,6 +634,7 @@ export default class UserService {
                 loanManager: null
             };
         }
+
         const [userRoles, user] = await Promise.all([
             getUserRoles(address),
             models.appUser.findOne({

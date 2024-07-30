@@ -10,6 +10,7 @@ import { database, utils } from '@impactmarket/core';
 import { parseEther } from '@ethersproject/units';
 import { randomBytes, randomInt } from 'crypto';
 
+import { AppUserModel } from '@impactmarket/core/src/database/models/app/appUser';
 import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
 import config from '../../config';
@@ -81,7 +82,13 @@ const topUpOdis = async (issuer: Wallet) => {
  * @param userId user id doing the verification
  * @returns the obfuscated identifier
  */
-export const verify = async (plainTextIdentifier: string, type: AttestationType, code: string, userId: number) => {
+export const verify = async (
+    plainTextIdentifier: string,
+    type: AttestationType,
+    code: string,
+    userId: number,
+    params?: Partial<AppUserModel>
+) => {
     // check if code exists and is valid
     // TODO: create startup process to delete expired codes
     const { gt } = Op;
@@ -97,6 +104,16 @@ export const verify = async (plainTextIdentifier: string, type: AttestationType,
 
     if (!validCode) {
         throw Error('Invalid or expired code');
+    }
+    if (type === AttestationType.EMAIL_LINK) {
+        await database.models.appUser.update(
+            {
+                emailValidated: true,
+                ...params
+            },
+            { where: { id: userId } }
+        );
+        return '';
     }
 
     // initiate odis request
@@ -140,13 +157,6 @@ export const verify = async (plainTextIdentifier: string, type: AttestationType,
             { where: { id: userId } }
         );
     } else if (type === AttestationType.EMAIL) {
-        await database.models.appUser.update(
-            {
-                emailValidated: true
-            },
-            { where: { id: userId } }
-        );
-    } else if (type === AttestationType.EMAIL_LINK) {
         await database.models.appUser.update(
             {
                 emailValidated: true
