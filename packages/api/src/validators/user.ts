@@ -6,6 +6,16 @@ import config from '~config/index';
 
 const validator = createValidator();
 
+const appUserModelSchema = Joi.object({
+    firstName: Joi.string().optional(),
+    lastName: Joi.string().optional(),
+    age: Joi.number().optional(),
+    gender: Joi.string().optional(),
+    language: Joi.string().optional(),
+    currency: Joi.string().optional(),
+    country: Joi.string().optional()
+}).optional();
+
 const create = celebrate({
     body: defaultSchema.object({
         address: Joi.string().required(),
@@ -51,7 +61,8 @@ const verify = celebrate({
     body: defaultSchema.object({
         email: Joi.string().required(),
         code: Joi.string().required(),
-        userId: Joi.string().required()
+        userId: Joi.string().required(),
+        params: appUserModelSchema
     })
 });
 
