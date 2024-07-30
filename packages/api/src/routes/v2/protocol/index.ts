@@ -2,7 +2,6 @@ import { Router } from 'express';
 
 import circulatingSupply from './circulatingSupply';
 import microcredit from './microcredit';
-import circulatingSupply from './circulatingSupply';
 
 export default (app: Router): void => {
     const route = Router();
