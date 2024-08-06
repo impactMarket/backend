@@ -11,7 +11,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('Notified users with incomplete courses!');
     } catch (error) {
         utils.Logger.error('Error users with incomplete courses: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to notify users with incomplete courses', config.slack.lambdaChannel);
+        throw error;
     }
 
     // notify when a new course is available
@@ -20,6 +20,6 @@ export const notification = async (event, context) => {
         utils.Logger.info('Notified available courses and lessons!');
     } catch (error) {
         utils.Logger.error('Error notify available courses and lessons: ', error);
-        utils.slack.sendSlackMessage('🚨 Error notify available courses and lessons', config.slack.lambdaChannel);
+        throw error;
     }
 };

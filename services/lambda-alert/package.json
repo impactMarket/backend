@@ -1,5 +1,5 @@
 {
-    "name": "@impactmarket/orchestrator",
+    "name": "@impactmarket/lambda-alert",
     "version": "1.0.0",
     "scripts": {
         "build": "tsc",
@@ -12,8 +12,8 @@
         "node": "18.x"
     },
     "dependencies": {
-        "aws-sdk": "2.1503.0",
-        "axios": "1.6.0"
+        "@slack/web-api": "6.10.0",
+        "aws-sdk": "2.1503.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.102",

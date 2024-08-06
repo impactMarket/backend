@@ -1,0 +1,32 @@
+service: lambda-alert
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  webpack:
+    includeModules: true
+    packager: yarn
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:AWS_REGION}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - SNS:Subscribe
+          Resource:
+            - "*"
+
+functions:
+  notify:
+    handler: handler.notify
+    events:
+      - sns:
+          arn: "arn:aws:sns:eu-west-1:763241127132:lambdaAlert"
+
+plugins:
+  - serverless-webpack

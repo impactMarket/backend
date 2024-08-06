@@ -30,7 +30,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
         utils.Logger.info('User accounts to delete verified!');
     } catch (error) {
         await t.rollback();
-        utils.slack.sendSlackMessage('🚨 Error to verify deleted accounts', config.slack.lambdaChannel);
         utils.Logger.error('Error verifyDeletedAccounts: ', error);
+        throw error;
     }
 }

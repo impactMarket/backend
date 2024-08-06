@@ -22,7 +22,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('Sent welcome/reminder notification!');
     } catch (error) {
         utils.Logger.error('Error welcome/reminder notification: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to send welcome/reminder notification', config.slack.lambdaChannel);
+        throw error;
     }
 
     // if the borrower repaid something in the last month and the performance is above 100%, notify the borrower only once
@@ -31,7 +31,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('notify high performance!');
     } catch (error) {
         utils.Logger.error('Error notify high performance: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to notify high performance', config.slack.lambdaChannel);
+        throw error;
     }
 
     // if the borrower repaid something, but the performance is now below 100%, notify the borrower 
@@ -40,7 +40,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('notify low performance!');
     } catch (error) {
         utils.Logger.error('Error notify low performance: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to notify low performance', config.slack.lambdaChannel);
+        throw error;
     }
 
     // if halfway through the loan, the borrower didn't repay yet, start notifying every 2 weeks
@@ -49,7 +49,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('Remind unpaid loan loan!');
     } catch (error) {
         utils.Logger.error('Error remind unpaid loan loan: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to remind unpaid loan loan', config.slack.lambdaChannel);
+        throw error;
     }
 
     // every 2 weeks, remind the borrower about the loan and increasing interest
@@ -58,7 +58,7 @@ export const notification = async (event, context) => {
         utils.Logger.info('Remind increasing interest!');
     } catch (error) {
         utils.Logger.error('Error remind increasing interest: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to remind increasing interest', config.slack.lambdaChannel);
+        throw error;
     }
 
     // one week before reaching maturity and 24 hours again
@@ -67,6 +67,6 @@ export const notification = async (event, context) => {
         utils.Logger.info('Remind reaching maturity!');
     } catch (error) {
         utils.Logger.error('Error remind reaching maturity: ', error);
-        utils.slack.sendSlackMessage('🚨 Error to remind reaching maturity', config.slack.lambdaChannel);
+        throw error;
     }
 };
