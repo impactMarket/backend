@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 
+import { AppUserModel } from '@impactmarket/core/src/database/models/app/appUser';
 import { AttestationType, send, verify } from '~services/attestation';
 import { ListUserNotificationsRequestSchema } from '~validators/user';
 import { RequestWithUser } from '~middlewares/core';
@@ -8,6 +9,13 @@ import { ValidatedRequest } from '~utils/queryValidator';
 import { standardResponse } from '~utils/api';
 import UserLogService from '~services/app/user/log';
 import UserService from '~services/app/user';
+
+type VerifyRequestBody = {
+    email: string;
+    code: string;
+    userId: number;
+    params?: Partial<AppUserModel>;
+};
 
 class UserController {
     private userService: UserService;
@@ -354,9 +362,10 @@ class UserController {
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
     public verify = (req: RequestWithUser, res: Response) => {
-        const { email, code, userId } = req.body;
+        const { email, code, userId, params } = req.body as VerifyRequestBody;
+        const userParams: Partial<AppUserModel> = params ?? {};
 
-        verify(email, AttestationType.EMAIL_LINK, code!, userId)
+        verify(email, AttestationType.EMAIL_LINK, code!, userId, userParams)
             .then(r => standardResponse(res, 200, true, r, {}))
             .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
